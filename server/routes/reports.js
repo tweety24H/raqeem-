@@ -4,6 +4,98 @@ const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
+function rangeWhere(range, column) {
+  if (range === 'today') return `date(${column}) = date('now')`;
+  if (range === 'week') return `date(${column}) >= date('now', '-6 days')`;
+  if (range === 'month') return `date(${column}) >= date('now', '-29 days')`;
+  return '1=1';
+}
+
+// GET /api/reports/summary?range=today|week|month|all
+router.get('/summary', requireAuth, (req, res) => {
+  const range = ['today', 'week', 'month', 'all'].includes(req.query.range) ? req.query.range : 'today';
+  const orderWhere = rangeWhere(range, 'o.created_at');
+  const expenseWhere = rangeWhere(range, 'date');
+
+  const orderStats = db
+    .prepare(`SELECT COUNT(*) AS totalOrders, COALESCE(SUM(total_price), 0) AS totalRevenue FROM orders o WHERE ${orderWhere}`)
+    .get();
+  const totalExpenses = db.prepare(`SELECT COALESCE(SUM(amount), 0) AS v FROM expenses WHERE ${expenseWhere}`).get().v;
+  const netProfit = orderStats.totalRevenue - totalExpenses;
+
+  // الديون والمخزون المنخفض حالة لحظية، غير مرتبطة بالفترة المختارة
+  const totalDebts = db.prepare('SELECT COALESCE(SUM(total_price - paid_amount), 0) AS v FROM orders').get().v;
+  const lowStockCount = db.prepare('SELECT COUNT(*) AS c FROM stock_items WHERE quantity <= min_quantity').get().c;
+
+  const topCustomers = db
+    .prepare(
+      `SELECT c.id, c.name, COUNT(o.id) AS ordersCount, COALESCE(SUM(o.total_price), 0) AS revenue
+       FROM orders o JOIN customers c ON c.id = o.customer_id
+       WHERE ${orderWhere}
+       GROUP BY c.id ORDER BY revenue DESC LIMIT 5`
+    )
+    .all();
+
+  const topStockItems = db
+    .prepare(
+      `SELECT si.id, si.name, si.unit, COALESCE(SUM(oi.stock_qty_used), 0) AS usedQty
+       FROM order_items oi
+       JOIN orders o ON o.id = oi.order_id
+       JOIN stock_items si ON si.id = oi.stock_item_id
+       WHERE ${orderWhere} AND oi.stock_qty_used > 0
+       GROUP BY si.id ORDER BY usedQty DESC LIMIT 5`
+    )
+    .all();
+
+  const recentExpenses = db
+    .prepare(`SELECT * FROM expenses WHERE ${expenseWhere} ORDER BY date DESC, id DESC LIMIT 10`)
+    .all();
+
+  res.json({
+    range,
+    totalOrders: orderStats.totalOrders,
+    totalRevenue: orderStats.totalRevenue,
+    totalExpenses,
+    netProfit,
+    totalDebts,
+    lowStockCount,
+    topCustomers,
+    topStockItems,
+    recentExpenses,
+  });
+});
+
+// GET /api/reports/daily?days=30 - الإيراد والمصاريف يوميًا لآخر N يوم (لرسم بياني)
+router.get('/daily', requireAuth, (req, res) => {
+  const days = Math.min(Math.max(Number(req.query.days) || 30, 1), 365);
+
+  const revenueRows = db
+    .prepare(
+      `SELECT date(created_at) AS d, COALESCE(SUM(total_price), 0) AS revenue
+       FROM orders WHERE date(created_at) >= date('now', ?)
+       GROUP BY d`
+    )
+    .all(`-${days - 1} days`);
+  const expenseRows = db
+    .prepare(
+      `SELECT date AS d, COALESCE(SUM(amount), 0) AS expenses
+       FROM expenses WHERE date(date) >= date('now', ?)
+       GROUP BY d`
+    )
+    .all(`-${days - 1} days`);
+
+  const revMap = Object.fromEntries(revenueRows.map((r) => [r.d, r.revenue]));
+  const expMap = Object.fromEntries(expenseRows.map((r) => [r.d, r.expenses]));
+
+  const result = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    result.push({ date: d, revenue: revMap[d] || 0, expenses: expMap[d] || 0 });
+  }
+
+  res.json({ days: result });
+});
+
 // GET /api/reports/profit?from=&to=
 router.get('/profit', requireAuth, (req, res) => {
   const { from, to } = req.query;

@@ -148,6 +148,15 @@ CREATE TABLE IF NOT EXISTS stock_alerts (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS expenses (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  amount REAL NOT NULL,
+  reason TEXT,
+  date TEXT NOT NULL DEFAULT (date('now')),
+  worker_id INTEGER REFERENCES workers(id) ON DELETE SET NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS design_files (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
@@ -167,3 +176,4 @@ CREATE INDEX IF NOT EXISTS idx_payments_customer ON payments(customer_id);
 CREATE INDEX IF NOT EXISTS idx_debt_reminders_customer ON debt_reminders(customer_id);
 CREATE INDEX IF NOT EXISTS idx_design_files_order ON design_files(order_id);
 CREATE INDEX IF NOT EXISTS idx_design_files_customer ON design_files(customer_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(date);

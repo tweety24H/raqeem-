@@ -1,9 +1,311 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api/client';
 import PageHeader from '../components/PageHeader';
-import { formatIQD } from '../utils/format';
+import Modal from '../components/Modal';
+import RevenueChart from '../components/RevenueChart';
+import { formatIQD, formatDate } from '../utils/format';
+
+const RANGES = [
+  { key: 'today', label: 'اليوم' },
+  { key: 'week', label: 'هذا الأسبوع' },
+  { key: 'month', label: 'هذا الشهر' },
+  { key: 'all', label: 'الكلي' },
+];
 
 export default function Reports() {
+  const [tab, setTab] = useState('overview'); // overview | detailed
+
+  return (
+    <div className="p-6">
+      <PageHeader title="التقارير" subtitle="نظرة عامة على أداء المطبعة وتحليلات مفصلة" />
+
+      <div className="mb-6 flex gap-1 border-b border-slate-200">
+        <TabButton active={tab === 'overview'} onClick={() => setTab('overview')}>
+          نظرة عامة
+        </TabButton>
+        <TabButton active={tab === 'detailed'} onClick={() => setTab('detailed')}>
+          تقارير تفصيلية
+        </TabButton>
+      </div>
+
+      {tab === 'overview' ? <OverviewTab /> : <DetailedTab />}
+    </div>
+  );
+}
+
+function TabButton({ active, onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium transition ${
+        active ? 'border-nili text-nili' : 'border-transparent text-slate-500 hover:text-slate-700'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function OverviewTab() {
+  const [summaries, setSummaries] = useState(null); // { today, week, month, all }
+  const [activeRange, setActiveRange] = useState('today');
+  const [daily, setDaily] = useState(null);
+  const [showAddExpense, setShowAddExpense] = useState(false);
+
+  useEffect(() => {
+    loadSummaries();
+    loadDaily();
+  }, []);
+
+  async function loadSummaries() {
+    const results = await Promise.all(RANGES.map((r) => api.get('/reports/summary', { params: { range: r.key } })));
+    const obj = {};
+    RANGES.forEach((r, i) => {
+      obj[r.key] = results[i].data;
+    });
+    setSummaries(obj);
+  }
+
+  async function loadDaily() {
+    const res = await api.get('/reports/daily', { params: { days: 30 } });
+    setDaily(res.data.days);
+  }
+
+  const active = summaries?.[activeRange];
+  const activeLabel = RANGES.find((r) => r.key === activeRange)?.label;
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {RANGES.map((r) => (
+          <RangeCard
+            key={r.key}
+            label={r.label}
+            data={summaries?.[r.key]}
+            active={activeRange === r.key}
+            onClick={() => setActiveRange(r.key)}
+          />
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <MiniStat label="إجمالي الديون المستحقة" value={active ? formatIQD(active.totalDebts) : '...'} tone="text-rose-600" />
+        <MiniStat label="أصناف بمخزون منخفض" value={active ? `${active.lowStockCount} صنف` : '...'} tone="text-amber-600" />
+        <MiniStat
+          label={`صافي الربح (${activeLabel})`}
+          value={active ? formatIQD(active.netProfit) : '...'}
+          tone="text-emerald-600"
+        />
+      </div>
+
+      <div className="card">
+        <h2 className="mb-3 font-semibold text-slate-700">الإيراد والمصاريف — آخر 30 يومًا</h2>
+        {daily ? <RevenueChart data={daily} /> : <div className="text-slate-400">جاري التحميل...</div>}
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="card">
+          <h2 className="mb-3 font-semibold text-slate-700">أفضل 5 زبائن ({activeLabel})</h2>
+          <table className="w-full text-sm">
+            <thead className="bg-slate-100 text-slate-600">
+              <tr>
+                <th className="px-3 py-2 text-right">الزبون</th>
+                <th className="px-3 py-2 text-right">عدد الطلبات</th>
+                <th className="px-3 py-2 text-right">الإيراد</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(active?.topCustomers || []).map((c) => (
+                <tr key={c.id} className="border-t border-slate-100">
+                  <td className="px-3 py-2">
+                    <Link to={`/customers/${c.id}`} className="text-nili hover:underline">
+                      {c.name}
+                    </Link>
+                  </td>
+                  <td className="px-3 py-2">{c.ordersCount}</td>
+                  <td className="px-3 py-2 font-medium">{formatIQD(c.revenue)}</td>
+                </tr>
+              ))}
+              {active && active.topCustomers.length === 0 && (
+                <tr>
+                  <td colSpan={3} className="px-3 py-6 text-center text-slate-400">
+                    لا توجد بيانات لهذه الفترة
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="card">
+          <h2 className="mb-3 font-semibold text-slate-700">أكثر المواد استهلاكًا ({activeLabel})</h2>
+          <table className="w-full text-sm">
+            <thead className="bg-slate-100 text-slate-600">
+              <tr>
+                <th className="px-3 py-2 text-right">الصنف</th>
+                <th className="px-3 py-2 text-right">الكمية المستهلكة</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(active?.topStockItems || []).map((s) => (
+                <tr key={s.id} className="border-t border-slate-100">
+                  <td className="px-3 py-2">{s.name}</td>
+                  <td className="px-3 py-2 font-medium">
+                    {s.usedQty} {s.unit}
+                  </td>
+                </tr>
+              ))}
+              {active && active.topStockItems.length === 0 && (
+                <tr>
+                  <td colSpan={2} className="px-3 py-6 text-center text-slate-400">
+                    لا توجد بيانات لهذه الفترة
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-semibold text-slate-700">المصاريف الأخيرة ({activeLabel})</h2>
+          <button className="btn-secondary" onClick={() => setShowAddExpense(true)}>
+            + إضافة مصروف
+          </button>
+        </div>
+        <table className="w-full text-sm">
+          <thead className="bg-slate-100 text-slate-600">
+            <tr>
+              <th className="px-3 py-2 text-right">التاريخ</th>
+              <th className="px-3 py-2 text-right">السبب</th>
+              <th className="px-3 py-2 text-right">المبلغ</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(active?.recentExpenses || []).map((e) => (
+              <tr key={e.id} className="border-t border-slate-100">
+                <td className="px-3 py-2 text-slate-500">{formatDate(e.date)}</td>
+                <td className="px-3 py-2">{e.reason || '-'}</td>
+                <td className="px-3 py-2 font-medium text-rose-600">{formatIQD(e.amount)}</td>
+              </tr>
+            ))}
+            {active && active.recentExpenses.length === 0 && (
+              <tr>
+                <td colSpan={3} className="px-3 py-6 text-center text-slate-400">
+                  لا توجد مصاريف مسجلة لهذه الفترة
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {showAddExpense && (
+        <AddExpenseModal
+          onClose={() => setShowAddExpense(false)}
+          onSaved={() => {
+            setShowAddExpense(false);
+            loadSummaries();
+            loadDaily();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function RangeCard({ label, data, active, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`rounded-xl p-4 text-right shadow-sm transition ${
+        active ? 'bg-nili text-white ring-2 ring-gold' : 'bg-white text-slate-700 hover:shadow-md'
+      }`}
+    >
+      <div className={`text-sm ${active ? 'text-white/80' : 'text-slate-400'}`}>{label}</div>
+      {data ? (
+        <>
+          <div className="mt-1 text-xl font-bold">{formatIQD(data.totalRevenue)}</div>
+          <div className={`mt-1 text-xs ${active ? 'text-white/70' : 'text-slate-500'}`}>
+            صافي {formatIQD(data.netProfit)} · {data.totalOrders} طلب
+          </div>
+        </>
+      ) : (
+        <div className="mt-1 text-sm opacity-60">جاري التحميل...</div>
+      )}
+    </button>
+  );
+}
+
+function MiniStat({ label, value, tone }) {
+  return (
+    <div className="card">
+      <div className="text-xs text-slate-400">{label}</div>
+      <div className={`mt-1 text-lg font-bold ${tone}`}>{value}</div>
+    </div>
+  );
+}
+
+function AddExpenseModal({ onClose, onSaved }) {
+  const [amount, setAmount] = useState('');
+  const [reason, setReason] = useState('');
+  const [date, setDate] = useState('');
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  async function submit(e) {
+    e.preventDefault();
+    setError('');
+    setSaving(true);
+    try {
+      await api.post('/expenses', { amount, reason, date: date || undefined });
+      onSaved();
+    } catch (err) {
+      setError(err.response?.data?.error || 'فشل حفظ المصروف');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal open title="إضافة مصروف" onClose={onClose}>
+      <form onSubmit={submit} className="space-y-3">
+        {error && <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</div>}
+        <div>
+          <label className="label">المبلغ (د.ع)</label>
+          <input
+            className="input"
+            type="number"
+            step="any"
+            required
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="label">السبب</label>
+          <input className="input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="إيجار، كهرباء، شراء حبر..." />
+        </div>
+        <div>
+          <label className="label">التاريخ</label>
+          <input className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        </div>
+        <div className="flex justify-end gap-2 pt-2">
+          <button type="button" className="btn-secondary" onClick={onClose}>
+            إلغاء
+          </button>
+          <button disabled={saving} className="btn-primary">
+            حفظ
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function DetailedTab() {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [profit, setProfit] = useState(null);
@@ -27,9 +329,7 @@ export default function Reports() {
   }
 
   return (
-    <div className="p-6">
-      <PageHeader title="التقارير" subtitle="الربح الحقيقي، الهدر، وأداء العاملين" />
-
+    <div>
       <div className="mb-6 flex gap-3">
         <div>
           <label className="label">من</label>

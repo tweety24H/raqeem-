@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import StatusBadge from '../components/StatusBadge';
@@ -94,6 +94,13 @@ export default function MobileDashboard() {
                 ))}
               </div>
             </div>
+
+            <Link
+              to="/reports"
+              className="block rounded-2xl bg-white p-4 text-center text-sm font-semibold text-nili shadow-sm"
+            >
+              📊 عرض التقارير الكاملة
+            </Link>
           </>
         )}
       </div>

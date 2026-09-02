@@ -22,6 +22,7 @@ const wipeOrder = [
   'stock_alerts',
   'archive_designs',
   'design_files',
+  'expenses',
   'orders', // يحذف order_items و payments تلقائيًا (ON DELETE CASCADE)
   'customers',
   'stock_movements',
@@ -94,6 +95,17 @@ const STOCK_ITEMS = [
 const STATUSES = ['جديد', 'قيد التصميم', 'قيد الطباعة', 'جاهز للتسليم', 'تم التسليم'];
 const PRICES = [5000, 15000, 40000];
 const PRODUCTS = ['طباعة كارت شخصي', 'طباعة فلاير', 'طباعة بروشور', 'طباعة ستيكر', 'تغليف حراري', 'طباعة فلكس'];
+// الأصناف التي "تُستهلك" من المخزون مع كل طلب (لتفعيل تقرير "أكثر المواد استهلاكًا")
+const STOCK_USAGE_NAMES = ['ورق A4', 'حبر ملون', 'ستيكر', 'بروشور', 'فلاير'];
+
+const EXPENSES = [
+  { amount: 250000, reason: 'إيجار المحل', daysAgo: 25 },
+  { amount: 60000, reason: 'فاتورة الكهرباء', daysAgo: 18 },
+  { amount: 120000, reason: 'شراء حبر طابعة', daysAgo: 12 },
+  { amount: 15000, reason: 'إنترنت', daysAgo: 8 },
+  { amount: 35000, reason: 'صيانة ماكنة الطباعة', daysAgo: 3 },
+  { amount: 20000, reason: 'قرطاسية متنوعة', daysAgo: 1 },
+];
 
 function seed() {
   console.log('حذف البيانات التجريبية القديمة...');
@@ -109,17 +121,20 @@ function seed() {
      VALUES (?, ?, ?, ?, 0, ?, ?, ?, ?, ?)`
   );
   const insertItem = db.prepare(
-    `INSERT INTO order_items (order_id, description, quantity, unit_price, total_price)
-     VALUES (?, ?, 1, ?, ?)`
+    `INSERT INTO order_items (order_id, description, quantity, unit_price, total_price, stock_item_id, stock_qty_used)
+     VALUES (?, ?, 1, ?, ?, ?, ?)`
   );
 
   console.log('إضافة الزبائن...');
   const customerIds = CUSTOMERS.map((c) => insertCustomer.run(c.name, c.phone).lastInsertRowid);
 
   console.log('إضافة أصناف المخزون...');
+  const stockIdByName = {};
   for (const s of STOCK_ITEMS) {
-    insertStock.run(s.name, s.unit, s.quantity, s.min_quantity, s.cost);
+    const id = insertStock.run(s.name, s.unit, s.quantity, s.min_quantity, s.cost).lastInsertRowid;
+    stockIdByName[s.name] = id;
   }
+  const stockUsageIds = STOCK_USAGE_NAMES.map((n) => stockIdByName[n]);
 
   console.log('إضافة الطلبات...');
   let seq = 1;
@@ -143,7 +158,9 @@ function seed() {
       deliveredAt
     ).lastInsertRowid;
     const product = PRODUCTS[orderCount % PRODUCTS.length];
-    insertItem.run(orderId, product, total, total);
+    const stockItemId = stockUsageIds[orderCount % stockUsageIds.length];
+    const stockQtyUsed = 2 + (orderCount % 5); // 2..6
+    insertItem.run(orderId, product, total, total, stockItemId, stockQtyUsed);
     orderCount++;
     return orderId;
   }
@@ -188,13 +205,19 @@ function seed() {
     insertDesign.run(orderId, custId, relPath, d.fileName, d.type, Buffer.byteLength(content, 'utf-8'), d.notes);
   }
 
+  console.log('إضافة مصاريف تجريبية...');
+  const insertExpense = db.prepare('INSERT INTO expenses (amount, reason, date) VALUES (?, ?, ?)');
+  for (const e of EXPENSES) {
+    insertExpense.run(e.amount, e.reason, daysAgo(e.daysAgo).slice(0, 10));
+  }
+
   console.log('ضبط رقم هاتف المطبعة (لتنبيهات واتساب المخزون)...');
   db.prepare(
     "INSERT INTO settings (key, value) VALUES ('shop_phone', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
   ).run('9647801234567');
 
   console.log(
-    `تم: ${customerIds.length} زبون، ${STOCK_ITEMS.length} صنف مخزون، ${orderCount} طلب، ${DUMMY_DESIGNS.length} تصميم وهمي.`
+    `تم: ${customerIds.length} زبون، ${STOCK_ITEMS.length} صنف مخزون، ${orderCount} طلب، ${DUMMY_DESIGNS.length} تصميم وهمي، ${EXPENSES.length} مصروف.`
   );
 }
 
