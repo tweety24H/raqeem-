@@ -4,6 +4,7 @@ import api from '../api/client';
 import PageHeader from '../components/PageHeader';
 import StatusBadge from '../components/StatusBadge';
 import { formatIQD, formatDateTime } from '../utils/format';
+import { OrderDesignsSection } from '../components/DesignArchive';
 
 const STATUSES = ['جديد', 'قيد التصميم', 'قيد الطباعة', 'جاهز للتسليم', 'تم التسليم'];
 
@@ -139,6 +140,8 @@ export default function OrderDetail() {
               <p className="text-sm text-slate-600">{order.notes}</p>
             </div>
           )}
+
+          <OrderDesignsSection orderId={order.id} customerId={order.customer_id} />
         </div>
 
         <div className="space-y-6">

@@ -5,6 +5,7 @@ import PageHeader from '../components/PageHeader';
 import Modal from '../components/Modal';
 import { formatIQD } from '../utils/format';
 import { buildDebtReminderLink } from '../utils/whatsapp';
+import { CustomerDesignsModal } from '../components/DesignArchive';
 
 export default function Customers() {
   const [customers, setCustomers] = useState([]);
@@ -12,6 +13,7 @@ export default function Customers() {
   const [overdueOnly, setOverdueOnly] = useState(false);
   const [overdue, setOverdue] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
+  const [archiveCustomer, setArchiveCustomer] = useState(null);
 
   useEffect(() => {
     load();
@@ -88,14 +90,26 @@ export default function Customers() {
                   {formatIQD(c.debt)}
                 </td>
                 <td className="px-4 py-3">
-                  {c.debt > 0 && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    {c.debt > 0 && (
+                      <button
+                        className="rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
+                        onClick={(e) => sendReminder(e, c)}
+                      >
+                        إرسال تذكير واتساب
+                      </button>
+                    )}
                     <button
-                      className="rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
-                      onClick={(e) => sendReminder(e, c)}
+                      className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setArchiveCustomer(c);
+                      }}
+                      title="أرشيف التصاميم"
                     >
-                      إرسال تذكير واتساب
+                      📁 أرشيف
                     </button>
-                  )}
+                  </div>
                 </td>
                 {overdueOnly && <td className="px-4 py-3 text-slate-500">منذ {c.daysSinceActivity} يوم</td>}
               </tr>
@@ -119,6 +133,10 @@ export default function Customers() {
             load();
           }}
         />
+      )}
+
+      {archiveCustomer && (
+        <CustomerDesignsModal customer={archiveCustomer} onClose={() => setArchiveCustomer(null)} />
       )}
     </div>
   );

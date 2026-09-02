@@ -148,8 +148,22 @@ CREATE TABLE IF NOT EXISTS stock_alerts (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS design_files (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  customer_id INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+  file_path TEXT NOT NULL,
+  file_name TEXT NOT NULL,
+  file_type TEXT,
+  file_size INTEGER,
+  notes TEXT,
+  uploaded_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_orders_customer ON orders(customer_id);
 CREATE INDEX IF NOT EXISTS idx_stock_movements_item ON stock_movements(stock_item_id);
 CREATE INDEX IF NOT EXISTS idx_payments_customer ON payments(customer_id);
 CREATE INDEX IF NOT EXISTS idx_debt_reminders_customer ON debt_reminders(customer_id);
+CREATE INDEX IF NOT EXISTS idx_design_files_order ON design_files(order_id);
+CREATE INDEX IF NOT EXISTS idx_design_files_customer ON design_files(customer_id);

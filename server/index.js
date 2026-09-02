@@ -35,6 +35,7 @@ app.use('/api/archive', require('./routes/archive'));
 app.use('/api/reports', require('./routes/reports'));
 app.use('/api/public', require('./routes/public'));
 app.use('/api/requests', require('./routes/requests'));
+app.use('/api/designs', require('./routes/designs'));
 
 app.use((err, req, res, next) => {
   console.error(err);
