@@ -27,7 +27,15 @@ export default function Dashboard() {
 
   return (
     <div className="p-6">
-      <PageHeader title="لوحة التحكم" subtitle="نظرة عامة على أداء المطبعة اليوم" />
+      <PageHeader
+        title="لوحة التحكم"
+        subtitle="نظرة عامة على أداء المطبعة اليوم"
+        actions={
+          <Link to="/mobile" target="_blank" className="btn-secondary">
+            📱 عرض نسخة الموبايل
+          </Link>
+        }
+      />
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="ربح اليوم" value={formatIQD(data.profitToday.profit)} tone="emerald" />

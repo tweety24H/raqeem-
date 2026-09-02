@@ -1,6 +1,10 @@
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:4310/api';
+// عند التشغيل داخل Electron (بروتوكول file://) يبقى الخادم دائمًا على نفس الجهاز،
+// أما عند فتح الصفحة من متصفح (بما فيها جهاز آخر عبر الواي فاي المحلي) نستخدم نفس العنوان الذي فُتحت منه الصفحة.
+const API_HOST =
+  !window.location.hostname || window.location.protocol === 'file:' ? 'localhost' : window.location.hostname;
+const API_BASE = `http://${API_HOST}:4310/api`;
 
 const api = axios.create({ baseURL: API_BASE });
 

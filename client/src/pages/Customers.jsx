@@ -4,6 +4,7 @@ import api from '../api/client';
 import PageHeader from '../components/PageHeader';
 import Modal from '../components/Modal';
 import { formatIQD } from '../utils/format';
+import { buildDebtReminderLink } from '../utils/whatsapp';
 
 export default function Customers() {
   const [customers, setCustomers] = useState([]);
@@ -20,6 +21,17 @@ export default function Customers() {
   async function load() {
     const res = await api.get('/customers', { params: { search: search || undefined } });
     setCustomers(res.data.customers);
+  }
+
+  function sendReminder(e, c) {
+    e.stopPropagation();
+    const link = buildDebtReminderLink(c);
+    if (!link) {
+      alert('لا يوجد رقم هاتف مسجل لهذا الزبون');
+      return;
+    }
+    window.open(link, '_blank');
+    api.post(`/customers/${c.id}/remind`).catch(() => {});
   }
 
   const list = overdueOnly ? overdue : customers;
@@ -59,6 +71,7 @@ export default function Customers() {
               <th className="px-4 py-3 text-right">الاسم</th>
               <th className="px-4 py-3 text-right">الهاتف</th>
               <th className="px-4 py-3 text-right">الدين المستحق</th>
+              <th className="px-4 py-3 text-right"></th>
               {overdueOnly && <th className="px-4 py-3 text-right">آخر نشاط</th>}
             </tr>
           </thead>
@@ -74,12 +87,22 @@ export default function Customers() {
                 <td className={`px-4 py-3 font-semibold ${c.debt > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
                   {formatIQD(c.debt)}
                 </td>
+                <td className="px-4 py-3">
+                  {c.debt > 0 && (
+                    <button
+                      className="rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
+                      onClick={(e) => sendReminder(e, c)}
+                    >
+                      إرسال تذكير واتساب
+                    </button>
+                  )}
+                </td>
                 {overdueOnly && <td className="px-4 py-3 text-slate-500">منذ {c.daysSinceActivity} يوم</td>}
               </tr>
             ))}
             {list.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-slate-400">
+                <td colSpan={overdueOnly ? 6 : 5} className="px-4 py-8 text-center text-slate-400">
                   لا توجد بيانات
                 </td>
               </tr>

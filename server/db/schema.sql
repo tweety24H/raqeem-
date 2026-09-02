@@ -132,7 +132,24 @@ CREATE TABLE IF NOT EXISTS customer_requests (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS debt_reminders (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_id INTEGER NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+  debt_amount REAL NOT NULL,
+  worker_id INTEGER REFERENCES workers(id) ON DELETE SET NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS stock_alerts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  items_count INTEGER NOT NULL,
+  items_summary TEXT,
+  worker_id INTEGER REFERENCES workers(id) ON DELETE SET NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_orders_customer ON orders(customer_id);
 CREATE INDEX IF NOT EXISTS idx_stock_movements_item ON stock_movements(stock_item_id);
 CREATE INDEX IF NOT EXISTS idx_payments_customer ON payments(customer_id);
+CREATE INDEX IF NOT EXISTS idx_debt_reminders_customer ON debt_reminders(customer_id);

@@ -3,6 +3,7 @@ import api, { fileUrl } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import Modal from '../components/Modal';
 import { formatIQD, formatDateTime } from '../utils/format';
+import { buildStockAlertLink } from '../utils/whatsapp';
 
 const UNITS = ['فرخ', 'متر', 'مل', 'قطعة'];
 
@@ -12,14 +13,31 @@ export default function Stock() {
   const [lowOnly, setLowOnly] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [selected, setSelected] = useState(null);
+  const [shopPhone, setShopPhone] = useState('');
 
   useEffect(() => {
     load();
   }, [search, lowOnly]);
 
+  useEffect(() => {
+    api.get('/settings').then((r) => setShopPhone(r.data.settings.shop_phone || ''));
+  }, []);
+
   async function load() {
     const res = await api.get('/stock', { params: { search: search || undefined, lowOnly: lowOnly ? '1' : undefined } });
     setItems(res.data.items);
+  }
+
+  const lowItems = items.filter((i) => i.quantity <= i.min_quantity);
+
+  function sendStockAlert() {
+    const link = buildStockAlertLink(lowItems, shopPhone);
+    if (!link) {
+      alert('لا يوجد رقم هاتف المطبعة في الإعدادات');
+      return;
+    }
+    window.open(link, '_blank');
+    api.post('/stock/alert').catch(() => {});
   }
 
   return (
@@ -33,6 +51,18 @@ export default function Stock() {
           </button>
         }
       />
+
+      {lowItems.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+          <span>⚠️ يوجد {lowItems.length} صنف بمخزون منخفض أو أقل من الحد الأدنى.</span>
+          <button
+            className="rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
+            onClick={sendStockAlert}
+          >
+            إرسال تنبيه واتساب
+          </button>
+        </div>
+      )}
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <input

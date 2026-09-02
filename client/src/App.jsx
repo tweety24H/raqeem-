@@ -14,12 +14,14 @@ import Requests from './pages/Requests';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
 import Receipt from './pages/Receipt';
+import MobileDashboard from './pages/MobileDashboard';
 
 export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/receipt/:id" element={<ProtectedRoute><Receipt /></ProtectedRoute>} />
+      <Route path="/mobile" element={<ProtectedRoute><MobileDashboard /></ProtectedRoute>} />
 
       <Route
         element={

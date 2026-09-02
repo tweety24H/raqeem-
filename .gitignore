@@ -6,3 +6,4 @@ backups/
 dist/
 *.log
 .DS_Store
+.tools/

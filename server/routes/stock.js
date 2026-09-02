@@ -4,6 +4,7 @@ const fs = require('fs');
 const multer = require('multer');
 const db = require('../db/db');
 const { requireAuth } = require('../middleware/auth');
+const stockAlertService = require('../services/stockAlertService');
 
 const router = express.Router();
 
@@ -207,6 +208,17 @@ router.get('/reports/waste', requireAuth, (req, res) => {
   const rows = db.prepare(sql).all(...params);
   const totalCost = rows.reduce((s, r) => s + r.cost_lost, 0);
   res.json({ rows, totalCost });
+});
+
+// POST /api/stock/alert - يسجّل أن تنبيه واتساب للمخزون المنخفض أُرسل
+router.post('/alert', requireAuth, (req, res) => {
+  const lowItems = stockAlertService.getLowStockItems();
+  stockAlertService.logAlert({
+    itemsCount: lowItems.length,
+    itemsSummary: lowItems.map((i) => i.name).join('، '),
+    workerId: req.worker.workerId,
+  });
+  res.json({ ok: true });
 });
 
 module.exports = router;

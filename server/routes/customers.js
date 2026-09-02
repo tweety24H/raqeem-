@@ -1,19 +1,10 @@
 const express = require('express');
 const db = require('../db/db');
 const { requireAuth } = require('../middleware/auth');
+const debtService = require('../services/debtService');
+const { debtFor } = debtService;
 
 const router = express.Router();
-
-function debtFor(customerId) {
-  const totals = db
-    .prepare(
-      `SELECT COALESCE(SUM(total_price), 0) AS totalOrders,
-              COALESCE(SUM(paid_amount), 0) AS totalPaid
-       FROM orders WHERE customer_id = ?`
-    )
-    .get(customerId);
-  return totals.totalOrders - totals.totalPaid;
-}
 
 // GET /api/customers ?search=
 router.get('/', requireAuth, (req, res) => {
@@ -33,26 +24,7 @@ router.get('/', requireAuth, (req, res) => {
 // GET /api/customers/overdue?days=45
 router.get('/overdue', requireAuth, (req, res) => {
   const days = Number(req.query.days) || 30;
-  const customers = db.prepare('SELECT * FROM customers').all();
-  const result = [];
-  for (const c of customers) {
-    const debt = debtFor(c.id);
-    if (debt <= 0) continue;
-    const lastPayment = db
-      .prepare('SELECT MAX(created_at) AS d FROM payments WHERE customer_id = ?')
-      .get(c.id).d;
-    const lastOrder = db
-      .prepare('SELECT MAX(created_at) AS d FROM orders WHERE customer_id = ?')
-      .get(c.id).d;
-    const lastActivity = [lastPayment, lastOrder].filter(Boolean).sort().pop();
-    if (!lastActivity) continue;
-    const ageDays = Math.floor((Date.now() - new Date(lastActivity).getTime()) / 86400000);
-    if (ageDays >= days) {
-      result.push({ ...c, debt, daysSinceActivity: ageDays });
-    }
-  }
-  result.sort((a, b) => b.daysSinceActivity - a.daysSinceActivity);
-  res.json({ customers: result });
+  res.json({ customers: debtService.getOverdueCustomers(days) });
 });
 
 // GET /api/customers/:id
@@ -84,6 +56,15 @@ router.patch('/:id', requireAuth, (req, res) => {
   db.prepare(
     'UPDATE customers SET name = COALESCE(?, name), phone = COALESCE(?, phone), notes = COALESCE(?, notes) WHERE id = ?'
   ).run(name ?? null, phone ?? null, notes ?? null, req.params.id);
+  res.json({ ok: true });
+});
+
+// POST /api/customers/:id/remind - يسجّل أن تذكير واتساب أُرسل لهذا الزبون
+router.post('/:id/remind', requireAuth, (req, res) => {
+  const customer = db.prepare('SELECT * FROM customers WHERE id = ?').get(req.params.id);
+  if (!customer) return res.status(404).json({ error: 'الزبون غير موجود' });
+  const debt = debtFor(customer.id);
+  debtService.logReminder({ customerId: customer.id, debtAmount: debt, workerId: req.worker.workerId });
   res.json({ ok: true });
 });
 
