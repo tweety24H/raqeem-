@@ -239,7 +239,14 @@ router.get('/:id/receipt', requireAuth, async (req, res) => {
   });
   const qrDataUrl = await QRCode.toDataURL(qrPayload, { margin: 1, width: 180 });
 
-  res.json({ order, items, settings, qrDataUrl });
+  let qrWhatsappDataUrl = null;
+  if (settings.shop_phone) {
+    const digits = settings.shop_phone.replace(/\D/g, '');
+    const waPhone = digits.startsWith('964') ? digits : `964${digits.replace(/^0/, '')}`;
+    qrWhatsappDataUrl = await QRCode.toDataURL(`https://wa.me/${waPhone}`, { margin: 1, width: 180 });
+  }
+
+  res.json({ order, items, settings, qrDataUrl, qrWhatsappDataUrl });
 });
 
 module.exports = router;

@@ -59,7 +59,7 @@ export default function OrderDetail() {
         subtitle={order.customer_name}
         actions={
           <Link to={`/receipt/${order.id}`} className="btn-gold" target="_blank">
-            🖨️ طباعة الوصل
+            طباعة الفاتورة 🖨️
           </Link>
         }
       />

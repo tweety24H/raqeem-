@@ -2,15 +2,14 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/client';
 import PageHeader from '../components/PageHeader';
-import StatusBadge from '../components/StatusBadge';
+import StatusBadge, { STATUSES, STATUS_STYLES, STATUS_SOLID } from '../components/StatusBadge';
 import { formatIQD, formatDate } from '../utils/format';
-
-const STATUSES = ['جديد', 'قيد التصميم', 'قيد الطباعة', 'جاهز للتسليم', 'تم التسليم'];
 
 export default function OrdersList() {
   const [orders, setOrders] = useState([]);
   const [status, setStatus] = useState('');
   const [search, setSearch] = useState('');
+  const [busyId, setBusyId] = useState(null);
 
   useEffect(() => {
     load();
@@ -19,6 +18,16 @@ export default function OrdersList() {
   async function load() {
     const res = await api.get('/orders', { params: { status: status || undefined, search: search || undefined } });
     setOrders(res.data.orders);
+  }
+
+  async function quickChangeStatus(orderId, newStatus) {
+    setBusyId(orderId);
+    try {
+      await api.patch(`/orders/${orderId}/status`, { status: newStatus });
+      await load();
+    } finally {
+      setBusyId(null);
+    }
   }
 
   return (
@@ -44,7 +53,7 @@ export default function OrdersList() {
           <button
             key={s}
             onClick={() => setStatus(s)}
-            className={`badge cursor-pointer ${status === s ? 'bg-nili text-white' : 'bg-slate-200 text-slate-600'}`}
+            className={`badge cursor-pointer ${status === s ? STATUS_SOLID[s] : STATUS_STYLES[s]}`}
           >
             {s}
           </button>
@@ -64,6 +73,7 @@ export default function OrdersList() {
               <th className="px-4 py-3 text-right">رقم الطلب</th>
               <th className="px-4 py-3 text-right">الزبون</th>
               <th className="px-4 py-3 text-right">الحالة</th>
+              <th className="px-4 py-3 text-right">تغيير سريع</th>
               <th className="px-4 py-3 text-right">الإجمالي</th>
               <th className="px-4 py-3 text-right">المتبقي</th>
               <th className="px-4 py-3 text-right">موعد التسليم</th>
@@ -84,7 +94,21 @@ export default function OrdersList() {
                   <td className="px-4 py-3">
                     <StatusBadge status={o.status} />
                   </td>
-                  <td className="px-4 py-3">{formatIQD(o.total_price)}</td>
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                    <select
+                      className="input !h-auto !py-1 text-xs"
+                      value={o.status}
+                      disabled={busyId === o.id}
+                      onChange={(e) => quickChangeStatus(o.id, e.target.value)}
+                    >
+                      {STATUSES.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="px-4 py-3 font-bold text-slate-800">{formatIQD(o.total_price)}</td>
                   <td className={`px-4 py-3 ${remaining > 0 ? 'text-rose-600 font-semibold' : 'text-emerald-600'}`}>
                     {remaining > 0 ? formatIQD(remaining) : 'مسدد'}
                   </td>
@@ -95,7 +119,7 @@ export default function OrdersList() {
             })}
             {orders.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-slate-400">
+                <td colSpan={8} className="px-4 py-8 text-center text-slate-400">
                   لا توجد طلبات
                 </td>
               </tr>

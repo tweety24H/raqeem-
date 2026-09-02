@@ -6,6 +6,7 @@ import { formatIQD, formatDateTime } from '../utils/format';
 export default function Receipt() {
   const { id } = useParams();
   const [data, setData] = useState(null);
+  const [qrMode, setQrMode] = useState('order'); // order | whatsapp
 
   useEffect(() => {
     api.get(`/orders/${id}/receipt`).then((r) => setData(r.data));
@@ -13,13 +14,33 @@ export default function Receipt() {
 
   if (!data) return <div className="p-6 text-slate-400">جاري التحميل...</div>;
 
-  const { order, items, settings, qrDataUrl } = data;
+  const { order, items, settings, qrDataUrl, qrWhatsappDataUrl } = data;
+  const shownQr = qrMode === 'whatsapp' && qrWhatsappDataUrl ? qrWhatsappDataUrl : qrDataUrl;
   const primary = settings.receipt_primary_color || '#1B2A6B';
   const accent = settings.receipt_accent_color || '#D4AF37';
 
   return (
     <div className="min-h-screen bg-slate-100 py-8 print:bg-white print:py-0">
-      <div className="no-print mx-auto mb-4 max-w-2xl text-left">
+      <div className="no-print mx-auto mb-4 flex max-w-2xl items-center justify-between">
+        {qrWhatsappDataUrl ? (
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <span>رمز QR:</span>
+            <button
+              onClick={() => setQrMode('order')}
+              className={`rounded-lg px-2 py-1 ${qrMode === 'order' ? 'bg-nili text-white' : 'bg-slate-200'}`}
+            >
+              معلومات الطلب
+            </button>
+            <button
+              onClick={() => setQrMode('whatsapp')}
+              className={`rounded-lg px-2 py-1 ${qrMode === 'whatsapp' ? 'bg-nili text-white' : 'bg-slate-200'}`}
+            >
+              تواصل واتساب
+            </button>
+          </div>
+        ) : (
+          <span />
+        )}
         <button onClick={() => window.print()} className="rounded-lg px-4 py-2 text-white" style={{ background: primary }}>
           🖨️ طباعة
         </button>
@@ -114,7 +135,7 @@ export default function Receipt() {
               <br />
               {settings.shop_phone}
             </div>
-            {qrDataUrl && <img src={qrDataUrl} alt="QR" className="h-20 w-20" />}
+            {shownQr && <img src={shownQr} alt="QR" className="h-20 w-20" />}
           </div>
         </div>
       </div>
