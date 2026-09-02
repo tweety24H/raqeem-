@@ -31,7 +31,8 @@ function debtFor(customerId) {
 router.get('/', requireAuth, (req, res) => {
   const { status, customer_id, search, dueSoon } = req.query;
   let sql = `
-    SELECT o.*, c.name AS customer_name, c.phone AS customer_phone
+    SELECT o.*, c.name AS customer_name, c.phone AS customer_phone,
+      (SELECT description FROM order_items WHERE order_id = o.id ORDER BY id LIMIT 1) AS item_summary
     FROM orders o JOIN customers c ON c.id = o.customer_id
     WHERE 1=1
   `;
