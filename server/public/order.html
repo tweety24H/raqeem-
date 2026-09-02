@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>اطلب تصميمك</title>
+<style>
+  :root { --nili: #1B2A6B; --gold: #D4AF37; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", Tahoma, Arial, sans-serif; background: #f1f5f9; color: #1e293b; }
+  .header { background: var(--nili); color: white; padding: 24px 16px; text-align: center; }
+  .header img { height: 56px; width: 56px; border-radius: 50%; background: white; object-fit: contain; padding: 4px; margin-bottom: 8px; }
+  .header h1 { margin: 0; font-size: 20px; }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 20px 16px 60px; }
+  .card { background: white; border-radius: 14px; padding: 18px; box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 16px; border-top: 3px solid var(--gold); }
+  label { display: block; font-size: 13px; color: #64748b; margin-bottom: 4px; font-weight: 600; }
+  input, textarea, select { width: 100%; padding: 11px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 15px; margin-bottom: 14px; font-family: inherit; }
+  button { width: 100%; padding: 13px; border: none; border-radius: 10px; background: var(--nili); color: white; font-size: 16px; font-weight: 700; cursor: pointer; }
+  button:disabled { opacity: .6; }
+  .msg { padding: 12px; border-radius: 10px; margin-bottom: 14px; font-size: 14px; }
+  .msg.ok { background: #dcfce7; color: #15803d; }
+  .msg.err { background: #fee2e2; color: #b91c1c; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <img id="logo" src="" alt="" style="display:none" />
+    <h1 id="shopName">مطبعتنا</h1>
+    <div style="font-size:13px;opacity:.85">أرسل طلبك أو صمّمك مباشرة</div>
+  </div>
+  <div class="wrap">
+    <div id="msg"></div>
+    <form class="card" id="form">
+      <label>الاسم الكامل</label>
+      <input name="customer_name" required />
+      <label>رقم الهاتف</label>
+      <input name="phone" required inputmode="tel" />
+      <label>نوع الطلب / الخدمة</label>
+      <input name="service_text" placeholder="مثال: 500 كارت شخصي" />
+      <label>ملاحظات</label>
+      <textarea name="notes" rows="3"></textarea>
+      <label>إرفاق تصميم (اختياري)</label>
+      <input type="file" name="file" />
+      <button type="submit">إرسال الطلب</button>
+    </form>
+  </div>
+
+<script>
+  fetch('/api/public/shop-info').then(r => r.json()).then(d => {
+    if (d.shop_name) document.getElementById('shopName').textContent = d.shop_name;
+    if (d.shop_logo_path) {
+      const img = document.getElementById('logo');
+      img.src = '/' + d.shop_logo_path.replace(/\\/g, '/');
+      img.style.display = 'inline-block';
+    }
+  }).catch(() => {});
+
+  const form = document.getElementById('form');
+  const msg = document.getElementById('msg');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    msg.innerHTML = '';
+    const btn = form.querySelector('button');
+    btn.disabled = true;
+    btn.textContent = 'جاري الإرسال...';
+    try {
+      const fd = new FormData(form);
+      const res = await fetch('/api/public/order-request', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'فشل الإرسال');
+      msg.innerHTML = '<div class="msg ok">' + data.message + '</div>';
+      form.reset();
+    } catch (err) {
+      msg.innerHTML = '<div class="msg err">' + err.message + '</div>';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'إرسال الطلب';
+    }
+  });
+</script>
+</body>
+</html>

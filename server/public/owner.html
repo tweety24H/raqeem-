@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>لوحة المالك</title>
+<style>
+  :root { --nili: #1B2A6B; --gold: #D4AF37; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", Tahoma, Arial, sans-serif; background: #f1f5f9; color: #1e293b; }
+  .header { background: var(--nili); color: white; padding: 20px 16px; text-align: center; }
+  .wrap { max-width: 480px; margin: 0 auto; padding: 16px; }
+  .card { background: white; border-radius: 14px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.08); margin-bottom: 14px; }
+  .stat { background: linear-gradient(135deg, var(--nili), #2c3f96); color: white; border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+  .stat .label { font-size: 13px; opacity: .85; }
+  .stat .value { font-size: 26px; font-weight: 800; margin-top: 4px; }
+  .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+  input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 20px; text-align: center; letter-spacing: 6px; margin-bottom: 12px; }
+  button { width: 100%; padding: 13px; border: none; border-radius: 10px; background: var(--nili); color: white; font-size: 16px; font-weight: 700; }
+  .badge { display:inline-block; padding: 3px 8px; border-radius: 999px; font-size: 12px; font-weight:600; background:#fee2e2; color:#b91c1c; }
+  h2 { font-size: 15px; margin: 0 0 10px; color:#334155; }
+  #err { color:#b91c1c; font-size: 13px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+  <div class="header"><h1 style="margin:0;font-size:18px">لوحة المالك 📱</h1></div>
+  <div class="wrap">
+    <div id="login" class="card">
+      <p style="text-align:center;color:#64748b">أدخل رمز PIN الخاص بالمالك</p>
+      <div id="err"></div>
+      <input id="pin" type="password" inputmode="numeric" maxlength="8" />
+      <button id="loginBtn">دخول</button>
+    </div>
+    <div id="dashboard" style="display:none"></div>
+  </div>
+
+<script>
+  const API = '/api';
+  let token = localStorage.getItem('raqeem_owner_token');
+
+  document.getElementById('loginBtn').addEventListener('click', async () => {
+    const pin = document.getElementById('pin').value;
+    const err = document.getElementById('err');
+    err.textContent = '';
+    try {
+      const res = await fetch(API + '/auth/login', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pin })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      if (data.worker.role !== 'owner') throw new Error('هذه الصفحة مخصصة للمالك فقط');
+      token = data.token;
+      localStorage.setItem('raqeem_owner_token', token);
+      showDashboard();
+    } catch (e) {
+      err.textContent = e.message;
+    }
+  });
+
+  async function showDashboard() {
+    document.getElementById('login').style.display = 'none';
+    const el = document.getElementById('dashboard');
+    el.style.display = 'block';
+    el.innerHTML = '<p style="text-align:center;color:#94a3b8">جاري التحميل...</p>';
+    try {
+      const res = await fetch(API + '/dashboard/summary', { headers: { Authorization: 'Bearer ' + token } });
+      if (res.status === 401) { localStorage.removeItem('raqeem_owner_token'); location.reload(); return; }
+      const d = await res.json();
+      const fmt = (n) => Math.round(n).toLocaleString('en-US') + ' د.ع';
+      el.innerHTML = `
+        <div class="stat"><div class="label">ربح اليوم</div><div class="value">${fmt(d.profitToday.profit)}</div></div>
+        <div class="stat" style="background:linear-gradient(135deg,#b8932a,#D4AF37)"><div class="label">ربح هذا الشهر</div><div class="value">${fmt(d.profitMonth.profit)}</div></div>
+        <div class="card">
+          <div class="row"><span>عدد طلبات اليوم</span><b>${d.ordersToday}</b></div>
+          <div class="row"><span>إجمالي الديون المستحقة</span><b style="color:#b91c1c">${fmt(d.totalDebt)}</b></div>
+        </div>
+        <div class="card">
+          <h2>مواعيد تسليم قريبة</h2>
+          ${d.dueSoon.map(o => `<div class="row"><span>${o.customer_name} - #${o.order_number}</span><span class="badge">${o.status}</span></div>`).join('') || '<p style="color:#94a3b8;font-size:13px">لا توجد</p>'}
+        </div>
+        <div class="card">
+          <h2>مخزون منخفض</h2>
+          ${d.lowStock.map(s => `<div class="row"><span>${s.name}</span><span>${s.quantity} ${s.unit}</span></div>`).join('') || '<p style="color:#94a3b8;font-size:13px">جيد</p>'}
+        </div>
+        <button onclick="localStorage.removeItem('raqeem_owner_token');location.reload()" style="background:#e2e8f0;color:#334155;margin-top:8px">تسجيل الخروج</button>
+      `;
+    } catch (e) {
+      el.innerHTML = '<p style="color:#b91c1c">تعذر الاتصال بالخادم</p>';
+    }
+  }
+
+  if (token) showDashboard();
+</script>
+</body>
+</html>
