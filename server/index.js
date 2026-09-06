@@ -3,12 +3,35 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const rateLimit = require('express-rate-limit');
 
 const db = require('./db/db');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// حماية عامة لكل /api من إغراق الطلبات (Defense in depth - السيرفر يشتغل
+// على الشبكة المحلية 0.0.0.0 حتى تشتغل صفحة الزبون QR، فأي جهاز على نفس
+// الواي فاي نظرياً يقدر يوصله). حد سخي ما يعيق الاستخدام العادي إطلاقاً.
+const generalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'طلبات كثيرة جداً، حاول بعد شوي' },
+});
+app.use('/api', generalLimiter);
+
+// حد أشد على نقاط صفحة الزبون العامة (بدون تسجيل دخول إطلاقاً - أي جهاز
+// بالشبكة يقدر يناديها مباشرة، فيها حتى رفع ملفات).
+const publicLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'طلبات كثيرة جداً، حاول بعد دقيقة' },
+});
 
 const dataDir = process.env.RAQEEM_DB_DIR || path.join(__dirname, '..', 'data');
 const uploadsRoot = path.join(dataDir, 'uploads');
@@ -33,7 +56,7 @@ app.use('/api/settings', require('./routes/settings'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/archive', require('./routes/archive'));
 app.use('/api/reports', require('./routes/reports'));
-app.use('/api/public', require('./routes/public'));
+app.use('/api/public', publicLimiter, require('./routes/public'));
 app.use('/api/requests', require('./routes/requests'));
 app.use('/api/designs', require('./routes/designs'));
 app.use('/api/expenses', require('./routes/expenses'));

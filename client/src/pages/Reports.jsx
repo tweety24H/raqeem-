@@ -5,6 +5,7 @@ import PageHeader from '../components/PageHeader';
 import Modal from '../components/Modal';
 import RevenueChart from '../components/RevenueChart';
 import { formatIQD, formatDate } from '../utils/format';
+import { exportMultiSheetExcel } from '../utils/exportExcel';
 
 const RANGES = [
   { key: 'today', label: 'اليوم' },
@@ -75,8 +76,45 @@ function OverviewTab() {
   const active = summaries?.[activeRange];
   const activeLabel = RANGES.find((r) => r.key === activeRange)?.label;
 
+  function exportOverview() {
+    if (!active) return;
+    exportMultiSheetExcel(`تقرير-${activeLabel}-${new Date().toISOString().slice(0, 10)}`, [
+      {
+        name: 'ملخص',
+        rows: [
+          {
+            الفترة: activeLabel,
+            'إجمالي الإيراد': active.totalRevenue,
+            'صافي الربح': active.netProfit,
+            'عدد الطلبات': active.totalOrders,
+            'إجمالي الديون': active.totalDebts,
+            'مخزون منخفض': active.lowStockCount,
+          },
+        ],
+      },
+      {
+        name: 'أفضل الزبائن',
+        rows: (active.topCustomers || []).map((c) => ({ الزبون: c.name, 'عدد الطلبات': c.ordersCount, الإيراد: c.revenue })),
+      },
+      {
+        name: 'أكثر المواد استهلاكاً',
+        rows: (active.topStockItems || []).map((s) => ({ الصنف: s.name, الكمية: s.usedQty, الوحدة: s.unit })),
+      },
+      {
+        name: 'المصاريف',
+        rows: (active.recentExpenses || []).map((e) => ({ التاريخ: e.date, السبب: e.reason || '', المبلغ: e.amount })),
+      },
+    ]);
+  }
+
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+        <button type="button" onClick={exportOverview} disabled={!active} className="btn-secondary">
+          📊 تصدير Excel ({activeLabel})
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {RANGES.map((r) => (
           <RangeCard
@@ -328,17 +366,58 @@ function DetailedTab() {
     setPerf(r.data);
   }
 
+  function exportDetailed() {
+    exportMultiSheetExcel(`تقرير-تفصيلي-${new Date().toISOString().slice(0, 10)}`, [
+      {
+        name: 'الربح حسب الخدمة',
+        rows: (profit?.byService || []).map((s) => ({
+          الخدمة: s.service_name,
+          الكمية: s.quantity,
+          الإيراد: s.revenue,
+          التكلفة: s.cost,
+          'صافي الربح': s.profit,
+        })),
+      },
+      {
+        name: 'الهدر',
+        rows: (waste?.rows || []).map((r) => ({
+          الصنف: r.item_name,
+          الكمية: r.quantity,
+          الوحدة: r.unit,
+          السبب: r.reason || '',
+          التكلفة: r.cost_lost,
+          العامل: r.worker_name || '',
+        })),
+      },
+      {
+        name: 'أداء العاملين',
+        rows: (perf?.workers || []).map((w) => ({
+          العامل: w.name,
+          'عدد الطلبات': w.orders_count,
+          المبيعات: w.revenue,
+          'حالات التالف': w.damage_events,
+          'تكلفة التالف': w.damage_cost,
+        })),
+      },
+    ]);
+  }
+
   return (
     <div>
-      <div className="mb-6 flex gap-3">
-        <div>
-          <label className="label">من</label>
-          <input className="input" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div className="flex gap-3">
+          <div>
+            <label className="label">من</label>
+            <input className="input" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+          </div>
+          <div>
+            <label className="label">إلى</label>
+            <input className="input" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          </div>
         </div>
-        <div>
-          <label className="label">إلى</label>
-          <input className="input" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
-        </div>
+        <button type="button" onClick={exportDetailed} className="btn-secondary">
+          📊 تصدير Excel
+        </button>
       </div>
 
       {profit && (

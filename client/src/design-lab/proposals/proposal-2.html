@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>مقترح 2 — الحبر والورق (Ink &amp; Paper)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          nili: { DEFAULT: '#1B2A6B', dark: '#121d4d', light: '#2c3f96' },
+          gold: { DEFAULT: '#D4AF37', light: '#e6c866', dark: '#b8932a' },
+          paper: { DEFAULT: '#FBF7F0', dark: '#F3ECE0' },
+        },
+        fontFamily: { sans: ['Tajawal', 'sans-serif'] },
+      },
+    },
+  };
+</script>
+<style>
+  body { font-family: 'Tajawal', sans-serif; }
+  .label-badge { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 50; }
+  .status-chip { display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700; padding:4px 10px; border-radius:9999px; }
+</style>
+</head>
+<body class="bg-paper text-slate-900">
+
+  <div class="label-badge bg-black text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg">
+    مقترح 2 — الحبر والورق (Ink &amp; Paper) · اسكرول لتحت لتشوف Login
+  </div>
+
+  <!-- ============ LANDING ============ -->
+  <section class="min-h-screen flex flex-col">
+    <header class="flex items-center justify-between px-8 lg:px-16 py-6">
+      <div class="flex items-center gap-3">
+        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-nili text-white text-lg">🖨️</span>
+        <div class="leading-tight">
+          <div class="font-black text-lg tracking-tight text-nili">RaqeemOS</div>
+          <div class="text-[11px] text-slate-400 font-medium">نظام إدارة المطبعة</div>
+        </div>
+      </div>
+      <button class="bg-nili hover:bg-nili-dark text-white text-sm font-bold px-6 py-2.5 rounded-full transition">دخول للنظام</button>
+    </header>
+
+    <!-- Split hero: يسار نص، يمين "لقطة" حقيقية من واجهة الطلبات (مبنية بألوان StatusBadge الفعلية) -->
+    <main class="flex-1 grid lg:grid-cols-2 gap-10 items-center px-8 lg:px-16 py-10">
+      <div class="order-2 lg:order-1">
+        <span class="inline-block text-[11px] font-black tracking-[0.15em] text-gold-dark mb-5">من الفكرة … للطباعة</span>
+        <h1 class="text-[38px] lg:text-[52px] font-black leading-[1.15] text-nili">
+          كل طلب طباعة،<br>مرتّب من أول خطوة
+        </h1>
+        <p class="mt-6 text-base text-slate-500 leading-relaxed max-w-md">
+          صمّم → اطبع → سلّم. رقيم يتابع كل مرحلة، ويذكّرك بالمواعيد والديون، وياخذ نسخة احتياطية كل يوم بدون ما تسوي شي.
+        </p>
+        <button class="mt-8 bg-gold hover:bg-gold-dark text-nili-dark text-sm font-black px-9 py-4 rounded-full transition shadow-lg shadow-gold/20">
+          ابدأ الآن
+        </button>
+      </div>
+
+      <!-- بطاقة "لقطة نظام" - تصميم مستوحى من صفحة الطلبات الحقيقية -->
+      <div class="order-1 lg:order-2">
+        <div class="rounded-3xl border border-black/5 bg-white p-6 shadow-2xl shadow-nili/10 rotate-1">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-black text-sm text-nili">الطلبات اليوم</span>
+            <span class="text-[10px] text-slate-300 font-bold">RQ20260905</span>
+          </div>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
+              <div>
+                <div class="text-xs font-bold">محمد العلي</div>
+                <div class="text-[10px] text-slate-400">صندوق فلكس مضاء</div>
+              </div>
+              <span class="status-chip bg-blue-100 text-blue-700">جديد</span>
+            </div>
+            <div class="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
+              <div>
+                <div class="text-xs font-bold">نور الهدى</div>
+                <div class="text-[10px] text-slate-400">طباعة فلكس</div>
+              </div>
+              <span class="status-chip bg-orange-100 text-orange-700">قيد الطباعة</span>
+            </div>
+            <div class="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
+              <div>
+                <div class="text-xs font-bold">سجاد رياض</div>
+                <div class="text-[10px] text-slate-400">طباعة بروشور</div>
+              </div>
+              <span class="status-chip bg-emerald-100 text-emerald-700">جاهز للتسليم</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </section>
+
+  <!-- ============ LOGIN ============ -->
+  <section class="min-h-screen flex items-center justify-center bg-paper-dark relative overflow-hidden">
+    <div class="absolute top-10 left-10 text-[160px] opacity-[0.04] select-none">🖨️</div>
+    <div class="relative w-full max-w-sm mx-4 rounded-[28px] border-2 border-nili/10 bg-white p-8 shadow-2xl">
+      <div class="text-center mb-7">
+        <span class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-nili text-2xl text-white rotate-3">🖨️</span>
+        <h1 class="text-lg font-black text-nili">RaqeemOS</h1>
+        <p class="mt-1 text-xs text-slate-400 font-medium">أدخل رمز PIN لتسجيل الدخول</p>
+      </div>
+
+      <div class="flex items-center justify-center gap-3 mb-7" id="pindots">
+        <span class="pin-dot h-3.5 w-3.5 rounded-full border-2 border-gold/40"></span>
+        <span class="pin-dot h-3.5 w-3.5 rounded-full border-2 border-gold/40"></span>
+        <span class="pin-dot h-3.5 w-3.5 rounded-full border-2 border-gold/40"></span>
+        <span class="pin-dot h-3.5 w-3.5 rounded-full border-2 border-gold/40"></span>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3 mb-5">
+        <button onclick="press(this)" class="numkey rounded-2xl bg-paper hover:bg-gold/10 py-4 text-lg font-bold text-nili transition">1</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-paper hover:bg-gold/10 py-4 text-lg font-bold text-nili transition">2</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-paper hover:bg-gold/10 py-4 text-lg font-bold text-nili transition">3</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-paper hover:bg-gold/10 py-4 text-lg font-bold text-nili transition">4</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-paper hover:bg-gold/10 py-4 text-lg font-bold text-nili transition">5</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-paper hover:bg-gold/10 py-4 text-lg font-bold text-nili transition">6</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-paper hover:bg-gold/10 py-4 text-lg font-bold text-nili transition">7</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-paper hover:bg-gold/10 py-4 text-lg font-bold text-nili transition">8</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-paper hover:bg-gold/10 py-4 text-lg font-bold text-nili transition">9</button>
+        <button onclick="clearPin()" class="rounded-2xl bg-paper hover:bg-gold/10 py-4 text-xs font-bold text-slate-400 transition">مسح</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-paper hover:bg-gold/10 py-4 text-lg font-bold text-nili transition">0</button>
+        <button onclick="backspace()" class="rounded-2xl bg-paper hover:bg-gold/10 py-4 text-sm font-bold text-slate-400 transition">⌫</button>
+      </div>
+
+      <button class="w-full bg-nili hover:bg-nili-dark text-white text-sm font-black py-4 rounded-2xl transition shadow-lg shadow-nili/20">
+        دخول
+      </button>
+    </div>
+  </section>
+
+  <script>
+    let pin = '';
+    function render() {
+      document.querySelectorAll('#pindots .pin-dot').forEach((el, i) => {
+        if (i < pin.length) { el.classList.add('bg-gold','border-gold'); el.classList.remove('border-gold/40'); }
+        else { el.classList.remove('bg-gold','border-gold'); el.classList.add('border-gold/40'); }
+      });
+    }
+    function press(btn) { if (pin.length < 4) { pin += btn.textContent.trim(); render(); } }
+    function clearPin() { pin = ''; render(); }
+    function backspace() { pin = pin.slice(0, -1); render(); }
+  </script>
+</body>
+</html>

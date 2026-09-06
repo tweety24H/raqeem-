@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>مقترح 1 — النيلي الأتيليه (Nili Atelier)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          nili: { DEFAULT: '#1B2A6B', dark: '#121d4d', light: '#2c3f96' },
+          gold: { DEFAULT: '#D4AF37', light: '#e6c866', dark: '#b8932a' },
+        },
+        fontFamily: { sans: ['Tajawal', 'sans-serif'] },
+      },
+    },
+  };
+</script>
+<style>
+  body { font-family: 'Tajawal', sans-serif; }
+  .label-badge { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 50; }
+  .pin-dot { transition: all .15s ease; }
+</style>
+</head>
+<body class="bg-white text-slate-900">
+
+  <div class="label-badge bg-black text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg">
+    مقترح 1 — النيلي الأتيليه (Nili Atelier) · اسكرول لتحت لتشوف Login
+  </div>
+
+  <!-- ============ LANDING ============ -->
+  <section class="min-h-screen flex flex-col">
+    <!-- Header: بدون قائمة تنقّل وهمية - بس هوية + دخول -->
+    <header class="flex items-center justify-between px-8 lg:px-16 py-6 border-b border-slate-100">
+      <div class="flex items-center gap-3">
+        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-nili text-white text-lg">🖨️</span>
+        <div class="leading-tight">
+          <div class="font-black text-lg tracking-tight">RaqeemOS</div>
+          <div class="text-[11px] text-slate-400 font-medium">نظام إدارة المطبعة</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="text-xs font-bold text-slate-400 border border-slate-200 rounded-full px-3 py-1.5">AR</button>
+        <button class="bg-nili hover:bg-nili-dark text-white text-sm font-bold px-6 py-2.5 rounded-full transition">دخول</button>
+      </div>
+    </header>
+
+    <!-- Hero: عنوان مرتبط مباشرة بوظائف النظام الحقيقية -->
+    <main class="flex-1 flex items-center px-8 lg:px-16 py-16">
+      <div class="max-w-3xl">
+        <span class="inline-block text-[11px] font-bold tracking-[0.2em] text-gold-dark bg-gold/10 border border-gold/30 rounded-full px-4 py-1.5 mb-6">
+          PRINT MANAGEMENT SYSTEM
+        </span>
+        <h1 class="text-[44px] lg:text-[64px] font-black leading-[1.05] tracking-tight text-nili">
+          إدارة مطبعتك،<br>من الطلب إلى الفاتورة
+        </h1>
+        <p class="mt-6 text-base lg:text-lg text-slate-500 leading-relaxed max-w-lg">
+          تتبع الطلبات لحظة بلحظة، إدارة المخزون والزبائن، وإصدار الفواتير — كل شي بمكان وحد، مصمم خصيصاً لمطبعتك.
+        </p>
+        <div class="mt-10 flex items-center gap-8">
+          <button class="bg-nili hover:bg-nili-dark text-white text-sm font-bold px-9 py-4 rounded-full transition shadow-xl shadow-nili/20">
+            دخول للنظام
+          </button>
+          <div class="flex items-center gap-6 text-xs text-slate-400 font-semibold">
+            <span class="flex items-center gap-1.5">📦 الطلبات</span>
+            <span class="flex items-center gap-1.5">👥 الزبائن</span>
+            <span class="flex items-center gap-1.5">🧾 الفواتير</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer strip: نقاط قوة حقيقية بالنظام، مو تسويقي عام -->
+    <div class="border-t border-slate-100 px-8 lg:px-16 py-6 grid grid-cols-2 lg:grid-cols-4 gap-6 text-xs text-slate-400 font-semibold">
+      <div>⏱️ متابعة الطلبات لحظياً</div>
+      <div>📊 تقارير أرباح دقيقة</div>
+      <div>💬 تذكير ديون واتساب</div>
+      <div>🔒 صلاحيات مالك/موظف</div>
+    </div>
+  </section>
+
+  <!-- ============ LOGIN ============ -->
+  <section class="min-h-screen flex items-center justify-center bg-gradient-to-br from-nili via-nili-dark to-black relative overflow-hidden">
+    <!-- خطوط ديكور زجاجية خفيفة -->
+    <div class="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-gold/10 blur-3xl"></div>
+    <div class="absolute -bottom-32 -left-20 w-96 h-96 rounded-full bg-white/5 blur-3xl"></div>
+
+    <div class="relative w-full max-w-sm mx-4 rounded-3xl border border-white/10 bg-white/95 backdrop-blur-xl p-8 shadow-2xl">
+      <div class="text-center mb-7">
+        <span class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-nili text-2xl text-white">🖨️</span>
+        <h1 class="text-lg font-black text-nili">RaqeemOS</h1>
+        <p class="mt-1 text-xs text-slate-400 font-medium">أدخل رمز PIN لتسجيل الدخول</p>
+      </div>
+
+      <!-- نقاط PIN بدل خانة نص مقنّعة عادية -->
+      <div class="flex items-center justify-center gap-3 mb-7" id="pindots">
+        <span class="pin-dot h-3.5 w-3.5 rounded-full border-2 border-slate-200"></span>
+        <span class="pin-dot h-3.5 w-3.5 rounded-full border-2 border-slate-200"></span>
+        <span class="pin-dot h-3.5 w-3.5 rounded-full border-2 border-slate-200"></span>
+        <span class="pin-dot h-3.5 w-3.5 rounded-full border-2 border-slate-200"></span>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3 mb-5">
+        <button onclick="press(this)" class="numkey rounded-2xl bg-slate-50 hover:bg-slate-100 py-4 text-lg font-bold text-slate-700 transition">1</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-slate-50 hover:bg-slate-100 py-4 text-lg font-bold text-slate-700 transition">2</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-slate-50 hover:bg-slate-100 py-4 text-lg font-bold text-slate-700 transition">3</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-slate-50 hover:bg-slate-100 py-4 text-lg font-bold text-slate-700 transition">4</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-slate-50 hover:bg-slate-100 py-4 text-lg font-bold text-slate-700 transition">5</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-slate-50 hover:bg-slate-100 py-4 text-lg font-bold text-slate-700 transition">6</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-slate-50 hover:bg-slate-100 py-4 text-lg font-bold text-slate-700 transition">7</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-slate-50 hover:bg-slate-100 py-4 text-lg font-bold text-slate-700 transition">8</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-slate-50 hover:bg-slate-100 py-4 text-lg font-bold text-slate-700 transition">9</button>
+        <button onclick="clearPin()" class="rounded-2xl bg-slate-50 hover:bg-slate-100 py-4 text-xs font-bold text-slate-400 transition">مسح</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-slate-50 hover:bg-slate-100 py-4 text-lg font-bold text-slate-700 transition">0</button>
+        <button onclick="backspace()" class="rounded-2xl bg-slate-50 hover:bg-slate-100 py-4 text-sm font-bold text-slate-400 transition">⌫</button>
+      </div>
+
+      <button class="w-full bg-gold hover:bg-gold-dark text-nili-dark text-sm font-black py-4 rounded-2xl transition shadow-lg shadow-gold/20">
+        دخول
+      </button>
+    </div>
+  </section>
+
+  <script>
+    let pin = '';
+    function render() {
+      document.querySelectorAll('#pindots .pin-dot').forEach((el, i) => {
+        if (i < pin.length) { el.classList.add('bg-nili','border-nili'); el.classList.remove('border-slate-200'); }
+        else { el.classList.remove('bg-nili','border-nili'); el.classList.add('border-slate-200'); }
+      });
+    }
+    function press(btn) { if (pin.length < 4) { pin += btn.textContent.trim(); render(); } }
+    function clearPin() { pin = ''; render(); }
+    function backspace() { pin = pin.slice(0, -1); render(); }
+  </script>
+</body>
+</html>

@@ -1,9 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import api, { fileUrl } from '../api/client';
+import VerifyQR from '../components/VerifyQR';
+import { useLanguage } from '../context/LanguageContext';
 import { formatIQD, formatDateTime } from '../utils/format';
 
+const GOLD = '#C9A94A';
+const GOLD_DARK = '#8a6d10';
+const CREAM = '#FBF6EA';
+const NAVY = '#1B2A6B';
+
 export default function Receipt() {
+  const { t } = useLanguage();
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [qrMode, setQrMode] = useState('order'); // order | whatsapp
@@ -12,130 +20,182 @@ export default function Receipt() {
     api.get(`/orders/${id}/receipt`).then((r) => setData(r.data));
   }, [id]);
 
-  if (!data) return <div className="p-6 text-slate-400">جاري التحميل...</div>;
+  if (!data) return <div className="p-6 text-slate-400">{t('common.loading')}</div>;
 
-  const { order, items, settings, qrDataUrl, qrWhatsappDataUrl } = data;
-  const shownQr = qrMode === 'whatsapp' && qrWhatsappDataUrl ? qrWhatsappDataUrl : qrDataUrl;
-  const primary = settings.receipt_primary_color || '#1B2A6B';
-  const accent = settings.receipt_accent_color || '#D4AF37';
+  const { order, items, settings, qrWhatsappDataUrl } = data;
+  const remaining = order.total_price - order.paid_amount;
 
   return (
-    <div className="min-h-screen bg-slate-100 py-8 print:bg-white print:py-0">
-      <div className="no-print mx-auto mb-4 flex max-w-2xl items-center justify-between">
+    <div className="min-h-screen bg-stone-200 py-8 print:bg-white print:py-0">
+      <div className="no-print mx-auto mb-4 flex max-w-2xl items-center justify-between px-4">
         {qrWhatsappDataUrl ? (
           <div className="flex items-center gap-2 text-xs text-slate-500">
-            <span>رمز QR:</span>
+            <span>{t('receipt.qrLabel')}</span>
             <button
               onClick={() => setQrMode('order')}
-              className={`rounded-lg px-2 py-1 ${qrMode === 'order' ? 'bg-nili text-white' : 'bg-slate-200'}`}
+              className={`rounded-lg px-2 py-1 ${qrMode === 'order' ? 'text-white' : 'bg-slate-200'}`}
+              style={qrMode === 'order' ? { background: NAVY } : undefined}
             >
-              معلومات الطلب
+              {t('receipt.qrOrderInfo')}
             </button>
             <button
               onClick={() => setQrMode('whatsapp')}
-              className={`rounded-lg px-2 py-1 ${qrMode === 'whatsapp' ? 'bg-nili text-white' : 'bg-slate-200'}`}
+              className={`rounded-lg px-2 py-1 ${qrMode === 'whatsapp' ? 'text-white' : 'bg-slate-200'}`}
+              style={qrMode === 'whatsapp' ? { background: NAVY } : undefined}
             >
-              تواصل واتساب
+              {t('receipt.qrWhatsapp')}
             </button>
           </div>
         ) : (
           <span />
         )}
-        <button onClick={() => window.print()} className="rounded-lg px-4 py-2 text-white" style={{ background: primary }}>
-          🖨️ طباعة
+        <button onClick={() => window.print()} className="rounded-lg px-4 py-2 text-white" style={{ background: NAVY }}>
+          {t('receipt.printBtn')}
         </button>
       </div>
 
-      <div
-        className="mx-auto max-w-2xl overflow-hidden rounded-xl bg-white shadow-lg print:shadow-none print:rounded-none"
-        style={{ border: `2px solid ${accent}` }}
-      >
-        <div className="flex items-center justify-between px-8 py-6 text-white" style={{ background: primary }}>
-          <div className="flex items-center gap-3">
-            {settings.shop_logo_path && (
-              <img src={fileUrl(settings.shop_logo_path)} alt="شعار" className="h-14 w-14 rounded-full bg-white object-contain p-1" />
-            )}
-            <div>
-              <div className="text-xl font-bold">{settings.shop_name}</div>
-              {settings.shop_address && <div className="text-xs opacity-80">{settings.shop_address}</div>}
-            </div>
-          </div>
-          <div className="text-left text-sm" style={{ color: accent }}>
-            <div className="font-bold">فاتورة #{order.order_number}</div>
-            <div className="text-white/80">{formatDateTime(order.created_at)}</div>
-          </div>
-        </div>
+      <div className="mx-auto flex max-w-2xl justify-center px-4 print:px-0">
+        <div
+          dir="rtl"
+          className="receipt-frame w-full p-2"
+          style={{ background: CREAM, border: `1px solid ${GOLD}`, boxShadow: `0 0 0 5px ${CREAM}, 0 0 0 6px ${GOLD}` }}
+        >
+          <div className="relative p-6 sm:p-10">
+            <Corner className="right-1 top-1" />
+            <Corner className="left-1 top-1 -scale-x-100" />
+            <Corner className="right-1 bottom-1 -scale-y-100" />
+            <Corner className="left-1 bottom-1 -scale-x-100 -scale-y-100" />
 
-        <div className="px-8 py-5">
-          <div className="mb-5 flex justify-between text-sm">
-            <div>
-              <div className="text-slate-400">الزبون</div>
-              <div className="font-semibold text-slate-800">{order.customer_name}</div>
+            {/* الرأس */}
+            <div className="text-center">
+              {settings.shop_logo_path && (
+                <img
+                  src={fileUrl(settings.shop_logo_path)}
+                  alt={t('receipt.logoAlt')}
+                  className="mx-auto mb-3 h-14 w-14 rounded-full bg-white object-contain p-1"
+                  style={{ border: `1px solid ${GOLD}` }}
+                />
+              )}
+              <p className="text-4xl font-bold" style={{ fontFamily: "'Aref Ruqaa', 'IBM Plex Sans Arabic', serif", color: NAVY }}>
+                فاتورة
+              </p>
+              <div className="mx-auto mt-2 flex items-center justify-center gap-2" style={{ color: GOLD }}>
+                <span className="h-px w-10" style={{ background: GOLD }} />
+                <span>❖</span>
+                <span className="h-px w-10" style={{ background: GOLD }} />
+              </div>
+              <p className="mt-2 text-sm font-semibold text-stone-500" style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}>
+                {settings.shop_name}
+              </p>
+              {(settings.shop_phone || settings.shop_address) && (
+                <p className="mt-0.5 text-[11px] text-stone-400" style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}>
+                  {[settings.shop_phone, settings.shop_address].filter(Boolean).join(' · ')}
+                </p>
+              )}
             </div>
-            <div className="text-left">
-              <div className="text-slate-400">الهاتف</div>
-              <div className="font-semibold text-slate-800">{order.customer_phone || '-'}</div>
+
+            <div
+              className="mt-6 flex justify-center gap-10 text-center text-sm"
+              style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif", fontVariantNumeric: 'tabular-nums' }}
+            >
+              <div>
+                <p className="text-[11px] text-stone-400">{t('receipt.invoicePrefix')}</p>
+                <p className="mt-0.5 font-bold text-stone-700">{order.order_number}</p>
+              </div>
+              <div>
+                <p className="text-[11px] text-stone-400">{t('common.createdAt')}</p>
+                <p className="mt-0.5 font-bold text-stone-700">{formatDateTime(order.created_at)}</p>
+              </div>
             </div>
-          </div>
 
-          <table className="mb-4 w-full text-sm">
-            <thead>
-              <tr style={{ borderBottom: `2px solid ${accent}` }}>
-                <th className="py-2 text-right text-slate-600">الوصف</th>
-                <th className="py-2 text-right text-slate-600">الكمية</th>
-                <th className="py-2 text-right text-slate-600">سعر الوحدة</th>
-                <th className="py-2 text-right text-slate-600">المجموع</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((it) => (
-                <tr key={it.id} className="border-b border-slate-100">
-                  <td className="py-2">{it.description || it.service_name}</td>
-                  <td className="py-2">{it.quantity}</td>
-                  <td className="py-2">{formatIQD(it.unit_price)}</td>
-                  <td className="py-2 font-medium">{formatIQD(it.total_price)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div className="mb-5 flex justify-end">
-            <div className="w-56 text-sm">
-              <div className="flex justify-between py-1 text-slate-500">
-                <span>المجموع الفرعي</span>
-                <span>{formatIQD(order.subtotal)}</span>
+            <div
+              className="mt-6 flex justify-center gap-10 text-center text-sm"
+              style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}
+            >
+              <div>
+                <p className="text-[11px] text-stone-400">{t('common.customer')}</p>
+                <p className="mt-0.5 font-bold text-stone-700">{order.customer_name}</p>
               </div>
-              <div className="flex justify-between py-1 text-slate-500">
-                <span>الخصم</span>
-                <span>- {formatIQD(order.discount)}</span>
-              </div>
-              <div
-                className="mt-1 flex justify-between rounded-lg px-2 py-2 text-base font-bold text-white"
-                style={{ background: primary }}
-              >
-                <span>الإجمالي</span>
-                <span>{formatIQD(order.total_price)}</span>
-              </div>
-              <div className="mt-1 flex justify-between py-1 text-xs text-slate-400">
-                <span>المدفوع</span>
-                <span>{formatIQD(order.paid_amount)}</span>
-              </div>
-              {order.total_price - order.paid_amount > 0 && (
-                <div className="flex justify-between py-1 text-xs font-semibold text-rose-600">
-                  <span>المتبقي</span>
-                  <span>{formatIQD(order.total_price - order.paid_amount)}</span>
+              {order.customer_phone && (
+                <div>
+                  <p className="text-[11px] text-stone-400">{t('common.phone')}</p>
+                  <p className="mt-0.5 font-bold text-stone-700" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                    {order.customer_phone}
+                  </p>
                 </div>
               )}
             </div>
-          </div>
 
-          <div className="flex items-end justify-between border-t border-dashed border-slate-200 pt-4">
-            <div className="text-xs text-slate-400">
-              {settings.shop_address}
-              <br />
-              {settings.shop_phone}
+            {/* الجدول */}
+            <table className="mt-6 w-full text-sm" style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif", borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: `3px double ${GOLD}` }} className="text-[11px] text-stone-500">
+                  <th className="py-1.5 text-right font-medium">{t('common.description')}</th>
+                  <th className="py-1.5 text-center font-medium">{t('common.quantity')}</th>
+                  <th className="py-1.5 text-center font-medium">{t('common.unitPrice')}</th>
+                  <th className="py-1.5 text-left font-medium">{t('common.total')}</th>
+                </tr>
+              </thead>
+              <tbody style={{ fontVariantNumeric: 'tabular-nums' }}>
+                {items.map((it) => (
+                  <tr key={it.id} style={{ borderBottom: '1px solid #e7dcbd' }}>
+                    <td className="py-2 text-stone-700">{it.description || it.service_name}</td>
+                    <td className="py-2 text-center text-stone-700">{it.quantity}</td>
+                    <td className="py-2 text-center text-stone-700">{formatIQD(it.unit_price)}</td>
+                    <td className="py-2 text-left font-bold text-stone-800">{formatIQD(it.total_price)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* الإجمالي */}
+            <div
+              className="mt-6 space-y-1.5 text-sm"
+              style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif", borderTop: `3px double ${GOLD}`, paddingTop: 12 }}
+            >
+              <div className="flex justify-between text-stone-500">
+                <span>{t('common.subtotal')}</span>
+                <span style={{ fontVariantNumeric: 'tabular-nums' }}>{formatIQD(order.subtotal)}</span>
+              </div>
+              <div className="flex justify-between text-stone-500">
+                <span>{t('common.discount')}</span>
+                <span style={{ fontVariantNumeric: 'tabular-nums' }}>- {formatIQD(order.discount)}</span>
+              </div>
+              <div className="flex justify-between border-t pt-1.5 text-base font-bold" style={{ borderColor: '#e7dcbd', color: NAVY }}>
+                <span style={{ fontFamily: "'Aref Ruqaa', serif" }}>{t('common.grandTotal')}</span>
+                <span style={{ fontVariantNumeric: 'tabular-nums' }}>{formatIQD(order.total_price)}</span>
+              </div>
+              <div className="flex justify-between text-xs text-stone-500">
+                <span>{t('common.paid')}</span>
+                <span style={{ fontVariantNumeric: 'tabular-nums' }}>{formatIQD(order.paid_amount)}</span>
+              </div>
+              {remaining > 0 && (
+                <div className="flex justify-between text-sm font-bold" style={{ color: GOLD_DARK }}>
+                  <span style={{ fontFamily: "'Aref Ruqaa', serif" }}>{t('common.remaining')}</span>
+                  <span style={{ fontVariantNumeric: 'tabular-nums' }}>{formatIQD(remaining)}</span>
+                </div>
+              )}
             </div>
-            {shownQr && <img src={shownQr} alt="QR" className="h-20 w-20" />}
+
+            <div className="mt-6 flex justify-center">
+              {qrMode === 'whatsapp' && qrWhatsappDataUrl ? (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="rounded-lg p-2" style={{ border: `1px solid ${GOLD}` }}>
+                    <img src={qrWhatsappDataUrl} alt="QR" className="h-20 w-20" />
+                  </div>
+                  <p className="text-center text-[11px] text-stone-400" style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}>
+                    {t('receipt.qrWhatsapp')}
+                  </p>
+                </div>
+              ) : (
+                <VerifyQR orderNumber={order.order_number} logoUrl={settings.shop_logo_path ? fileUrl(settings.shop_logo_path) : null} />
+              )}
+            </div>
+
+            <div className="mt-8 flex justify-between text-xs text-stone-400" style={{ fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}>
+              <span>{t('receipt.customerSignature')}: ______</span>
+              <span>{t('receipt.staffSignature')}: ______</span>
+            </div>
           </div>
         </div>
       </div>
@@ -144,8 +204,21 @@ export default function Receipt() {
         @media print {
           .no-print { display: none !important; }
           body { background: white; }
+          .receipt-frame, .receipt-frame * {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
         }
       `}</style>
     </div>
+  );
+}
+
+function Corner({ className }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 22 22" className={`absolute ${className}`} style={{ color: GOLD }}>
+      <path d="M2 20V6a4 4 0 0 1 4-4h14" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="2" cy="20" r="1.5" fill="currentColor" />
+    </svg>
   );
 }

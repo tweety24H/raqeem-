@@ -1,4 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+/* Sora + IBM Plex Sans Arabic are loaded via <link> in index.html (not @import)
+   so they're discovered by the preconnect hints and don't block first paint.
+   Aref Ruqaa stays here — it's used only for decorative flourishes on the
+   printable receipt/invoice pages and was never part of the UI font swap. */
+@import url('https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -9,7 +13,11 @@ html, body, #root {
 }
 
 body {
-  @apply bg-slate-50 text-slate-800;
+  @apply bg-slate-50 text-slate-800 font-sans;
+}
+
+.dark body {
+  @apply bg-[#0a0a0f] text-slate-100;
 }
 
 * {
@@ -25,34 +33,95 @@ body {
   border-radius: 6px;
 }
 
-.input {
-  @apply w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-nili/40 focus:border-nili;
+/* Custom @apply-based component classes must live inside @layer components
+   so Tailwind's JIT can correctly generate the CSS-variable-based opacity
+   utilities used below (e.g. focus:ring-brand-500/30) — without this layer,
+   PostCSS raises "class does not exist" for any opacity-modified utility
+   used in @apply. */
+@layer components {
+  .input {
+    @apply w-full rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500;
+  }
+
+  .dark .input {
+    @apply border-white/10 bg-[#1a1a23] text-white placeholder:text-slate-500 focus:border-brand-400 focus:ring-brand-500/30;
+  }
+
+  .label {
+    @apply mb-1 block text-sm font-medium text-slate-600;
+  }
+
+  .dark .label {
+    @apply text-slate-300;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition duration-200 ease-out disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97];
+  }
+  .btn-primary {
+    @apply btn bg-nili text-white hover:bg-nili-dark;
+  }
+  /* Modern brand-accent primary action (violet), used by the redesigned Dashboard/hero. */
+  .btn-brand {
+    @apply btn bg-brand-600 text-white shadow-sm shadow-brand-600/20 hover:bg-brand-700 hover:shadow-md hover:shadow-brand-600/30;
+  }
+  .btn-gold {
+    @apply btn bg-gold text-nili-dark hover:bg-gold-dark;
+  }
+  .btn-secondary {
+    @apply btn bg-slate-200 text-slate-700 hover:bg-slate-300;
+  }
+  .dark .btn-secondary {
+    @apply bg-white/10 text-white hover:bg-white/20;
+  }
+  .btn-danger {
+    @apply btn bg-rose-600 text-white hover:bg-rose-700;
+  }
+
+  .card {
+    @apply rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition duration-200 ease-out;
+  }
+
+  .dark .card {
+    @apply border-brand-500/20 bg-[#1a1a23] shadow-[0_0_0_1px_rgba(139,92,246,0.15)];
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
 }
 
-.label {
-  @apply mb-1 block text-sm font-medium text-slate-600;
+.dark ::-webkit-scrollbar-thumb {
+  background: #3f3f52;
 }
 
-.btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed;
+/* Shimmer keyframe for skeleton loading states (see components/ui/LoadingSkeleton.jsx). */
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: #e5e7eb;
 }
-.btn-primary {
-  @apply btn bg-nili text-white hover:bg-nili-dark;
+.dark .skeleton-shimmer {
+  background: #232330;
 }
-.btn-gold {
-  @apply btn bg-gold text-nili-dark hover:bg-gold-dark;
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: skeleton-sweep 1.6s ease-in-out infinite;
 }
-.btn-secondary {
-  @apply btn bg-slate-200 text-slate-700 hover:bg-slate-300;
+.dark .skeleton-shimmer::after {
+  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.15), transparent);
 }
-.btn-danger {
-  @apply btn bg-rose-600 text-white hover:bg-rose-700;
+@keyframes skeleton-sweep {
+  100% {
+    transform: translateX(100%);
+  }
 }
-
-.card {
-  @apply rounded-xl border border-slate-200 bg-white p-4 shadow-sm;
-}
-
-.badge {
-  @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold;
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer::after {
+    animation: none;
+  }
 }

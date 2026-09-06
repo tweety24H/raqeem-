@@ -1,21 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
 import api, { fileUrl } from '../api/client';
 import Modal from './Modal';
+import { useLanguage } from '../context/LanguageContext';
 import { formatDateTime } from '../utils/format';
 import { fileIcon, isImageType, isPreviewable, formatBytes, downloadDesignFile } from '../utils/fileHelpers';
 
 const ACCEPT = '.pdf,.jpg,.jpeg,.png,.ai,.psd,.cdr,.eps';
-const HINT = 'اسحب ملفًا هنا أو اضغط للاختيار (PDF, JPG, PNG, AI, PSD, CDR, EPS — حتى 20 ميجابايت)';
 
 export function DesignCard({ file, onDeleted, showOrder }) {
+  const { t } = useLanguage();
+
   async function remove() {
-    if (!confirm('حذف هذا التصميم؟')) return;
+    if (!confirm(t('designs.confirmDelete'))) return;
     await api.delete(`/designs/${file.id}`);
     onDeleted?.();
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 p-2">
+    <div className="rounded-xl border border-slate-200 p-2 dark:border-white/10">
       <a href={fileUrl(file.file_path)} target="_blank" rel="noreferrer">
         {isImageType(file.file_type) ? (
           <img
@@ -24,31 +26,31 @@ export function DesignCard({ file, onDeleted, showOrder }) {
             className="mb-2 h-24 w-full rounded-lg object-cover"
           />
         ) : (
-          <div className="mb-2 flex h-24 w-full items-center justify-center rounded-lg bg-slate-100 text-3xl">
+          <div className="mb-2 flex h-24 w-full items-center justify-center rounded-lg bg-slate-100 text-3xl dark:bg-white/5">
             {fileIcon(file.file_type)}
           </div>
         )}
       </a>
       {showOrder && file.order_number && (
-        <div className="truncate text-xs font-semibold text-nili">#{file.order_number}</div>
+        <div className="truncate text-xs font-semibold text-nili dark:text-violet-300">#{file.order_number}</div>
       )}
-      <div className="truncate text-xs font-medium text-slate-800" title={file.file_name}>
+      <div className="truncate text-xs font-medium text-slate-800 dark:text-slate-200" title={file.file_name}>
         {file.file_name}
       </div>
-      <div className="text-xs text-slate-400">
+      <div className="text-xs text-slate-400 dark:text-slate-500">
         {formatBytes(file.file_size)} · {formatDateTime(file.uploaded_at)}
       </div>
       <div className="mt-1 flex flex-wrap gap-2 text-xs">
         {isPreviewable(file.file_type) && (
-          <a href={fileUrl(file.file_path)} target="_blank" rel="noreferrer" className="text-nili hover:underline">
-            معاينة
+          <a href={fileUrl(file.file_path)} target="_blank" rel="noreferrer" className="text-nili hover:underline dark:text-violet-300">
+            {t('designs.preview')}
           </a>
         )}
-        <button onClick={() => downloadDesignFile(api, file)} className="text-emerald-600 hover:underline">
-          تحميل
+        <button onClick={() => downloadDesignFile(api, file)} className="text-emerald-600 hover:underline dark:text-emerald-400">
+          {t('designs.download')}
         </button>
-        <button onClick={remove} className="text-rose-500 hover:underline">
-          حذف
+        <button onClick={remove} className="text-rose-500 hover:underline dark:text-rose-400">
+          {t('designs.delete')}
         </button>
       </div>
     </div>
@@ -56,6 +58,7 @@ export function DesignCard({ file, onDeleted, showOrder }) {
 }
 
 export function OrderDesignsSection({ orderId, customerId }) {
+  const { t } = useLanguage();
   const [files, setFiles] = useState([]);
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -83,7 +86,7 @@ export function OrderDesignsSection({ orderId, customerId }) {
       await api.post('/designs/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       await load();
     } catch (err) {
-      setError(err.response?.data?.error || 'فشل رفع الملف');
+      setError(err.response?.data?.error || t('designs.errorUpload'));
     } finally {
       setUploading(false);
     }
@@ -98,7 +101,7 @@ export function OrderDesignsSection({ orderId, customerId }) {
 
   return (
     <div className="card">
-      <h2 className="mb-3 font-semibold text-slate-700">التصاميم 📁</h2>
+      <h2 className="mb-3 font-semibold text-slate-700 dark:text-slate-200">{t('designs.heading')}</h2>
 
       <div
         onDragOver={(e) => {
@@ -109,10 +112,12 @@ export function OrderDesignsSection({ orderId, customerId }) {
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
         className={`mb-4 cursor-pointer rounded-xl border-2 border-dashed px-4 py-6 text-center text-sm transition ${
-          dragOver ? 'border-nili bg-nili/5 text-nili' : 'border-slate-300 text-slate-500 hover:bg-slate-50'
+          dragOver
+            ? 'border-nili bg-nili/5 text-nili'
+            : 'border-slate-300 text-slate-500 hover:bg-slate-50 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/5'
         }`}
       >
-        {uploading ? 'جاري الرفع...' : HINT}
+        {uploading ? t('designs.uploading') : t('designs.dropHint')}
         <input
           ref={inputRef}
           type="file"
@@ -125,14 +130,20 @@ export function OrderDesignsSection({ orderId, customerId }) {
         />
       </div>
 
-      {error && <div className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</div>}
+      {error && (
+        <div className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+          {error}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {files.map((f) => (
           <DesignCard key={f.id} file={f} onDeleted={load} />
         ))}
         {files.length === 0 && (
-          <div className="col-span-full py-4 text-center text-sm text-slate-400">لا توجد تصاميم لهذا الطلب بعد</div>
+          <div className="col-span-full py-4 text-center text-sm text-slate-400 dark:text-slate-500">
+            {t('designs.noDesignsOrder')}
+          </div>
         )}
       </div>
     </div>
@@ -140,6 +151,7 @@ export function OrderDesignsSection({ orderId, customerId }) {
 }
 
 export function CustomerDesignsModal({ customer, onClose }) {
+  const { t } = useLanguage();
   const [files, setFiles] = useState(null);
 
   useEffect(() => {
@@ -162,16 +174,18 @@ export function CustomerDesignsModal({ customer, onClose }) {
   }
 
   return (
-    <Modal open title={`أرشيف تصاميم: ${customer.name}`} onClose={onClose} width="max-w-3xl">
+    <Modal open title={`${t('designs.archiveTitlePrefix')}: ${customer.name}`} onClose={onClose} width="max-w-3xl">
       {!files ? (
-        <div className="py-6 text-center text-slate-400">جاري التحميل...</div>
+        <div className="py-6 text-center text-slate-400 dark:text-slate-500">{t('common.loading')}</div>
       ) : groups.length === 0 ? (
-        <div className="py-6 text-center text-slate-400">لا توجد تصاميم محفوظة لهذا الزبون</div>
+        <div className="py-6 text-center text-slate-400 dark:text-slate-500">{t('designs.noDesignsCustomer')}</div>
       ) : (
         <div className="space-y-5">
           {groups.map((g) => (
             <div key={g.orderId}>
-              <h3 className="mb-2 text-sm font-semibold text-nili">طلب #{g.orderNumber}</h3>
+              <h3 className="mb-2 text-sm font-semibold text-nili dark:text-violet-300">
+                {t('designs.orderPrefix')} #{g.orderNumber}
+              </h3>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {g.items.map((f) => (
                   <DesignCard key={f.id} file={f} onDeleted={load} />

@@ -6,9 +6,44 @@ const { getSecret, requireAuth, requireOwner } = require('../middleware/auth');
 
 const router = express.Router();
 
+// حماية بسيطة من محاولات تخمين رمز PIN المتكررة: بعد ٥ محاولات فاشلة من نفس
+// العنوان، قفل لمدة دقيقة. مخزّن بالذاكرة (كافي لتطبيق يعمل محلياً على جهاز
+// واحد داخل المطبعة، وينظّف نفسه تلقائياً).
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_MS = 60 * 1000;
+const attemptsByIp = new Map();
+
+function isLocked(ip) {
+  const entry = attemptsByIp.get(ip);
+  if (!entry) return false;
+  if (entry.count < MAX_ATTEMPTS) return false;
+  if (Date.now() - entry.lastAttempt > LOCKOUT_MS) {
+    attemptsByIp.delete(ip);
+    return false;
+  }
+  return true;
+}
+
+function recordFailure(ip) {
+  const entry = attemptsByIp.get(ip) || { count: 0, lastAttempt: 0 };
+  entry.count += 1;
+  entry.lastAttempt = Date.now();
+  attemptsByIp.set(ip, entry);
+}
+
+function recordSuccess(ip) {
+  attemptsByIp.delete(ip);
+}
+
 // POST /api/auth/login { pin }
 router.post('/login', (req, res) => {
   const { pin } = req.body;
+  const ip = req.ip;
+
+  if (isLocked(ip)) {
+    return res.status(429).json({ error: 'محاولات كثيرة خاطئة، انتظر دقيقة وحاول مرة أخرى' });
+  }
+
   if (!pin || typeof pin !== 'string') {
     return res.status(400).json({ error: 'أدخل رمز PIN' });
   }
@@ -17,8 +52,11 @@ router.post('/login', (req, res) => {
   const match = workers.find((w) => bcrypt.compareSync(pin, w.pin_hash));
 
   if (!match) {
+    recordFailure(ip);
     return res.status(401).json({ error: 'رمز PIN غير صحيح' });
   }
+
+  recordSuccess(ip);
 
   const token = jwt.sign(
     { workerId: match.id, name: match.name, role: match.role },

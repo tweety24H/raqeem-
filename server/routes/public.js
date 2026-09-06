@@ -31,6 +31,38 @@ router.get('/shop-info', (req, res) => {
   });
 });
 
+// GET /api/public/verify/:orderNumber
+// تحقق عام من فاتورة عبر رقم الوصل (بدون تسجيل دخول) - يستخدمه رمز QR المطبوع على الفاتورة.
+// نكشف فقط الحقول الآمنة للعرض العام: لا نكشف رقم هاتف الزبون أو سجل الدفعات/الديون.
+router.get('/verify/:orderNumber', (req, res) => {
+  const order = db
+    .prepare(
+      `SELECT o.id, o.order_number, o.total_price, o.status, o.created_at, c.name AS customer_name
+       FROM orders o JOIN customers c ON c.id = o.customer_id
+       WHERE o.order_number = ?`
+    )
+    .get(req.params.orderNumber);
+  if (!order) return res.status(404).json({ error: 'رقم الوصل غير موجود' });
+
+  const items = db
+    .prepare('SELECT description, quantity, unit_price FROM order_items WHERE order_id = ?')
+    .all(order.id);
+
+  const settings = settingsService.getAll();
+
+  res.json({
+    order: {
+      order_number: order.order_number,
+      customer_name: order.customer_name,
+      total_price: order.total_price,
+      status: order.status,
+      created_at: order.created_at,
+      items,
+    },
+    shop: { name: settings.shop_name, logo_path: settings.shop_logo_path },
+  });
+});
+
 // GET /api/public/services
 router.get('/services', (req, res) => {
   const services = db.prepare('SELECT id, name, unit, price, category FROM services WHERE active = 1').all();

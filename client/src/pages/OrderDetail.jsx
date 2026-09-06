@@ -3,12 +3,14 @@ import { useParams, Link } from 'react-router-dom';
 import api from '../api/client';
 import PageHeader from '../components/PageHeader';
 import StatusBadge from '../components/StatusBadge';
+import { useLanguage } from '../context/LanguageContext';
 import { formatIQD, formatDateTime } from '../utils/format';
 import { OrderDesignsSection } from '../components/DesignArchive';
 
 const STATUSES = ['جديد', 'قيد التصميم', 'قيد الطباعة', 'جاهز للتسليم', 'تم التسليم'];
 
 export default function OrderDetail() {
+  const { t } = useLanguage();
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [payAmount, setPayAmount] = useState('');
@@ -42,11 +44,11 @@ export default function OrderDetail() {
       setPayAmount('');
       await load();
     } catch (err) {
-      setError(err.response?.data?.error || 'فشل تسجيل الدفعة');
+      setError(err.response?.data?.error || t('orderDetail.errorPayment'));
     }
   }
 
-  if (!data) return <div className="p-6 text-slate-400">جاري التحميل...</div>;
+  if (!data) return <div className="p-6 text-slate-400 dark:text-slate-500">{t('common.loading')}</div>;
 
   const { order, items, payments } = data;
   const remaining = order.total_price - order.paid_amount;
@@ -55,18 +57,18 @@ export default function OrderDetail() {
   return (
     <div className="p-6">
       <PageHeader
-        title={`طلب #${order.order_number}`}
+        title={`${t('orderDetail.orderPrefix')} #${order.order_number}`}
         subtitle={order.customer_name}
         actions={
           <Link to={`/receipt/${order.id}`} className="btn-gold" target="_blank">
-            طباعة الفاتورة 🖨️
+            {t('orderDetail.printInvoice')}
           </Link>
         }
       />
 
       <div className="mb-6 card">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-semibold text-slate-700">حالة الطلب</h2>
+          <h2 className="font-semibold text-slate-700 dark:text-slate-200">{t('orderDetail.statusHeading')}</h2>
           <StatusBadge status={order.status} />
         </div>
         <div className="flex flex-wrap gap-2">
@@ -79,11 +81,11 @@ export default function OrderDetail() {
                 idx === statusIdx
                   ? 'border-nili bg-nili text-white'
                   : idx < statusIdx
-                  ? 'border-emerald-200 bg-emerald-50 text-emerald-600'
-                  : 'border-slate-300 text-slate-500 hover:bg-slate-50'
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300'
+                  : 'border-slate-300 text-slate-500 hover:bg-slate-50 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/5'
               }`}
             >
-              {s}
+              {t(`status.${s}`)}
             </button>
           ))}
         </div>
@@ -93,42 +95,42 @@ export default function OrderDetail() {
         <div className="lg:col-span-2 space-y-6">
           <div className="card overflow-x-auto p-0">
             <table className="w-full text-sm">
-              <thead className="bg-slate-100 text-slate-600">
+              <thead className="bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-slate-400">
                 <tr>
-                  <th className="px-4 py-3 text-right">الوصف</th>
-                  <th className="px-4 py-3 text-right">الكمية</th>
-                  <th className="px-4 py-3 text-right">سعر الوحدة</th>
-                  <th className="px-4 py-3 text-right">المجموع</th>
+                  <th className="px-4 py-3 text-right">{t('common.description')}</th>
+                  <th className="px-4 py-3 text-right">{t('common.quantity')}</th>
+                  <th className="px-4 py-3 text-right">{t('common.unitPrice')}</th>
+                  <th className="px-4 py-3 text-right">{t('common.total')}</th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((it) => (
-                  <tr key={it.id} className="border-t border-slate-100">
-                    <td className="px-4 py-3">{it.description || it.service_name}</td>
-                    <td className="px-4 py-3">{it.quantity}</td>
-                    <td className="px-4 py-3">{formatIQD(it.unit_price)}</td>
-                    <td className="px-4 py-3 font-medium">{formatIQD(it.total_price)}</td>
+                  <tr key={it.id} className="border-t border-slate-100 dark:border-white/5">
+                    <td className="px-4 py-3 dark:text-slate-200">{it.description || it.service_name}</td>
+                    <td className="px-4 py-3 dark:text-slate-200">{it.quantity}</td>
+                    <td className="px-4 py-3 dark:text-slate-300">{formatIQD(it.unit_price)}</td>
+                    <td className="px-4 py-3 font-medium dark:text-slate-100">{formatIQD(it.total_price)}</td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr className="border-t border-slate-200">
-                  <td colSpan={3} className="px-4 py-2 text-left text-slate-500">
-                    المجموع الفرعي
+                <tr className="border-t border-slate-200 dark:border-white/10">
+                  <td colSpan={3} className="px-4 py-2 text-left text-slate-500 dark:text-slate-400">
+                    {t('common.subtotal')}
                   </td>
-                  <td className="px-4 py-2 font-medium">{formatIQD(order.subtotal)}</td>
+                  <td className="px-4 py-2 font-medium dark:text-slate-100">{formatIQD(order.subtotal)}</td>
                 </tr>
                 <tr>
-                  <td colSpan={3} className="px-4 py-2 text-left text-slate-500">
-                    الخصم
+                  <td colSpan={3} className="px-4 py-2 text-left text-slate-500 dark:text-slate-400">
+                    {t('common.discount')}
                   </td>
-                  <td className="px-4 py-2 font-medium">- {formatIQD(order.discount)}</td>
+                  <td className="px-4 py-2 font-medium dark:text-slate-100">- {formatIQD(order.discount)}</td>
                 </tr>
                 <tr>
-                  <td colSpan={3} className="px-4 py-2 text-left font-bold text-nili">
-                    الإجمالي
+                  <td colSpan={3} className="px-4 py-2 text-left font-bold text-nili dark:text-violet-300">
+                    {t('common.grandTotal')}
                   </td>
-                  <td className="px-4 py-2 text-lg font-bold text-nili">{formatIQD(order.total_price)}</td>
+                  <td className="px-4 py-2 text-lg font-bold text-nili dark:text-violet-300">{formatIQD(order.total_price)}</td>
                 </tr>
               </tfoot>
             </table>
@@ -136,8 +138,8 @@ export default function OrderDetail() {
 
           {order.notes && (
             <div className="card">
-              <h3 className="mb-1 text-sm font-semibold text-slate-600">ملاحظات</h3>
-              <p className="text-sm text-slate-600">{order.notes}</p>
+              <h3 className="mb-1 text-sm font-semibold text-slate-600 dark:text-slate-300">{t('common.notes')}</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-300">{order.notes}</p>
             </div>
           )}
 
@@ -146,13 +148,13 @@ export default function OrderDetail() {
 
         <div className="space-y-6">
           <div className="card">
-            <h2 className="mb-3 font-semibold text-slate-700">الدفع</h2>
+            <h2 className="mb-3 font-semibold text-slate-700 dark:text-slate-200">{t('orderDetail.paymentHeading')}</h2>
             <div className="mb-2 flex justify-between text-sm">
-              <span className="text-slate-500">المدفوع</span>
-              <span className="font-medium text-emerald-600">{formatIQD(order.paid_amount)}</span>
+              <span className="text-slate-500 dark:text-slate-400">{t('common.paid')}</span>
+              <span className="font-medium text-emerald-600 dark:text-emerald-400">{formatIQD(order.paid_amount)}</span>
             </div>
             <div className="mb-3 flex justify-between text-sm">
-              <span className="text-slate-500">المتبقي</span>
+              <span className="text-slate-500 dark:text-slate-400">{t('common.remaining')}</span>
               <span className={`font-semibold ${remaining > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
                 {formatIQD(remaining)}
               </span>
@@ -163,45 +165,49 @@ export default function OrderDetail() {
                 <input
                   className="input"
                   type="number"
-                  placeholder="مبلغ الدفعة"
+                  placeholder={t('orderDetail.paymentAmountPlaceholder')}
                   value={payAmount}
                   onChange={(e) => setPayAmount(e.target.value)}
                   required
                 />
-                <button className="btn-primary shrink-0">تسجيل</button>
+                <button className="btn-primary shrink-0">{t('orderDetail.registerBtn')}</button>
               </form>
             )}
-            {error && <div className="mb-2 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-600">{error}</div>}
+            {error && (
+              <div className="mb-2 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+                {error}
+              </div>
+            )}
 
             <div className="space-y-1">
               {payments.map((p) => (
-                <div key={p.id} className="flex justify-between text-xs text-slate-500">
+                <div key={p.id} className="flex justify-between text-xs text-slate-500 dark:text-slate-400">
                   <span>{formatDateTime(p.created_at)}</span>
-                  <span className="font-medium text-slate-700">{formatIQD(p.amount)}</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-200">{formatIQD(p.amount)}</span>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="card text-sm">
-            <h2 className="mb-2 font-semibold text-slate-700">تفاصيل</h2>
-            <div className="flex justify-between py-1 text-slate-500">
-              <span>الزبون</span>
-              <Link to={`/customers/${order.customer_id}`} className="text-nili hover:underline">
+            <h2 className="mb-2 font-semibold text-slate-700 dark:text-slate-200">{t('orderDetail.detailsHeading')}</h2>
+            <div className="flex justify-between py-1 text-slate-500 dark:text-slate-400">
+              <span>{t('common.customer')}</span>
+              <Link to={`/customers/${order.customer_id}`} className="text-nili hover:underline dark:text-violet-300">
                 {order.customer_name}
               </Link>
             </div>
-            <div className="flex justify-between py-1 text-slate-500">
-              <span>الهاتف</span>
-              <span>{order.customer_phone || '-'}</span>
+            <div className="flex justify-between py-1 text-slate-500 dark:text-slate-400">
+              <span>{t('common.phone')}</span>
+              <span className="dark:text-slate-200">{order.customer_phone || '-'}</span>
             </div>
-            <div className="flex justify-between py-1 text-slate-500">
-              <span>تاريخ الإنشاء</span>
-              <span>{formatDateTime(order.created_at)}</span>
+            <div className="flex justify-between py-1 text-slate-500 dark:text-slate-400">
+              <span>{t('common.createdAt')}</span>
+              <span className="dark:text-slate-200">{formatDateTime(order.created_at)}</span>
             </div>
-            <div className="flex justify-between py-1 text-slate-500">
-              <span>موعد التسليم</span>
-              <span>{order.due_date || '-'}</span>
+            <div className="flex justify-between py-1 text-slate-500 dark:text-slate-400">
+              <span>{t('common.dueDate')}</span>
+              <span className="dark:text-slate-200">{order.due_date || '-'}</span>
             </div>
           </div>
         </div>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>مقترح 3 — استوديو البنفسجي (Studio Violet)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          nili: { DEFAULT: '#1B2A6B', dark: '#121d4d', light: '#2c3f96' },
+          gold: { DEFAULT: '#D4AF37', light: '#e6c866', dark: '#b8932a' },
+          brand: { 50:'#f5f3ff',100:'#ede9fe',200:'#ddd6fe',300:'#c4b5fd',400:'#a78bfa',500:'#8b5cf6',600:'#7c3aed',700:'#6d28d9',800:'#5b21b6',900:'#4c1d95' },
+        },
+        fontFamily: { sans: ['Tajawal', 'sans-serif'] },
+      },
+    },
+  };
+</script>
+<style>
+  body { font-family: 'Tajawal', sans-serif; }
+  .label-badge { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 50; }
+  .glass { background: rgba(255,255,255,0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.5); }
+  @keyframes floatBlob { 0%,100%{ transform: translate(0,0); } 50%{ transform: translate(20px,-24px); } }
+  .blob { position:absolute; border-radius:9999px; filter: blur(60px); animation: floatBlob 12s ease-in-out infinite; }
+</style>
+</head>
+<body class="bg-white text-slate-900">
+
+  <div class="label-badge bg-black text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg">
+    مقترح 3 — استوديو البنفسجي (Studio Violet) · اسكرول لتحت لتشوف Login
+  </div>
+
+  <!-- ============ LANDING ============ -->
+  <section class="min-h-screen relative overflow-hidden flex flex-col">
+    <div class="blob w-80 h-80 bg-brand-300/30 -top-10 -right-10"></div>
+    <div class="blob w-96 h-96 bg-gold/15 bottom-0 -left-20" style="animation-delay:3s"></div>
+
+    <header class="relative glass mx-4 mt-4 rounded-2xl flex items-center justify-between px-6 py-4 shadow-sm">
+      <div class="flex items-center gap-3">
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-600 text-white text-base">🖨️</span>
+        <div class="leading-tight">
+          <div class="font-black text-base tracking-tight">RaqeemOS</div>
+          <div class="text-[10px] text-slate-500 font-medium">نظام إدارة المطبعة</div>
+        </div>
+      </div>
+      <button class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-5 py-2 rounded-full transition">دخول</button>
+    </header>
+
+    <main class="relative flex-1 flex flex-col items-center justify-center text-center px-6 py-16">
+      <span class="inline-block text-[11px] font-bold tracking-[0.2em] text-brand-600 bg-brand-50 border border-brand-200 rounded-full px-4 py-1.5 mb-6">
+        PRINT COMMAND CENTER
+      </span>
+      <h1 class="text-[36px] lg:text-[52px] font-black leading-[1.15] max-w-2xl">
+        إدارة مطبعتك. أسهل. أسرع. أذكى.
+      </h1>
+      <p class="mt-5 text-slate-500 max-w-md leading-relaxed">
+        تابع طلبات الطباعة، الإنتاج، العملاء والفواتير من مكان واحد.
+      </p>
+      <button class="mt-8 bg-brand-600 hover:bg-brand-700 text-white text-sm font-black px-9 py-4 rounded-2xl transition shadow-xl shadow-brand-600/25">
+        دخول للنظام
+      </button>
+
+      <!-- بطاقات الأقسام الحقيقية - نفس أيقونات الشريط الجانبي بالنظام -->
+      <div class="mt-14 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl w-full">
+        <div class="glass rounded-2xl p-4 text-right hover:-translate-y-1 transition">
+          <span class="text-xl">📦</span>
+          <div class="mt-2 text-xs font-bold">الطلبات</div>
+        </div>
+        <div class="glass rounded-2xl p-4 text-right hover:-translate-y-1 transition">
+          <span class="text-xl">👥</span>
+          <div class="mt-2 text-xs font-bold">الزبائن والديون</div>
+        </div>
+        <div class="glass rounded-2xl p-4 text-right hover:-translate-y-1 transition">
+          <span class="text-xl">📊</span>
+          <div class="mt-2 text-xs font-bold">الجرد</div>
+        </div>
+        <div class="glass rounded-2xl p-4 text-right hover:-translate-y-1 transition">
+          <span class="text-xl">📈</span>
+          <div class="mt-2 text-xs font-bold">التقارير</div>
+        </div>
+      </div>
+    </main>
+  </section>
+
+  <!-- ============ LOGIN ============ -->
+  <section class="min-h-screen relative overflow-hidden flex items-center justify-center bg-gradient-to-br from-white via-brand-50 to-white">
+    <div class="blob w-96 h-96 bg-brand-300/25 top-0 right-0"></div>
+    <div class="blob w-80 h-80 bg-gold/15 bottom-0 left-0" style="animation-delay:4s"></div>
+
+    <div class="relative w-full max-w-sm mx-4 rounded-[28px] glass p-8 shadow-2xl">
+      <div class="text-center mb-7">
+        <span class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-600 text-2xl text-white">🖨️</span>
+        <h1 class="text-lg font-black">RaqeemOS</h1>
+        <p class="mt-1 text-xs text-slate-500 font-medium">أدخل رمز PIN لتسجيل الدخول</p>
+      </div>
+
+      <div class="flex items-center justify-center gap-3 mb-7" id="pindots">
+        <span class="pin-dot h-3.5 w-3.5 rounded-full border-2 border-brand-200"></span>
+        <span class="pin-dot h-3.5 w-3.5 rounded-full border-2 border-brand-200"></span>
+        <span class="pin-dot h-3.5 w-3.5 rounded-full border-2 border-brand-200"></span>
+        <span class="pin-dot h-3.5 w-3.5 rounded-full border-2 border-brand-200"></span>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3 mb-5">
+        <button onclick="press(this)" class="numkey rounded-2xl bg-white/80 hover:bg-white py-4 text-lg font-bold text-slate-700 transition shadow-sm">1</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-white/80 hover:bg-white py-4 text-lg font-bold text-slate-700 transition shadow-sm">2</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-white/80 hover:bg-white py-4 text-lg font-bold text-slate-700 transition shadow-sm">3</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-white/80 hover:bg-white py-4 text-lg font-bold text-slate-700 transition shadow-sm">4</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-white/80 hover:bg-white py-4 text-lg font-bold text-slate-700 transition shadow-sm">5</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-white/80 hover:bg-white py-4 text-lg font-bold text-slate-700 transition shadow-sm">6</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-white/80 hover:bg-white py-4 text-lg font-bold text-slate-700 transition shadow-sm">7</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-white/80 hover:bg-white py-4 text-lg font-bold text-slate-700 transition shadow-sm">8</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-white/80 hover:bg-white py-4 text-lg font-bold text-slate-700 transition shadow-sm">9</button>
+        <button onclick="clearPin()" class="rounded-2xl bg-white/80 hover:bg-white py-4 text-xs font-bold text-slate-400 transition shadow-sm">مسح</button>
+        <button onclick="press(this)" class="numkey rounded-2xl bg-white/80 hover:bg-white py-4 text-lg font-bold text-slate-700 transition shadow-sm">0</button>
+        <button onclick="backspace()" class="rounded-2xl bg-white/80 hover:bg-white py-4 text-sm font-bold text-slate-400 transition shadow-sm">⌫</button>
+      </div>
+
+      <button class="w-full bg-brand-600 hover:bg-brand-700 text-white text-sm font-black py-4 rounded-2xl transition shadow-lg shadow-brand-600/25">
+        دخول
+      </button>
+    </div>
+  </section>
+
+  <script>
+    let pin = '';
+    function render() {
+      document.querySelectorAll('#pindots .pin-dot').forEach((el, i) => {
+        if (i < pin.length) { el.classList.add('bg-brand-600','border-brand-600'); el.classList.remove('border-brand-200'); }
+        else { el.classList.remove('bg-brand-600','border-brand-600'); el.classList.add('border-brand-200'); }
+      });
+    }
+    function press(btn) { if (pin.length < 4) { pin += btn.textContent.trim(); render(); } }
+    function clearPin() { pin = ''; render(); }
+    function backspace() { pin = pin.slice(0, -1); render(); }
+  </script>
+</body>
+</html>

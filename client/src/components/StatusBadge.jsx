@@ -1,3 +1,5 @@
+import { useLanguage } from '../context/LanguageContext';
+
 export const STATUSES = ['جديد', 'قيد التصميم', 'قيد الطباعة', 'جاهز للتسليم', 'تم التسليم'];
 
 // ألوان الحالة: جديد=أزرق، قيد التصميم/الطباعة=أصفر-برتقالي (قيد التنفيذ)، جاهز للتسليم=أخضر، تم التسليم=رمادي
@@ -18,5 +20,10 @@ export const STATUS_SOLID = {
 };
 
 export default function StatusBadge({ status }) {
-  return <span className={`badge ${STATUS_STYLES[status] || 'bg-slate-200 text-slate-700'}`}>{status}</span>;
+  const { t } = useLanguage();
+  return (
+    <span className={`badge ${STATUS_STYLES[status] || 'bg-slate-200 text-slate-700'} dark:ring-1 dark:ring-white/10`}>
+      {t(`status.${status}`)}
+    </span>
+  );
 }

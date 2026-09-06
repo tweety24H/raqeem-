@@ -5,6 +5,7 @@ const os = require('os');
 const multer = require('multer');
 const QRCode = require('qrcode');
 const settingsService = require('../services/settingsService');
+const whatsappService = require('../services/whatsappService');
 const { requireAuth, requireOwner } = require('../middleware/auth');
 
 const router = express.Router();
@@ -33,6 +34,26 @@ router.patch('/', requireAuth, requireOwner, (req, res) => {
   const body = { ...req.body };
   delete body.jwt_secret;
   settingsService.setMany(body);
+  // Kick off WhatsApp pairing right away instead of waiting for a server
+  // restart to notice the toggle flipped on.
+  if (body.whatsapp_enabled === '1') whatsappService.init().catch(() => {});
+  res.json({ ok: true });
+});
+
+// GET /api/settings/whatsapp/status (owner only) — polled by the settings
+// page while pairing is in progress, to show the live QR code and state.
+router.get('/whatsapp/status', requireAuth, requireOwner, async (req, res) => {
+  const { status, lastQr, qrGeneratedAt, phoneNumber } = whatsappService.getStatus();
+  let qrDataUrl = null;
+  if (lastQr) qrDataUrl = await QRCode.toDataURL(lastQr, { margin: 1, width: 220 });
+  res.json({ status, qrDataUrl, qrGeneratedAt, phoneNumber });
+});
+
+// POST /api/settings/whatsapp/disconnect (owner only) — destroys the current
+// WhatsApp session and clears the saved pairing, so a fresh QR is generated
+// next time init() runs instead of retrying a possibly-stuck old session.
+router.post('/whatsapp/disconnect', requireAuth, requireOwner, async (req, res) => {
+  await whatsappService.disconnect();
   res.json({ ok: true });
 });
 

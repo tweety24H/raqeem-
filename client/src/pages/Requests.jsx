@@ -5,6 +5,7 @@ import { formatDateTime } from '../utils/format';
 
 export default function Requests() {
   const [requests, setRequests] = useState([]);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     load();
@@ -20,12 +21,29 @@ export default function Requests() {
     load();
   }
 
+  const term = search.trim().toLowerCase();
+  const filtered = term
+    ? requests.filter(
+        (r) =>
+          r.customer_name?.toLowerCase().includes(term) ||
+          r.phone?.toLowerCase().includes(term) ||
+          r.service_text?.toLowerCase().includes(term)
+      )
+    : requests;
+
   return (
     <div className="p-6">
       <PageHeader title="طلبات الزبائن الواردة" subtitle="طلبات وصلت عبر صفحة QR المحلية بانتظار المراجعة" />
 
+      <input
+        className="input mb-4 max-w-xs"
+        placeholder="ابحث بالاسم، الهاتف، أو الخدمة..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+
       <div className="space-y-3">
-        {requests.map((r) => (
+        {filtered.map((r) => (
           <div key={r.id} className="card flex items-start justify-between">
             <div>
               <div className="font-medium text-slate-800">
@@ -52,7 +70,9 @@ export default function Requests() {
             </div>
           </div>
         ))}
-        {requests.length === 0 && <div className="py-8 text-center text-slate-400">لا توجد طلبات واردة</div>}
+        {filtered.length === 0 && (
+          <div className="py-8 text-center text-slate-400">{term ? 'لا توجد نتائج' : 'لا توجد طلبات واردة'}</div>
+        )}
       </div>
     </div>
   );

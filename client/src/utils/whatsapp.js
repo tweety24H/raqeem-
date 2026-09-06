@@ -15,6 +15,15 @@ export function buildDebtReminderLink(customer) {
   return `https://wa.me/${waPhone}?text=${encodeURIComponent(message)}`;
 }
 
+export function buildLightboxOrderLink(customer, order) {
+  const waPhone = toWhatsAppPhone(customer.phone);
+  if (!waPhone) return null;
+  const message = `مرحبا ${customer.name}، تم تسجيل طلب الإعلان الضوئي الخاص بكم برقم وصل ${order.orderNumber} بمبلغ إجمالي ${formatIQD(
+    order.subtotal
+  )}${order.remaining > 0 ? ` (متبقي ${formatIQD(order.remaining)})` : ' (مسدد بالكامل)'}. شكرًا لتعاملكم معنا.`;
+  return `https://wa.me/${waPhone}?text=${encodeURIComponent(message)}`;
+}
+
 export function buildStockAlertLink(lowItems, shopPhone) {
   const waPhone = toWhatsAppPhone(shopPhone);
   if (!waPhone || !lowItems || lowItems.length === 0) return null;

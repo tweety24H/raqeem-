@@ -2,18 +2,24 @@ import { useEffect, useState } from 'react';
 import api, { fileUrl } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import Modal from '../components/Modal';
+import ViewToggle, { useViewMode } from '../components/ViewToggle';
+import { useLanguage } from '../context/LanguageContext';
 import { formatIQD, formatDateTime } from '../utils/format';
 import { buildStockAlertLink } from '../utils/whatsapp';
+import BarcodeScannerModal from '../components/BarcodeScannerModal';
 
 const UNITS = ['فرخ', 'متر', 'مل', 'قطعة'];
 
 export default function Stock() {
+  const { t } = useLanguage();
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState('');
   const [lowOnly, setLowOnly] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [selected, setSelected] = useState(null);
   const [shopPhone, setShopPhone] = useState('');
+  const [mode, setMode] = useViewMode('raqeem_view_stock', 'list');
+  const [showScanSearch, setShowScanSearch] = useState(false);
 
   useEffect(() => {
     load();
@@ -33,7 +39,7 @@ export default function Stock() {
   function sendStockAlert() {
     const link = buildStockAlertLink(lowItems, shopPhone);
     if (!link) {
-      alert('لا يوجد رقم هاتف المطبعة في الإعدادات');
+      alert(t('stock.errorNoShopPhone'));
       return;
     }
     window.open(link, '_blank');
@@ -43,23 +49,26 @@ export default function Stock() {
   return (
     <div className="p-6">
       <PageHeader
-        title="الجرد"
-        subtitle="متابعة المخزون، الوحدات المختلفة، والتالف"
+        title={t('stock.title')}
+        subtitle={t('stock.subtitle')}
         actions={
-          <button className="btn-primary" onClick={() => setShowAdd(true)}>
-            + إضافة صنف
-          </button>
+          <>
+            <ViewToggle mode={mode} onChange={setMode} />
+            <button className="btn-primary" onClick={() => setShowAdd(true)}>
+              {t('stock.addItemBtn')}
+            </button>
+          </>
         }
       />
 
       {lowItems.length > 0 && (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-800">
-          <span>⚠️ يوجد {lowItems.length} صنف بمخزون منخفض أو أقل من الحد الأدنى.</span>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+          <span>{t('stock.lowStockWarning', { count: lowItems.length })}</span>
           <button
-            className="rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
+            className="rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25"
             onClick={sendStockAlert}
           >
-            إرسال تنبيه واتساب
+            {t('stock.sendAlertBtn')}
           </button>
         </div>
       )}
@@ -67,61 +76,106 @@ export default function Stock() {
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <input
           className="input max-w-xs"
-          placeholder="بحث بالاسم أو الباركود..."
+          placeholder={t('stock.searchPlaceholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <label className="flex items-center gap-2 text-sm text-slate-600">
+        <button type="button" className="btn-secondary" onClick={() => setShowScanSearch(true)}>
+          📷 مسح باركود
+        </button>
+        <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
           <input type="checkbox" checked={lowOnly} onChange={(e) => setLowOnly(e.target.checked)} />
-          المخزون المنخفض فقط
+          {t('stock.lowOnlyLabel')}
         </label>
       </div>
 
-      <div className="card overflow-x-auto p-0">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-100 text-slate-600">
-            <tr>
-              <th className="px-4 py-3 text-right">الصنف</th>
-              <th className="px-4 py-3 text-right">الفئة</th>
-              <th className="px-4 py-3 text-right">الكمية</th>
-              <th className="px-4 py-3 text-right">الوحدة</th>
-              <th className="px-4 py-3 text-right">تكلفة الوحدة</th>
-              <th className="px-4 py-3 text-right">الباركود</th>
-              <th className="px-4 py-3"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item) => {
-              const low = item.quantity <= item.min_quantity;
-              return (
-                <tr key={item.id} className="border-t border-slate-100 hover:bg-slate-50">
-                  <td className="px-4 py-3 font-medium text-slate-800">{item.name}</td>
-                  <td className="px-4 py-3 text-slate-500">{item.category || '-'}</td>
-                  <td className={`px-4 py-3 font-semibold ${low ? 'text-rose-600' : 'text-slate-700'}`}>
-                    {item.quantity}
-                    {low && <span className="mr-2 badge bg-rose-100 text-rose-600">منخفض</span>}
-                  </td>
-                  <td className="px-4 py-3 text-slate-500">{item.unit}</td>
-                  <td className="px-4 py-3 text-slate-500">{formatIQD(item.cost_per_unit)}</td>
-                  <td className="px-4 py-3 text-slate-500">{item.barcode || '-'}</td>
-                  <td className="px-4 py-3 text-left">
-                    <button className="text-nili hover:underline" onClick={() => setSelected(item)}>
-                      إدارة
-                    </button>
+      {mode === 'grid' ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {items.map((item) => {
+            const low = item.quantity <= item.min_quantity;
+            return (
+              <div key={item.id} className="card">
+                <div className="mb-2 flex items-start justify-between">
+                  <p className="font-semibold text-slate-800 dark:text-slate-100">{item.name}</p>
+                  {low && (
+                    <span className="badge bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300">
+                      {t('stock.low')}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{item.category || t('stock.noCategory')}</p>
+                <div className="mt-3 flex items-center justify-between text-sm">
+                  <span className={`font-bold ${low ? 'text-rose-600' : 'text-slate-800 dark:text-slate-100'}`}>
+                    {item.quantity} {t(`unit.${item.unit}`)}
+                  </span>
+                  <span className="text-slate-500 dark:text-slate-400">{formatIQD(item.cost_per_unit)}</span>
+                </div>
+                {item.barcode && (
+                  <div className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+                    {t('common.barcode')}: {item.barcode}
+                  </div>
+                )}
+                <button className="btn-secondary mt-3 w-full" onClick={() => setSelected(item)}>
+                  {t('common.manage')}
+                </button>
+              </div>
+            );
+          })}
+          {items.length === 0 && (
+            <div className="col-span-full py-8 text-center text-slate-400 dark:text-slate-500">{t('stock.noItems')}</div>
+          )}
+        </div>
+      ) : (
+        <div className="card overflow-x-auto p-0">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-slate-400">
+              <tr>
+                <th className="px-4 py-3 text-right">{t('common.name')}</th>
+                <th className="px-4 py-3 text-right">{t('common.category')}</th>
+                <th className="px-4 py-3 text-right">{t('common.quantity')}</th>
+                <th className="px-4 py-3 text-right">{t('common.unit')}</th>
+                <th className="px-4 py-3 text-right">{t('stock.costPerUnitLabel')}</th>
+                <th className="px-4 py-3 text-right">{t('common.barcode')}</th>
+                <th className="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((item) => {
+                const low = item.quantity <= item.min_quantity;
+                return (
+                  <tr key={item.id} className="border-t border-slate-100 hover:bg-slate-50 dark:border-white/5 dark:hover:bg-white/5">
+                    <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-100">{item.name}</td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{item.category || '-'}</td>
+                    <td className={`px-4 py-3 font-semibold ${low ? 'text-rose-600' : 'text-slate-700 dark:text-slate-200'}`}>
+                      {item.quantity}
+                      {low && (
+                        <span className="mr-2 badge bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300">
+                          {t('stock.low')}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{t(`unit.${item.unit}`)}</td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{formatIQD(item.cost_per_unit)}</td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{item.barcode || '-'}</td>
+                    <td className="px-4 py-3 text-left">
+                      <button className="text-nili hover:underline dark:text-violet-300" onClick={() => setSelected(item)}>
+                        {t('common.manage')}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+              {items.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-4 py-8 text-center text-slate-400 dark:text-slate-500">
+                    {t('stock.noItems')}
                   </td>
                 </tr>
-              );
-            })}
-            {items.length === 0 && (
-              <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-slate-400">
-                  لا توجد أصناف
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {showAdd && (
         <AddItemModal
@@ -142,11 +196,22 @@ export default function Stock() {
           }}
         />
       )}
+
+      {showScanSearch && (
+        <BarcodeScannerModal
+          onDetected={(code) => {
+            setSearch(code);
+            setShowScanSearch(false);
+          }}
+          onClose={() => setShowScanSearch(false)}
+        />
+      )}
     </div>
   );
 }
 
 function AddItemModal({ onClose, onSaved }) {
+  const { t } = useLanguage();
   const [form, setForm] = useState({
     name: '',
     unit: 'قطعة',
@@ -158,6 +223,7 @@ function AddItemModal({ onClose, onSaved }) {
   });
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
 
   async function submit(e) {
     e.preventDefault();
@@ -167,18 +233,22 @@ function AddItemModal({ onClose, onSaved }) {
       await api.post('/stock', form);
       onSaved();
     } catch (err) {
-      setError(err.response?.data?.error || 'فشل الحفظ');
+      setError(err.response?.data?.error || t('stock.errorSave'));
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <Modal open title="إضافة صنف جديد للمخزون" onClose={onClose}>
+    <Modal open title={t('stock.addModalTitle')} onClose={onClose}>
       <form onSubmit={submit} className="space-y-3">
-        {error && <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</div>}
+        {error && (
+          <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+            {error}
+          </div>
+        )}
         <div>
-          <label className="label">اسم الصنف</label>
+          <label className="label">{t('stock.itemNameLabel')}</label>
           <input
             className="input"
             required
@@ -188,17 +258,17 @@ function AddItemModal({ onClose, onSaved }) {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="label">الوحدة</label>
+            <label className="label">{t('common.unit')}</label>
             <select className="input" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })}>
               {UNITS.map((u) => (
                 <option key={u} value={u}>
-                  {u}
+                  {t(`unit.${u}`)}
                 </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="label">الفئة</label>
+            <label className="label">{t('common.category')}</label>
             <input
               className="input"
               value={form.category}
@@ -208,7 +278,7 @@ function AddItemModal({ onClose, onSaved }) {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="label">الكمية الحالية</label>
+            <label className="label">{t('stock.currentQuantityLabel')}</label>
             <input
               type="number"
               step="any"
@@ -218,7 +288,7 @@ function AddItemModal({ onClose, onSaved }) {
             />
           </div>
           <div>
-            <label className="label">الحد الأدنى (تنبيه)</label>
+            <label className="label">{t('stock.minQuantityLabel')}</label>
             <input
               type="number"
               step="any"
@@ -230,7 +300,7 @@ function AddItemModal({ onClose, onSaved }) {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="label">تكلفة الوحدة (د.ع)</label>
+            <label className="label">{t('stock.costPerUnitLabel')}</label>
             <input
               type="number"
               step="any"
@@ -240,28 +310,46 @@ function AddItemModal({ onClose, onSaved }) {
             />
           </div>
           <div>
-            <label className="label">الباركود (اختياري)</label>
-            <input
-              className="input"
-              value={form.barcode}
-              onChange={(e) => setForm({ ...form, barcode: e.target.value })}
-            />
+            <label className="label">
+              {t('common.barcode')} {t('common.optional')}
+            </label>
+            <div className="flex gap-2">
+              <input
+                className="input"
+                value={form.barcode}
+                onChange={(e) => setForm({ ...form, barcode: e.target.value })}
+              />
+              <button type="button" className="btn-secondary shrink-0 !px-3" onClick={() => setShowScanner(true)}>
+                📷
+              </button>
+            </div>
           </div>
         </div>
         <div className="flex justify-end gap-2 pt-2">
           <button type="button" className="btn-secondary" onClick={onClose}>
-            إلغاء
+            {t('common.cancel')}
           </button>
           <button type="submit" disabled={saving} className="btn-primary">
-            حفظ
+            {t('common.save')}
           </button>
         </div>
       </form>
+
+      {showScanner && (
+        <BarcodeScannerModal
+          onDetected={(code) => {
+            setForm((f) => ({ ...f, barcode: code }));
+            setShowScanner(false);
+          }}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
     </Modal>
   );
 }
 
 function ItemDetailModal({ item, onClose, onChanged }) {
+  const { t } = useLanguage();
   const [detail, setDetail] = useState(null);
   const [tab, setTab] = useState('movement'); // movement | damage
   const [moveType, setMoveType] = useState('in');
@@ -291,7 +379,7 @@ function ItemDetailModal({ item, onClose, onChanged }) {
       await load();
       onChanged();
     } catch (err) {
-      setError(err.response?.data?.error || 'فشل تنفيذ الحركة');
+      setError(err.response?.data?.error || t('stock.errorMovement'));
     } finally {
       setSaving(false);
     }
@@ -313,78 +401,93 @@ function ItemDetailModal({ item, onClose, onChanged }) {
       await load();
       onChanged();
     } catch (err) {
-      setError(err.response?.data?.error || 'فشل تسجيل التالف');
+      setError(err.response?.data?.error || t('stock.errorDamage'));
     } finally {
       setSaving(false);
     }
   }
 
+  const MOVEMENT_LABEL = {
+    in: t('stock.movementIn'),
+    out: t('stock.movementOut'),
+    damage: t('stock.movementDamage'),
+    adjust: t('stock.movementAdjust'),
+  };
+
   return (
-    <Modal open title={`إدارة الصنف: ${item.name}`} onClose={onClose} width="max-w-2xl">
+    <Modal open title={`${t('stock.manageModalTitlePrefix')}: ${item.name}`} onClose={onClose} width="max-w-2xl">
       {!detail ? (
-        <div className="text-slate-400">جاري التحميل...</div>
+        <div className="text-slate-400 dark:text-slate-500">{t('common.loading')}</div>
       ) : (
         <div>
           <div className="mb-4 grid grid-cols-3 gap-3 text-center">
-            <div className="rounded-lg bg-slate-100 p-3">
-              <div className="text-xs text-slate-500">الكمية الحالية</div>
-              <div className="text-lg font-bold text-slate-800">
-                {detail.item.quantity} {detail.item.unit}
+            <div className="rounded-lg bg-slate-100 p-3 dark:bg-white/5">
+              <div className="text-xs text-slate-500 dark:text-slate-400">{t('stock.currentQuantityLabel')}</div>
+              <div className="text-lg font-bold text-slate-800 dark:text-slate-100">
+                {detail.item.quantity} {t(`unit.${detail.item.unit}`)}
               </div>
             </div>
-            <div className="rounded-lg bg-slate-100 p-3">
-              <div className="text-xs text-slate-500">الحد الأدنى</div>
-              <div className="text-lg font-bold text-slate-800">{detail.item.min_quantity}</div>
+            <div className="rounded-lg bg-slate-100 p-3 dark:bg-white/5">
+              <div className="text-xs text-slate-500 dark:text-slate-400">{t('stock.minQuantityLabel')}</div>
+              <div className="text-lg font-bold text-slate-800 dark:text-slate-100">{detail.item.min_quantity}</div>
             </div>
-            <div className="rounded-lg bg-slate-100 p-3">
-              <div className="text-xs text-slate-500">تكلفة الوحدة</div>
-              <div className="text-lg font-bold text-slate-800">{formatIQD(detail.item.cost_per_unit)}</div>
+            <div className="rounded-lg bg-slate-100 p-3 dark:bg-white/5">
+              <div className="text-xs text-slate-500 dark:text-slate-400">{t('stock.costPerUnitLabel')}</div>
+              <div className="text-lg font-bold text-slate-800 dark:text-slate-100">{formatIQD(detail.item.cost_per_unit)}</div>
             </div>
           </div>
 
-          <div className="mb-3 flex gap-2 border-b border-slate-200">
+          <div className="mb-3 flex gap-2 border-b border-slate-200 dark:border-white/10">
             <button
-              className={`px-3 py-2 text-sm font-medium ${tab === 'movement' ? 'border-b-2 border-nili text-nili' : 'text-slate-500'}`}
+              className={`px-3 py-2 text-sm font-medium ${
+                tab === 'movement' ? 'border-b-2 border-nili text-nili dark:text-violet-300' : 'text-slate-500 dark:text-slate-400'
+              }`}
               onClick={() => setTab('movement')}
             >
-              حركة مخزون
+              {t('stock.movementTab')}
             </button>
             <button
-              className={`px-3 py-2 text-sm font-medium ${tab === 'damage' ? 'border-b-2 border-rose-500 text-rose-600' : 'text-slate-500'}`}
+              className={`px-3 py-2 text-sm font-medium ${
+                tab === 'damage' ? 'border-b-2 border-rose-500 text-rose-600 dark:text-rose-300' : 'text-slate-500 dark:text-slate-400'
+              }`}
               onClick={() => setTab('damage')}
             >
-              تسجيل تالف
+              {t('stock.damageTab')}
             </button>
           </div>
 
-          {error && <div className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</div>}
+          {error && (
+            <div className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+              {error}
+            </div>
+          )}
 
           {tab === 'movement' ? (
             <form onSubmit={submitMovement} className="mb-4 space-y-3">
               <div className="grid grid-cols-3 gap-2">
                 <select className="input" value={moveType} onChange={(e) => setMoveType(e.target.value)}>
-                  <option value="in">إدخال (شراء/توريد)</option>
-                  <option value="out">إخراج</option>
-                  <option value="adjust">تصحيح الكمية إلى</option>
+                  <option value="in">{t('stock.moveIn')}</option>
+                  <option value="out">{t('stock.moveOut')}</option>
+                  <option value="adjust">{t('stock.moveAdjust')}</option>
                 </select>
                 <input
                   className="input"
                   type="number"
                   step="any"
-                  placeholder="الكمية"
+                  placeholder={t('common.quantity')}
                   value={qty}
                   onChange={(e) => setQty(e.target.value)}
                   required
                 />
                 <input
                   className="input"
-                  placeholder="ملاحظة (اختياري)"
+                  placeholder={t('stock.reasonPlaceholder')}
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                 />
               </div>
               <button disabled={saving} className="btn-primary">
-                تنفيذ
+                {t('stock.executeBtn')}
               </button>
             </form>
           ) : (
@@ -394,57 +497,67 @@ function ItemDetailModal({ item, onClose, onChanged }) {
                   className="input"
                   type="number"
                   step="any"
-                  placeholder="كمية التالف"
+                  placeholder={t('stock.damageQtyPlaceholder')}
                   value={qty}
                   onChange={(e) => setQty(e.target.value)}
                   required
                 />
                 <input
                   className="input"
-                  placeholder="سبب التلف"
+                  placeholder={t('stock.damageReasonPlaceholder')}
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                 />
               </div>
               <input type="file" accept="image/*" onChange={(e) => setPhoto(e.target.files[0])} />
               <button disabled={saving} className="btn-danger">
-                تسجيل التالف
+                {t('stock.registerDamageBtn')}
               </button>
             </form>
           )}
 
-          <h4 className="mb-2 text-sm font-semibold text-slate-600">آخر الحركات</h4>
+          <h4 className="mb-2 text-sm font-semibold text-slate-600 dark:text-slate-300">{t('stock.lastMovements')}</h4>
           <div className="max-h-56 space-y-2 overflow-y-auto">
             {detail.movements.map((m) => (
-              <div key={m.id} className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 text-sm">
+              <div
+                key={m.id}
+                className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 text-sm dark:border-white/10"
+              >
                 <div>
                   <span
                     className={`badge ml-2 ${
                       m.type === 'in'
-                        ? 'bg-emerald-100 text-emerald-700'
+                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
                         : m.type === 'damage'
-                        ? 'bg-rose-100 text-rose-700'
+                        ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300'
                         : m.type === 'adjust'
-                        ? 'bg-amber-100 text-amber-700'
-                        : 'bg-slate-200 text-slate-700'
+                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300'
+                        : 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300'
                     }`}
                   >
-                    {{ in: 'إدخال', out: 'إخراج', damage: 'تالف', adjust: 'تصحيح' }[m.type]}
+                    {MOVEMENT_LABEL[m.type]}
                   </span>
-                  <span className="text-slate-600">{m.reason || '-'}</span>
+                  <span className="text-slate-600 dark:text-slate-300">{m.reason || '-'}</span>
                   {m.photo_path && (
-                    <a href={fileUrl(m.photo_path)} target="_blank" rel="noreferrer" className="mr-2 text-nili underline">
-                      عرض الصورة
+                    <a
+                      href={fileUrl(m.photo_path)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mr-2 text-nili underline dark:text-violet-300"
+                    >
+                      {t('stock.viewPhoto')}
                     </a>
                   )}
                 </div>
                 <div className="text-left">
-                  <div className="font-semibold text-slate-700">{m.quantity}</div>
-                  <div className="text-xs text-slate-400">{formatDateTime(m.created_at)}</div>
+                  <div className="font-semibold text-slate-700 dark:text-slate-200">{m.quantity}</div>
+                  <div className="text-xs text-slate-400 dark:text-slate-500">{formatDateTime(m.created_at)}</div>
                 </div>
               </div>
             ))}
-            {detail.movements.length === 0 && <div className="text-sm text-slate-400">لا توجد حركات بعد</div>}
+            {detail.movements.length === 0 && (
+              <div className="text-sm text-slate-400 dark:text-slate-500">{t('stock.noMovements')}</div>
+            )}
           </div>
         </div>
       )}

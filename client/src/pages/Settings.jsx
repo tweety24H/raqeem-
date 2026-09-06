@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react';
 import api, { fileUrl } from '../api/client';
 import PageHeader from '../components/PageHeader';
 
+const isElectron = typeof window !== 'undefined' && !!window.raqeem?.isElectron;
+
 const TABS = [
   { key: 'shop', label: 'بيانات المطبعة' },
   { key: 'services', label: 'أسعار الخدمات' },
   { key: 'workers', label: 'العاملون' },
   { key: 'network', label: 'الشبكة المحلية' },
   { key: 'backup', label: 'النسخ الاحتياطي' },
+  ...(isElectron ? [{ key: 'license', label: 'الترخيص والحماية 🔒' }] : []),
 ];
 
 export default function Settings() {
@@ -16,12 +19,12 @@ export default function Settings() {
   return (
     <div className="p-6">
       <PageHeader title="الإعدادات" subtitle="تعديل أسعار الخدمات وبيانات المطبعة" />
-      <div className="mb-6 flex gap-2 border-b border-slate-200">
+      <div className="mb-6 flex gap-2 border-b border-slate-200 dark:border-white/10">
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`px-4 py-2 text-sm font-medium ${tab === t.key ? 'border-b-2 border-nili text-nili' : 'text-slate-500'}`}
+            className={`px-4 py-2 text-sm font-medium ${tab === t.key ? 'border-b-2 border-brand-600 text-brand-600' : 'text-slate-500 dark:text-slate-400'}`}
           >
             {t.label}
           </button>
@@ -33,6 +36,7 @@ export default function Settings() {
       {tab === 'workers' && <WorkersSettings />}
       {tab === 'network' && <NetworkSettings />}
       {tab === 'backup' && <BackupSettings />}
+      {tab === 'license' && isElectron && <LicenseSettings />}
     </div>
   );
 }
@@ -110,11 +114,118 @@ function ShopSettings() {
           إرسال رسالة واتساب تلقائيًا عند جاهزية الطلب للتسليم
         </label>
         <p className="mt-1 text-xs text-slate-400">
-          يتطلب تثبيت مكتبة whatsapp-web.js وربط الجهاز عبر مسح رمز QR عند أول تشغيل.
+          يتطلب ربط الجهاز عبر مسح رمز QR عند أول تشغيل — احفظ التغييرات بعد التفعيل وراح يظهر الكود بالأسفل.
         </p>
+        {form.whatsapp_enabled === '1' && <WhatsAppPairingStatus />}
       </div>
       <button className="btn-primary">حفظ التغييرات</button>
     </form>
+  );
+}
+
+const WA_STATUS_LABEL = {
+  disabled: 'الخدمة متوقفة',
+  initializing: 'جاري تحضير الاتصال...',
+  qr_pending: 'امسح الكود بواتساب على جوالك',
+  ready: 'متصل بواتساب ✅',
+  error: 'تعذر تشغيل خدمة واتساب — تحقق من تثبيت المكتبة وأعد تشغيل السيرفر',
+};
+
+function WhatsAppPairingStatus() {
+  const [state, setState] = useState(null);
+  const [now, setNow] = useState(Date.now());
+  const [disconnecting, setDisconnecting] = useState(false);
+
+  async function fetchStatus() {
+    try {
+      const res = await api.get('/settings/whatsapp/status');
+      setState(res.data);
+      return res.data;
+    } catch {
+      return null;
+    }
+  }
+
+  useEffect(() => {
+    let cancelled = false;
+    let timer = null;
+
+    async function poll() {
+      const data = await fetchStatus();
+      if (cancelled) return;
+      // Once connected there's nothing left to watch — stop polling entirely.
+      if (data && data.status !== 'ready') timer = setTimeout(poll, 3000);
+    }
+    poll();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Local 1s UI ticker for the "code age" readout — no extra network calls.
+  useEffect(() => {
+    if (state?.status !== 'qr_pending') return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [state?.status]);
+
+  async function handleDisconnect() {
+    setDisconnecting(true);
+    try {
+      await api.post('/settings/whatsapp/disconnect');
+      await fetchStatus();
+    } finally {
+      setDisconnecting(false);
+    }
+  }
+
+  if (!state) return null;
+
+  const qrAgeSec = state.qrGeneratedAt ? Math.floor((now - state.qrGeneratedAt) / 1000) : null;
+
+  return (
+    <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
+      <p className="text-sm font-medium text-slate-600 dark:text-slate-300">{WA_STATUS_LABEL[state.status] || state.status}</p>
+
+      {state.status === 'qr_pending' && state.qrDataUrl && (
+        <div className="mt-3">
+          <img src={state.qrDataUrl} alt="رمز اقتران واتساب" className="h-40 w-40 rounded-lg border border-slate-200" />
+          <div className="mt-2 flex items-center gap-3">
+            {qrAgeSec !== null && (
+              <span className="text-xs text-slate-400">
+                واتساب يجدد الكود تلقائيًا كل ~٢٠ ثانية — عمر الكود الحالي: {qrAgeSec} ث
+              </span>
+            )}
+            <button type="button" className="btn-secondary !py-1 !px-3 text-xs" onClick={fetchStatus}>
+              تحديث الآن
+            </button>
+          </div>
+        </div>
+      )}
+
+      {state.status === 'ready' && (
+        <div className="mt-2 flex items-center justify-between">
+          {state.phoneNumber && <span className="text-sm text-slate-500 dark:text-slate-400">الرقم المتصل: {state.phoneNumber}</span>}
+          <button
+            type="button"
+            disabled={disconnecting}
+            onClick={handleDisconnect}
+            className="rounded-lg border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-50"
+          >
+            {disconnecting ? 'جاري القطع...' : 'قطع الاتصال'}
+          </button>
+        </div>
+      )}
+
+      {state.status === 'error' && (
+        <button type="button" className="btn-secondary !py-1 !px-3 mt-2 text-xs" onClick={fetchStatus}>
+          إعادة المحاولة
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -356,5 +467,241 @@ function BackupSettings() {
       </div>
       <button className="btn-primary">حفظ</button>
     </form>
+  );
+}
+
+// تبويب "الترخيص والحماية" — يشتغل فقط داخل نسخة Electron المثبّتة. محمي
+// بكلمة سر إدارية منفصلة عن رمز PIN اليومي (حماية إضافية لأنه فيه معلومات
+// حساسة: حالة الترخيص، مجلد النسخ الاحتياطي المشفّر...).
+function LicenseSettings() {
+  const [unlocked, setUnlocked] = useState(false);
+  const [hasPassword, setHasPassword] = useState(null);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [confirmInput, setConfirmInput] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    window.raqeem.admin.hasPassword().then(setHasPassword);
+  }, []);
+
+  async function submitPassword(e) {
+    e.preventDefault();
+    setError('');
+    if (hasPassword) {
+      const ok = await window.raqeem.admin.checkPassword(passwordInput);
+      if (!ok) return setError('كلمة السر غير صحيحة');
+      setUnlocked(true);
+    } else {
+      if (passwordInput.length < 4) return setError('كلمة السر لازم ٤ أحرف أو أرقام على الأقل');
+      if (passwordInput !== confirmInput) return setError('كلمتا السر غير متطابقتين');
+      await window.raqeem.admin.setPassword(passwordInput);
+      setUnlocked(true);
+    }
+  }
+
+  if (hasPassword === null) return null;
+
+  if (!unlocked) {
+    return (
+      <form onSubmit={submitPassword} className="card max-w-sm space-y-3">
+        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+          {hasPassword ? '🔒 أدخل كلمة سر الحماية' : '🔒 عيّن كلمة سر جديدة لحماية هذا القسم'}
+        </p>
+        <input
+          type="password"
+          className="input"
+          value={passwordInput}
+          onChange={(e) => setPasswordInput(e.target.value)}
+          placeholder="كلمة السر"
+          autoFocus
+        />
+        {!hasPassword && (
+          <input
+            type="password"
+            className="input"
+            value={confirmInput}
+            onChange={(e) => setConfirmInput(e.target.value)}
+            placeholder="تأكيد كلمة السر"
+          />
+        )}
+        {error && <p className="text-xs font-semibold text-rose-600 dark:text-rose-400">{error}</p>}
+        <button className="btn-primary w-full">{hasPassword ? 'دخول' : 'حفظ وفتح'}</button>
+      </form>
+    );
+  }
+
+  return <LicenseAndBackupPanel />;
+}
+
+function LicenseAndBackupPanel() {
+  const [status, setStatus] = useState(null);
+  const [key, setKey] = useState('');
+  const [activateError, setActivateError] = useState('');
+  const [activateOk, setActivateOk] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [backups, setBackups] = useState([]);
+  const [backupDir, setBackupDir] = useState('');
+  const [backupBusy, setBackupBusy] = useState(false);
+  const [backupMsg, setBackupMsg] = useState('');
+
+  async function loadAll() {
+    const [s, list, dir] = await Promise.all([
+      window.raqeem.license.getStatus(),
+      window.raqeem.backup.list(),
+      window.raqeem.backup.getDir(),
+    ]);
+    setStatus(s);
+    setBackups(list);
+    setBackupDir(dir);
+  }
+
+  useEffect(() => {
+    loadAll();
+  }, []);
+
+  async function copyHwid() {
+    await window.raqeem.license.copyToClipboard(status.hardwareId);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
+
+  async function transferToNewDevice() {
+    const sure = window.confirm(
+      'هذا يلغي التفعيل على هذا الجهاز نهائياً (يرجع لحالة تجريبي/منتهي). تحتاج تطلب مفتاح تفعيل جديد للجهاز الجديد. متأكد؟'
+    );
+    if (!sure) return;
+    const s = await window.raqeem.license.deactivate();
+    setStatus(s);
+  }
+
+  async function activate(e) {
+    e.preventDefault();
+    setActivateError('');
+    setActivateOk(false);
+    const result = await window.raqeem.license.activate(key);
+    if (result.valid) {
+      setActivateOk(true);
+      setKey('');
+      loadAll();
+    } else {
+      setActivateError(result.reason || 'مفتاح غير صحيح');
+    }
+  }
+
+  async function backupNow() {
+    setBackupBusy(true);
+    setBackupMsg('');
+    const result = await window.raqeem.backup.runNow();
+    setBackupBusy(false);
+    setBackupMsg(result.ok ? 'تم أخذ نسخة احتياطية مشفّرة بنجاح' : `فشل: ${result.error}`);
+    loadAll();
+  }
+
+  async function restoreBackup(name, date) {
+    const sure = window.confirm(
+      `متأكد تريد استعادة نسخة ${new Date(date).toLocaleString('ar-IQ')}؟\n\nهذا يستبدل كل بيانات البرنامج الحالية بهذي النسخة (يؤخذ نسخة أمان من الوضع الحالي تلقائياً قبل الاستبدال). البرنامج يسكر ويرجع يفتح نفسه.`
+    );
+    if (!sure) return;
+    setBackupBusy(true);
+    setBackupMsg('جاري الاستعادة، البرنامج راح يعيد تشغيل نفسه...');
+    const result = await window.raqeem.backup.restore(name);
+    if (!result.ok) {
+      setBackupBusy(false);
+      setBackupMsg(`فشلت الاستعادة: ${result.error}`);
+    }
+    // إذا نجحت: البرنامج راح يسكر ويرجع يفتح خلال لحظات من جهة Electron، ما نحتاج نسوي شي إضافي هنا.
+  }
+
+  if (!status) return null;
+
+  return (
+    <div className="max-w-2xl space-y-6">
+      <div className="card">
+        <h3 className="mb-3 font-semibold text-slate-800 dark:text-slate-100">حالة الترخيص</h3>
+        {status.status === 'licensed' && (
+          <>
+            <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+              ✓ مفعّل مجاناً — {status.shop}
+              {new Date(status.expiresAt).getFullYear() - new Date().getFullYear() >= 50 ? (
+                <> — ترخيص مجاني مدى الحياة ♾️</>
+              ) : (
+                <> — صالح لغاية {new Date(status.expiresAt).toLocaleDateString('ar-IQ')}</>
+              )}
+            </p>
+            <button
+              type="button"
+              onClick={transferToNewDevice}
+              className="mt-3 rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5"
+            >
+              نقل الترخيص لجهاز جديد
+            </button>
+          </>
+        )}
+        {status.status === 'trial' && (
+          <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+            نسخة تجريبية — متبقي {status.daysLeft} يوم
+          </p>
+        )}
+        {status.status === 'expired' && (
+          <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">
+            انتهت الفترة التجريبية
+          </p>
+        )}
+
+        <div className="mt-4">
+          <label className="label">رقم الجهاز (Hardware ID)</label>
+          <div className="flex gap-2">
+            <input readOnly className="input font-mono text-xs" value={status.hardwareId} />
+            <button type="button" onClick={copyHwid} className="btn-secondary shrink-0 !px-3">
+              {copied ? '✓' : '📋'}
+            </button>
+          </div>
+        </div>
+
+        {status.status !== 'licensed' && (
+          <form onSubmit={activate} className="mt-4">
+            <label className="label">مفتاح تفعيل جديد</label>
+            <textarea
+              className="input resize-none font-mono text-xs"
+              rows={2}
+              value={key}
+              onChange={(e) => setKey(e.target.value)}
+              placeholder="الصق مفتاح التفعيل هنا..."
+            />
+            {activateError && <p className="mt-1 text-xs font-semibold text-rose-600 dark:text-rose-400">{activateError}</p>}
+            {activateOk && <p className="mt-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">تم التفعيل بنجاح ✓</p>}
+            <button className="btn-brand mt-2">فعّل</button>
+          </form>
+        )}
+      </div>
+
+      <div className="card">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="font-semibold text-slate-800 dark:text-slate-100">النسخ الاحتياطي المشفّر</h3>
+          <button type="button" onClick={backupNow} disabled={backupBusy} className="btn-brand !px-3 !py-1.5 !text-xs">
+            {backupBusy ? 'جاري...' : '📦 نسخ الآن'}
+          </button>
+        </div>
+        <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">المجلد: {backupDir}</p>
+        {backupMsg && <p className="mb-2 text-xs font-semibold text-slate-600 dark:text-slate-300">{backupMsg}</p>}
+        <div className="max-h-56 space-y-1 overflow-y-auto">
+          {backups.length === 0 && <p className="text-xs text-slate-400">لا توجد نسخ بعد</p>}
+          {backups.map((b) => (
+            <div key={b.name} className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-1.5 text-xs dark:bg-white/5">
+              <span className="truncate text-slate-600 dark:text-slate-300">{new Date(b.date).toLocaleString('ar-IQ')}</span>
+              <span className="shrink-0 text-slate-400">{b.sizeKb} KB</span>
+              <button
+                type="button"
+                disabled={backupBusy}
+                onClick={() => restoreBackup(b.name, b.date)}
+                className="shrink-0 rounded-md bg-amber-100 px-2 py-1 font-semibold text-amber-700 hover:bg-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:hover:bg-amber-500/25"
+              >
+                استعادة ⟲
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
