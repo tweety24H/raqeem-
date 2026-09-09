@@ -134,7 +134,7 @@ export default function Dashboard() {
 
   if (mode === 'grid') {
     return (
-      <div className="relative min-h-screen overflow-hidden bg-[#fcfcfd] p-6 dark:bg-[#0a0a0f]">
+      <div className="relative min-h-screen overflow-hidden bg-slate-50 p-6 dark:bg-slate-950">
         <InteractiveBackground />
         <div className="relative z-[1] mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -151,7 +151,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#fcfcfd] dark:bg-[#0a0a0f]">
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
       <InteractiveBackground />
 
       <div className="absolute left-6 top-6 z-10">
@@ -163,7 +163,7 @@ export default function Dashboard() {
         <motion.div variants={heroContainer} initial="hidden" animate="show" className="mb-10 text-center">
           <motion.span
             variants={heroItem}
-            className="inline-block rounded-full border border-slate-200 bg-white/60 px-3 py-1 text-xs tracking-widest text-slate-500 dark:border-brand-500/20 dark:bg-white/5 dark:text-slate-400"
+            className="inline-block rounded-full border border-slate-200 bg-white/60 px-3 py-1 text-xs tracking-widest text-slate-500 dark:border-slate-800 dark:bg-white/5 dark:text-slate-400"
           >
             {t('dashboard.badge')}
           </motion.span>
@@ -184,7 +184,7 @@ export default function Dashboard() {
           </motion.div>
 
           <motion.div variants={heroItem} className="relative mx-auto mt-8 max-w-2xl">
-            <div className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-[0_16px_48px_rgba(0,0,0,0.06)] dark:border-brand-500/20 dark:bg-[#1a1a23]">
+            <div className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-[0_16px_48px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:bg-slate-900">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-black">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
                   <circle cx="11" cy="11" r="7" />
@@ -203,7 +203,7 @@ export default function Dashboard() {
             </div>
 
             {searchResults && (
-              <div className="absolute inset-x-0 top-full z-20 mt-2 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg dark:border-brand-500/20 dark:bg-[#1a1a23]">
+              <div className="absolute inset-x-0 top-full z-20 mt-2 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-800 dark:bg-slate-900">
                 {searchResults.length === 0 && (
                   <p className="p-4 text-sm text-slate-400 dark:text-slate-500">{t('dashboard.noSearchResults')}</p>
                 )}
@@ -211,7 +211,7 @@ export default function Dashboard() {
                   <Link
                     key={`${r.type}-${r.id}`}
                     to={r.type === 'order' ? `/orders/${r.id}` : `/customers/${r.id}`}
-                    className="flex items-center gap-2 border-b border-slate-100 px-4 py-3 text-sm text-slate-700 last:border-0 hover:bg-brand-50 dark:border-white/5 dark:text-slate-200 dark:hover:bg-white/5"
+                    className="flex items-center gap-2 border-b border-slate-100 px-4 py-3 text-sm text-slate-700 last:border-0 hover:bg-nili/5 dark:border-white/5 dark:text-slate-200 dark:hover:bg-white/5"
                   >
                     <span className="text-xs text-slate-400 dark:text-slate-500">{r.type === 'order' ? 'طلب' : 'زبون'}</span>
                     {r.label}
@@ -243,10 +243,11 @@ export default function Dashboard() {
           <StatCardsSkeleton count={6} />
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            <StatCard icon="🧾" label={t('dashboard.statOrdersToday')} value={summary?.ordersToday || 0} />
-            <StatCard icon="🎨" label={t('dashboard.statInProgress')} value={statusCounts.inProgress} tone="warning" />
-            <StatCard icon="✅" label={t('dashboard.statReady')} value={statusCounts.ready} tone="success" />
+            <StatCard accent icon="🧾" label={t('dashboard.statOrdersToday')} value={summary?.ordersToday || 0} />
+            <StatCard accent icon="🎨" label={t('dashboard.statInProgress')} value={statusCounts.inProgress} tone="warning" />
+            <StatCard accent icon="✅" label={t('dashboard.statReady')} value={statusCounts.ready} tone="success" />
             <StatCard
+              accent
               icon="💰"
               label={t('dashboard.statProfitToday')}
               value={summary?.profitToday?.profit || 0}
@@ -316,7 +317,7 @@ function TodayColumn({ orders, loading }) {
   }));
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-brand-500/20 dark:bg-[#1a1a23]">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
       <div className="mb-5 flex items-center gap-2 text-sm font-bold text-slate-800 dark:text-slate-100">
         <span>🕐</span>
         {t('dashboard.today')}
@@ -334,7 +335,7 @@ function TodayColumn({ orders, loading }) {
           <div className="absolute bottom-1 right-1 top-1 w-px bg-slate-200 dark:bg-white/10" />
           {items.map((it, i) => (
             <div key={i} className="relative">
-              <span className="absolute right-[-1.15rem] top-1 h-2 w-2 -translate-x-1/2 rounded-full bg-brand-500" />
+              <span className="absolute right-[-1.15rem] top-1 h-2 w-2 -translate-x-1/2 rounded-full bg-nili" />
               <p className="text-xs text-slate-400 dark:text-slate-500">{it.time}</p>
               <p className="mt-0.5 text-sm font-medium text-slate-800 dark:text-slate-200">{it.label}</p>
             </div>
@@ -353,7 +354,7 @@ function PrintingColumn({ orders, loading }) {
   }));
 
   return (
-    <div className="rounded-2xl bg-black p-5 text-white dark:border dark:border-brand-500/30">
+    <div className="rounded-2xl bg-black p-5 text-white dark:border dark:border-slate-800">
       <div className="mb-5 text-sm font-bold">{t('dashboard.inProgress')}</div>
       {loading ? (
         <div className="space-y-4">
@@ -372,7 +373,7 @@ function PrintingColumn({ orders, loading }) {
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
                 <motion.div
-                  className="h-full rounded-full bg-gradient-to-l from-brand-500 to-gold"
+                  className="h-full rounded-full bg-gradient-to-l from-nili to-gold"
                   initial={{ width: 0 }}
                   animate={{ width: `${it.progress}%` }}
                   transition={{ duration: 0.6, ease: [0.22, 0.61, 0.36, 1] }}
@@ -410,7 +411,7 @@ function ReadyColumn({ orders, loading }) {
         items.map((it, i) => (
           <div
             key={i}
-            className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 dark:border-brand-500/20 dark:bg-[#1a1a23]"
+            className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
           >
             <div>
               <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{it.label}</p>
@@ -418,7 +419,7 @@ function ReadyColumn({ orders, loading }) {
             </div>
             <Link
               to={`/orders/${it.id}`}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-black text-white hover:bg-slate-800 dark:bg-brand-600 dark:hover:bg-brand-500"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-black text-white hover:bg-slate-800 dark:bg-nili dark:hover:bg-nili-light"
             >
               ←
             </Link>

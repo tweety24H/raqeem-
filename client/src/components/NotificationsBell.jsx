@@ -31,7 +31,7 @@ export default function NotificationsBell() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-sm transition hover:bg-slate-100 dark:border-brand-500/20 dark:bg-white/5 dark:hover:bg-white/10"
+        className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-sm transition hover:bg-slate-100 dark:border-slate-800 dark:bg-white/5 dark:hover:bg-white/10"
         aria-label="الإشعارات"
       >
         🔔
@@ -49,7 +49,7 @@ export default function NotificationsBell() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            className="absolute left-0 top-full z-30 mt-2 max-h-96 w-80 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg dark:border-brand-500/20 dark:bg-[#1a1a23]"
+            className="absolute left-0 top-full z-30 mt-2 max-h-96 w-80 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-800 dark:bg-slate-900"
           >
             {count === 0 ? (
               <p className="p-4 text-center text-sm text-slate-400 dark:text-slate-500">لا توجد إشعارات جديدة</p>

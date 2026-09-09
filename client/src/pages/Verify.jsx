@@ -58,7 +58,7 @@ export default function Verify() {
 
   return (
     <div dir="rtl" className="min-h-screen bg-stone-100 dark:bg-[#0a0a0f]">
-      <header className="no-print flex items-center justify-between border-b border-stone-200 bg-white px-4 py-3 dark:border-violet-500/20 dark:bg-[#0a0a0f]">
+      <header className="no-print flex items-center justify-between border-b border-stone-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950">
         <div className="flex items-center gap-2">
           <span className="text-xl">🖨️</span>
           <span className="font-bold text-slate-800 dark:text-slate-100">RaqeemOS</span>

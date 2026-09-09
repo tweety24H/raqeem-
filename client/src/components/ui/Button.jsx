@@ -5,8 +5,11 @@ import { motion, useMotionValue, useSpring } from 'framer-motion';
 const MotionLink = motion(Link);
 
 const VARIANTS = {
-  primary: 'bg-brand-600 text-white shadow-sm shadow-brand-600/20 hover:bg-brand-700 hover:shadow-md hover:shadow-brand-600/30',
-  gold: 'bg-gold text-nili-dark hover:bg-gold-dark',
+  primary: 'bg-nili text-white shadow-sm shadow-nili/20 hover:bg-nili/90',
+  // Low-emphasis tint — brand (violet) is reserved for focus rings/charts,
+  // never a primary action background.
+  brand: 'border border-brand-200 bg-brand-50 text-brand-700 hover:bg-brand-100 dark:border-brand-500/20 dark:bg-brand-500/10 dark:text-brand-300 dark:hover:bg-brand-500/20',
+  gold: 'bg-gold text-nili font-bold hover:bg-gold/90',
   secondary: 'bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-white/10 dark:text-white dark:hover:bg-white/20',
   ghost: 'bg-transparent text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/10',
 };
@@ -25,16 +28,16 @@ const Button = forwardRef(function Button(
   const innerRef = useRef(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const springX = useSpring(x, { stiffness: 300, damping: 20, mass: 0.4 });
-  const springY = useSpring(y, { stiffness: 300, damping: 20, mass: 0.4 });
+  const springX = useSpring(x, { stiffness: 300, damping: 20, mass: 0.2 });
+  const springY = useSpring(y, { stiffness: 300, damping: 20, mass: 0.2 });
 
   const enableMagnet = magnetic && !REDUCE_MOTION;
 
   function handleMouseMove(e) {
     if (!enableMagnet || !innerRef.current) return;
     const rect = innerRef.current.getBoundingClientRect();
-    x.set((e.clientX - rect.left - rect.width / 2) * 0.25);
-    y.set((e.clientY - rect.top - rect.height / 2) * 0.25);
+    x.set((e.clientX - rect.left - rect.width / 2) * 0.15);
+    y.set((e.clientY - rect.top - rect.height / 2) * 0.15);
   }
 
   function handleMouseLeave() {

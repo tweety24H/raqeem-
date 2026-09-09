@@ -2,21 +2,21 @@ import { useLanguage } from '../context/LanguageContext';
 
 export const STATUSES = ['جديد', 'قيد التصميم', 'قيد الطباعة', 'جاهز للتسليم', 'تم التسليم'];
 
-// ألوان الحالة: جديد=أزرق، قيد التصميم/الطباعة=أصفر-برتقالي (قيد التنفيذ)، جاهز للتسليم=أخضر، تم التسليم=رمادي
+// ألوان الحالة: جديد (قيد الانتظار)=ذهبي، تم التسليم (مكتمل)=نيلي، الباقي=رمادي محايد
 export const STATUS_STYLES = {
-  'جديد': 'bg-blue-100 text-blue-700',
-  'قيد التصميم': 'bg-amber-100 text-amber-700',
-  'قيد الطباعة': 'bg-orange-100 text-orange-700',
-  'جاهز للتسليم': 'bg-emerald-100 text-emerald-700',
-  'تم التسليم': 'bg-slate-200 text-slate-600',
+  'جديد': 'bg-gold/20 text-gold-dark dark:bg-gold/15 dark:text-gold',
+  'قيد التصميم': 'bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300',
+  'قيد الطباعة': 'bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300',
+  'جاهز للتسليم': 'bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300',
+  'تم التسليم': 'bg-nili/15 text-nili dark:bg-nili-light/20 dark:text-nili-light',
 };
 
 export const STATUS_SOLID = {
-  'جديد': 'bg-blue-600 text-white',
-  'قيد التصميم': 'bg-amber-500 text-white',
-  'قيد الطباعة': 'bg-orange-500 text-white',
-  'جاهز للتسليم': 'bg-emerald-600 text-white',
-  'تم التسليم': 'bg-slate-600 text-white',
+  'جديد': 'bg-gold text-nili-dark',
+  'قيد التصميم': 'bg-slate-500 text-white',
+  'قيد الطباعة': 'bg-slate-500 text-white',
+  'جاهز للتسليم': 'bg-slate-500 text-white',
+  'تم التسليم': 'bg-nili text-white',
 };
 
 export default function StatusBadge({ status }) {

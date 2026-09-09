@@ -354,7 +354,7 @@ export default function NewOrder() {
               <span>{t('common.discount')}</span>
               <span>- {formatIQD(discount)}</span>
             </div>
-            <div className="mb-3 flex justify-between border-t border-slate-200 pt-2 text-lg font-bold text-nili dark:border-white/10 dark:text-violet-300">
+            <div className="mb-3 flex justify-between border-t border-slate-200 pt-2 text-lg font-bold text-nili dark:border-white/10 dark:text-gold">
               <span>{t('common.grandTotal')}</span>
               <span>{formatIQD(total)}</span>
             </div>

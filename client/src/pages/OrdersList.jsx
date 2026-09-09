@@ -160,7 +160,7 @@ export default function OrdersList() {
                     className="cursor-pointer border-t border-slate-100 hover:bg-slate-50 dark:border-white/5 dark:hover:bg-white/5"
                     onClick={() => (window.location.hash = `#/orders/${o.id}`)}
                   >
-                    <td className="px-4 py-3 font-medium text-nili dark:text-violet-300">{o.order_number}</td>
+                    <td className="px-4 py-3 font-medium text-nili dark:text-gold">{o.order_number}</td>
                     <td className="px-4 py-3 dark:text-slate-200">{o.customer_name}</td>
                     <td className="px-4 py-3">
                       <StatusBadge status={o.status} />

@@ -158,7 +158,7 @@ export default function Stock() {
                     <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{formatIQD(item.cost_per_unit)}</td>
                     <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{item.barcode || '-'}</td>
                     <td className="px-4 py-3 text-left">
-                      <button className="text-nili hover:underline dark:text-violet-300" onClick={() => setSelected(item)}>
+                      <button className="text-nili hover:underline dark:text-gold" onClick={() => setSelected(item)}>
                         {t('common.manage')}
                       </button>
                     </td>
@@ -440,7 +440,7 @@ function ItemDetailModal({ item, onClose, onChanged }) {
           <div className="mb-3 flex gap-2 border-b border-slate-200 dark:border-white/10">
             <button
               className={`px-3 py-2 text-sm font-medium ${
-                tab === 'movement' ? 'border-b-2 border-nili text-nili dark:text-violet-300' : 'text-slate-500 dark:text-slate-400'
+                tab === 'movement' ? 'border-b-2 border-nili text-nili dark:text-gold' : 'text-slate-500 dark:text-slate-400'
               }`}
               onClick={() => setTab('movement')}
             >
@@ -543,7 +543,7 @@ function ItemDetailModal({ item, onClose, onChanged }) {
                       href={fileUrl(m.photo_path)}
                       target="_blank"
                       rel="noreferrer"
-                      className="mr-2 text-nili underline dark:text-violet-300"
+                      className="mr-2 text-nili underline dark:text-gold"
                     >
                       {t('stock.viewPhoto')}
                     </a>

@@ -49,7 +49,7 @@ export default function Activation({ status, onActivated, onDismiss, allowDismis
     >
       <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl dark:bg-[#15151d]">
         <div className="mb-6 text-center">
-          <span className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-600 text-3xl text-white">
+          <span className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-gold text-3xl text-nili-dark">
             🖨️
           </span>
           <h1 className="font-arabic text-xl font-semibold text-slate-900 dark:text-white">مرحباً بك في مطبعتي</h1>

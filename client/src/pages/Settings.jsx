@@ -24,7 +24,7 @@ export default function Settings() {
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`px-4 py-2 text-sm font-medium ${tab === t.key ? 'border-b-2 border-brand-600 text-brand-600' : 'text-slate-500 dark:text-slate-400'}`}
+            className={`px-4 py-2 text-sm font-medium ${tab === t.key ? 'border-b-2 border-nili text-nili dark:text-gold' : 'text-slate-500 dark:text-slate-400'}`}
           >
             {t.label}
           </button>

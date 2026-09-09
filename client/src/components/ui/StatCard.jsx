@@ -37,7 +37,7 @@ function useCountUp(value, duration = 900) {
   return display;
 }
 
-export default function StatCard({ label, value, format, icon, tone = 'default', badge }) {
+export default function StatCard({ label, value, format, icon, tone = 'default', badge, accent = false }) {
   const display = useCountUp(value);
 
   const toneClasses = {
@@ -52,10 +52,10 @@ export default function StatCard({ label, value, format, icon, tone = 'default',
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.22, 0.61, 0.36, 1] }}
-      className="card flex items-center gap-3"
+      className={`card flex items-center gap-3 ${accent ? 'border-t-2 border-t-gold' : ''}`}
     >
       {icon && (
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-lg dark:bg-brand-500/10">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-nili/10 text-lg text-nili dark:bg-nili-light/10 dark:text-nili-light">
           {icon}
         </span>
       )}

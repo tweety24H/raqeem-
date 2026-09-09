@@ -32,7 +32,7 @@ const COLUMNS = [
   },
 ];
 
-const AVATAR_COLORS = ['#8b5cf6', '#f59e0b', '#10b981', '#0ea5e9', '#ef4444', '#6366f1', '#ec4899'];
+const AVATAR_COLORS = ['#1B2A6B', '#f59e0b', '#10b981', '#0ea5e9', '#ef4444', '#6366f1', '#ec4899'];
 
 function avatarColor(name) {
   const code = (name || '؟').charCodeAt(0) || 0;
@@ -131,7 +131,7 @@ export default function OrdersKanban({ orders, onOrderChanged }) {
               onDragLeave={() => setDragOverCol((k) => (k === col.key ? null : k))}
               onDrop={(e) => handleDrop(e, col)}
               className={`rounded-2xl p-4 transition ${
-                dragOverCol === col.key ? 'ring-2 ring-nili ring-offset-2 dark:ring-offset-[#0a0a0f]' : ''
+                dragOverCol === col.key ? 'ring-2 ring-nili ring-offset-2 dark:ring-offset-slate-950' : ''
               }`}
               style={{ backgroundColor: theme === 'dark' ? col.bgDark : col.bg }}
             >
@@ -149,7 +149,7 @@ export default function OrdersKanban({ orders, onOrderChanged }) {
                       key={o.id}
                       draggable
                       onDragStart={(e) => e.dataTransfer.setData('text/plain', String(o.id))}
-                      className={`cursor-grab rounded-xl bg-white p-3 shadow-sm transition active:cursor-grabbing dark:border dark:border-violet-500/20 dark:bg-[#1a1a23] ${
+                      className={`cursor-grab rounded-xl bg-white p-3 shadow-sm transition active:cursor-grabbing dark:border dark:border-slate-800 dark:bg-slate-900 ${
                         busyId === String(o.id) ? 'opacity-50' : ''
                       }`}
                     >
@@ -161,7 +161,7 @@ export default function OrdersKanban({ orders, onOrderChanged }) {
                       </div>
                       <Link
                         to={`/orders/${o.id}`}
-                        className="block text-sm font-semibold text-slate-800 hover:text-nili dark:text-slate-100 dark:hover:text-violet-300"
+                        className="block text-sm font-semibold text-slate-800 hover:text-nili dark:text-slate-100 dark:hover:text-gold"
                       >
                         {o.customer_name}
                       </Link>

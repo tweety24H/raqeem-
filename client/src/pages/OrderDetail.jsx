@@ -127,10 +127,10 @@ export default function OrderDetail() {
                   <td className="px-4 py-2 font-medium dark:text-slate-100">- {formatIQD(order.discount)}</td>
                 </tr>
                 <tr>
-                  <td colSpan={3} className="px-4 py-2 text-left font-bold text-nili dark:text-violet-300">
+                  <td colSpan={3} className="px-4 py-2 text-left font-bold text-nili dark:text-gold">
                     {t('common.grandTotal')}
                   </td>
-                  <td className="px-4 py-2 text-lg font-bold text-nili dark:text-violet-300">{formatIQD(order.total_price)}</td>
+                  <td className="px-4 py-2 text-lg font-bold text-nili dark:text-gold">{formatIQD(order.total_price)}</td>
                 </tr>
               </tfoot>
             </table>
@@ -193,7 +193,7 @@ export default function OrderDetail() {
             <h2 className="mb-2 font-semibold text-slate-700 dark:text-slate-200">{t('orderDetail.detailsHeading')}</h2>
             <div className="flex justify-between py-1 text-slate-500 dark:text-slate-400">
               <span>{t('common.customer')}</span>
-              <Link to={`/customers/${order.customer_id}`} className="text-nili hover:underline dark:text-violet-300">
+              <Link to={`/customers/${order.customer_id}`} className="text-nili hover:underline dark:text-gold">
                 {order.customer_name}
               </Link>
             </div>

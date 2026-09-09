@@ -4,7 +4,7 @@ export default function LanguageToggle() {
   const { lang, setLang } = useLanguage();
 
   return (
-    <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1 dark:border-violet-500/20 dark:bg-white/5">
+    <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-white/5">
       <button
         type="button"
         onClick={() => setLang('ar')}

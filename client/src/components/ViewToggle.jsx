@@ -24,7 +24,7 @@ export function useViewMode(storageKey, defaultMode = 'list') {
 export default function ViewToggle({ mode, onChange }) {
   const { t } = useLanguage();
   return (
-    <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1 shadow-sm dark:border-violet-500/20 dark:bg-white/5">
+    <div className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white p-1 shadow-sm dark:border-slate-800 dark:bg-white/5">
       <button
         type="button"
         onClick={() => onChange('grid')}
