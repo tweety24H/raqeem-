@@ -48,6 +48,11 @@ function createWindow() {
     win.webContents.openDevTools({ mode: 'detach' });
   } else {
     win.loadFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
+  }
+
+  // التحديث التلقائي يشتغل فقط بالنسخة المحزّمة (مثبّتة عند المستخدم)،
+  // مو أثناء التطوير أو تشغيل غير محزّم — يمنع محاولات تحديث وهمية بجهاز المطوّر.
+  if (app.isPackaged) {
     initAutoUpdater(win);
   }
 
