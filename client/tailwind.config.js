@@ -57,6 +57,15 @@ export default {
         // (see :root in index.css) so it can be tuned in one place.
         '2xl': 'var(--radius)',
       },
+      keyframes: {
+        shimmer: {
+          '0%': { backgroundPosition: '200% 0' },
+          '100%': { backgroundPosition: '-200% 0' },
+        },
+      },
+      animation: {
+        shimmer: 'shimmer 1.5s ease-in-out infinite',
+      },
     },
   },
   plugins: [],

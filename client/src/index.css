@@ -110,34 +110,3 @@ body {
     display: none !important;
   }
 }
-
-/* Shimmer keyframe for skeleton loading states (see components/ui/LoadingSkeleton.jsx). */
-.skeleton-shimmer {
-  position: relative;
-  overflow: hidden;
-  background: #e5e7eb;
-}
-.dark .skeleton-shimmer {
-  background: #232330;
-}
-.skeleton-shimmer::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
-  animation: skeleton-sweep 1.6s ease-in-out infinite;
-}
-.dark .skeleton-shimmer::after {
-  background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.15), transparent);
-}
-@keyframes skeleton-sweep {
-  100% {
-    transform: translateX(100%);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .skeleton-shimmer::after {
-    animation: none;
-  }
-}

@@ -1,7 +1,12 @@
-// Shimmer skeleton block — see `.skeleton-shimmer` in index.css for the
-// animation itself (respects prefers-reduced-motion there).
+// Shimmer skeleton block — animated gradient sweep (see the `shimmer`
+// keyframes/animation in tailwind.config.js). motion-reduce: freezes the
+// sweep for prefers-reduced-motion without needing custom CSS.
 export function SkeletonBlock({ className = '' }) {
-  return <div className={`skeleton-shimmer rounded-lg ${className}`} />;
+  return (
+    <div
+      className={`animate-shimmer motion-reduce:animate-none rounded-2xl bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100 bg-[length:200%_100%] dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 ${className}`}
+    />
+  );
 }
 
 // A row of stat-card-shaped skeletons, sized to match StatCard.
