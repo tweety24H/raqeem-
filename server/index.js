@@ -62,6 +62,7 @@ app.use('/api/designs', require('./routes/designs'));
 app.use('/api/expenses', require('./routes/expenses'));
 app.use('/api/activity-logs', require('./routes/activityLogs'));
 app.use('/api/permissions', require('./routes/permissions'));
+app.use('/api/roles', require('./routes/roles'));
 
 app.use((err, req, res, next) => {
   console.error(err);

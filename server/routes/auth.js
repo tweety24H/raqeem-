@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../db/db');
-const { getSecret, requireAuth, requireOwner } = require('../middleware/auth');
+const { getSecret, requireAuth, requireOwner, requireOwnerOrPermission } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -39,10 +39,21 @@ function recordSuccess(ip) {
 // قائمة الـ slugs الممنوحة له من user_permissions فقط.
 function permissionsFor(worker) {
   if (worker.role === 'owner') return 'all';
-  return db
+  const direct = db
     .prepare('SELECT permission_slug FROM user_permissions WHERE user_id = ?')
     .all(worker.id)
     .map((r) => r.permission_slug);
+  const viaRole = worker.role_id
+    ? db
+        .prepare(
+          `SELECT p.slug FROM role_permissions rp
+           JOIN permissions p ON p.id = rp.permission_id
+           WHERE rp.role_id = ?`
+        )
+        .all(worker.role_id)
+        .map((r) => r.slug)
+    : [];
+  return Array.from(new Set([...direct, ...viaRole]));
 }
 
 // POST /api/auth/login { pin }
@@ -69,14 +80,23 @@ router.post('/login', (req, res) => {
   recordSuccess(ip);
 
   const token = jwt.sign(
-    { workerId: match.id, name: match.name, role: match.role },
+    { workerId: match.id, name: match.name, role: match.role, roleId: match.role_id },
     getSecret(),
     { expiresIn: '12h' }
   );
 
+  const roleRow = match.role_id ? db.prepare('SELECT name FROM roles WHERE id = ?').get(match.role_id) : null;
+
   res.json({
     token,
-    worker: { id: match.id, name: match.name, role: match.role, permissions: permissionsFor(match) },
+    worker: {
+      id: match.id,
+      name: match.name,
+      role: match.role,
+      roleId: match.role_id,
+      roleName: roleRow ? roleRow.name : null,
+      permissions: permissionsFor(match),
+    },
   });
 });
 
@@ -84,22 +104,34 @@ router.post('/login', (req, res) => {
 router.get('/me', requireAuth, (req, res) => {
   const worker = db.prepare('SELECT * FROM workers WHERE id = ?').get(req.worker.workerId);
   if (!worker) return res.status(404).json({ error: 'المستخدم غير موجود' });
-  res.json({ worker: { ...req.worker, permissions: permissionsFor(worker) } });
+  const roleRow = worker.role_id ? db.prepare('SELECT name FROM roles WHERE id = ?').get(worker.role_id) : null;
+  res.json({
+    worker: {
+      ...req.worker,
+      roleId: worker.role_id,
+      roleName: roleRow ? roleRow.name : null,
+      permissions: permissionsFor(worker),
+    },
+  });
 });
 
 // --- Worker management (owner only) ---
 
 // GET /api/auth/workers
-router.get('/workers', requireAuth, requireOwner, (req, res) => {
+router.get('/workers', requireAuth, requireOwnerOrPermission('manage_users'), (req, res) => {
   const workers = db
-    .prepare('SELECT id, name, role, active, created_at FROM workers ORDER BY created_at')
+    .prepare(
+      `SELECT w.id, w.name, w.role, w.role_id, w.active, w.created_at, r.name AS role_name
+       FROM workers w LEFT JOIN roles r ON r.id = w.role_id
+       ORDER BY w.created_at`
+    )
     .all();
   res.json({ workers });
 });
 
 // POST /api/auth/workers { name, pin, role }
-router.post('/workers', requireAuth, requireOwner, (req, res) => {
-  const { name, pin, role } = req.body;
+router.post('/workers', requireAuth, requireOwnerOrPermission('manage_users'), (req, res) => {
+  const { name, pin, role, role_id } = req.body;
   if (!name || !pin || pin.length < 4) {
     return res.status(400).json({ error: 'الاسم ورمز PIN (٤ أرقام على الأقل) مطلوبان' });
   }
@@ -108,17 +140,30 @@ router.post('/workers', requireAuth, requireOwner, (req, res) => {
   if (clash) {
     return res.status(400).json({ error: 'رمز PIN مستخدم من قبل عامل آخر، اختر رمزًا مختلفًا' });
   }
+  let roleIdValue = null;
+  if (role_id) {
+    const roleRow = db.prepare('SELECT id FROM roles WHERE id = ?').get(role_id);
+    if (!roleRow) return res.status(400).json({ error: 'الدور المحدد غير موجود' });
+    roleIdValue = roleRow.id;
+  }
   const pin_hash = bcrypt.hashSync(pin, 8);
   const info = db
-    .prepare('INSERT INTO workers (name, pin_hash, role) VALUES (?, ?, ?)')
-    .run(name, pin_hash, role === 'owner' ? 'owner' : 'employee');
+    .prepare('INSERT INTO workers (name, pin_hash, role, role_id) VALUES (?, ?, ?, ?)')
+    .run(name, pin_hash, role === 'owner' ? 'owner' : 'employee', roleIdValue);
   res.json({ id: info.lastInsertRowid });
 });
 
 // PATCH /api/auth/workers/:id { active }
-router.patch('/workers/:id', requireAuth, requireOwner, (req, res) => {
-  const { active } = req.body;
-  db.prepare('UPDATE workers SET active = ? WHERE id = ?').run(active ? 1 : 0, req.params.id);
+router.patch('/workers/:id', requireAuth, requireOwnerOrPermission('manage_users'), (req, res) => {
+  const { active, role_id } = req.body;
+  if (active !== undefined) {
+    db.prepare('UPDATE workers SET active = ? WHERE id = ?').run(active ? 1 : 0, req.params.id);
+  }
+  if (role_id !== undefined) {
+    const roleRow = role_id ? db.prepare('SELECT id FROM roles WHERE id = ?').get(role_id) : null;
+    if (role_id && !roleRow) return res.status(400).json({ error: 'الدور المحدد غير موجود' });
+    db.prepare('UPDATE workers SET role_id = ? WHERE id = ?').run(roleRow ? roleRow.id : null, req.params.id);
+  }
   res.json({ ok: true });
 });
 

@@ -66,32 +66,115 @@ migrateCustomersSearchName();
 
 // زرع قائمة الصلاحيات الثابتة (idempotent — لا يكرر الصفوف، ولا يحذف صلاحيات
 // ممنوحة سابقًا حتى لو تغيّرت القائمة البرمجية لاحقًا).
+// ترقية: عمود group_name لجدول الصلاحيات (لتجميعها بالواجهة) — أُضيف
+// بعد إنشاء الجدول الأصلي، فيلزم ALTER TABLE لقاعدة بيانات موجودة مسبقًا.
+function migratePermissionsGroupName() {
+  const existing = db.prepare('PRAGMA table_info(permissions)').all().map((c) => c.name);
+  if (!existing.includes('group_name')) {
+    db.exec('ALTER TABLE permissions ADD COLUMN group_name TEXT');
+  }
+}
+migratePermissionsGroupName();
+
 function seedPermissions() {
   const PERMISSIONS = [
-    ['view_orders', 'عرض الطلبات'],
-    ['create_order', 'إنشاء طلب'],
-    ['edit_order', 'تعديل طلب'],
-    ['delete_order', 'حذف طلب'],
-    ['view_customers', 'عرض الزبائن'],
-    ['create_customer', 'إضافة زبون'],
-    ['edit_customer', 'تعديل زبون'],
-    ['view_inventory', 'عرض المخزون'],
-    ['edit_inventory', 'تعديل المخزون'],
-    ['view_profits', 'عرض الأرباح'],
-    ['view_debts', 'عرض الديون'],
-    ['view_activity_logs', 'عرض سجل النشاطات'],
-    ['manage_users', 'إدارة الموظفين'],
-    ['manage_permissions', 'إدارة الصلاحيات'],
+    ['view_orders', 'عرض الطلبات', 'الطلبات'],
+    ['create_order', 'إنشاء طلب', 'الطلبات'],
+    ['edit_order', 'تعديل طلب', 'الطلبات'],
+    ['delete_order', 'حذف طلب', 'الطلبات'],
+    ['update_order_status', 'تحديث حالة الطلب', 'الطلبات'],
+    ['view_customers', 'عرض الزبائن', 'الزبائن'],
+    ['create_customer', 'إضافة زبون', 'الزبائن'],
+    ['edit_customer', 'تعديل زبون', 'الزبائن'],
+    ['delete_customer', 'حذف زبون', 'الزبائن'],
+    ['view_receipts', 'عرض الفواتير', 'الفواتير'],
+    ['print_receipts', 'طباعة الفواتير', 'الفواتير'],
+    ['view_dashboard', 'عرض لوحة التحكم', 'لوحة التحكم'],
+    ['view_reports', 'عرض التقارير', 'التقارير'],
+    ['view_profits', 'عرض الأرباح', 'التقارير'],
+    ['view_debts', 'عرض الديون', 'التقارير'],
+    ['view_inventory', 'عرض المخزون', 'المخزون'],
+    ['edit_inventory', 'تعديل المخزون', 'المخزون'],
+    ['manage_users', 'إدارة الموظفين', 'الإعدادات'],
+    ['manage_permissions', 'إدارة الصلاحيات', 'الإعدادات'],
+    ['manage_roles', 'إدارة الأدوار', 'الإعدادات'],
+    ['view_activity_logs', 'عرض سجل النشاطات', 'أخرى'],
   ];
   const insert = db.prepare(
-    'INSERT INTO permissions (slug, name) VALUES (?, ?) ON CONFLICT(slug) DO NOTHING'
+    'INSERT INTO permissions (slug, name, group_name) VALUES (?, ?, ?) ' +
+      'ON CONFLICT(slug) DO UPDATE SET group_name = excluded.group_name'
   );
   const tx = db.transaction(() => {
-    for (const [slug, name] of PERMISSIONS) insert.run(slug, name);
+    for (const [slug, name, group] of PERMISSIONS) insert.run(slug, name, group);
   });
   tx();
 }
 seedPermissions();
+
+// ترقية: عمود role_id لجدول workers (دور/منصب اختياري يمنح حزمة صلاحيات
+// جاهزة — منفصل تمامًا عن عمود role الحالي 'owner'|'employee' الذي يبقى هو
+// المتحكم بصلاحية المالك الكاملة؛ role_id يضيف طبقة صلاحيات إضافية فوقه).
+function migrateWorkersRoleId() {
+  const existing = db.prepare('PRAGMA table_info(workers)').all().map((c) => c.name);
+  if (!existing.includes('role_id')) {
+    db.exec('ALTER TABLE workers ADD COLUMN role_id INTEGER REFERENCES roles(id)');
+  }
+  // الفهرس يُنشأ هنا (وليس schema.sql) لنفس سبب idx_customers_search_name
+  // أعلاه: قاعدة بيانات موجودة مسبقًا ما تملك هذا العمود إلا بعد ALTER TABLE.
+  db.exec('CREATE INDEX IF NOT EXISTS idx_workers_role_id ON workers(role_id)');
+}
+migrateWorkersRoleId();
+
+// زرع الأدوار الأربعة الافتراضية + توزيع الصلاحيات عليها (idempotent).
+function seedRoles() {
+  const ROLES = [
+    [1, 'مدير عام', 'كل الصلاحيات', 1],
+    [2, 'مصمم', 'ادارة التصاميم والطلبات', 0],
+    [3, 'عامل طباعة', 'تحديث حالة الطلب فقط', 0],
+    [4, 'محاسب', 'الفواتير والتقارير', 0],
+  ];
+  const insertRole = db.prepare(
+    'INSERT INTO roles (id, name, description, is_system) VALUES (?, ?, ?, ?) ON CONFLICT(id) DO NOTHING'
+  );
+  const tx1 = db.transaction(() => {
+    for (const r of ROLES) insertRole.run(...r);
+  });
+  tx1();
+
+  const ALL_SLUGS = db.prepare('SELECT slug FROM permissions').all().map((p) => p.slug);
+  const ROLE_PERMISSIONS = {
+    1: ALL_SLUGS,
+    2: [
+      'view_orders', 'create_order', 'edit_order', 'update_order_status',
+      'view_customers', 'create_customer', 'edit_customer',
+      'view_dashboard', 'view_receipts', 'print_receipts', 'view_inventory',
+    ],
+    3: ['view_orders', 'update_order_status', 'view_dashboard'],
+    4: [
+      'view_orders', 'view_customers', 'view_receipts', 'print_receipts',
+      'view_reports', 'view_profits', 'view_debts', 'view_dashboard',
+    ],
+  };
+
+  const getPermId = db.prepare('SELECT id FROM permissions WHERE slug = ?');
+  const insertRP = db.prepare(
+    'INSERT INTO role_permissions (role_id, permission_id) VALUES (?, ?) ON CONFLICT DO NOTHING'
+  );
+  const tx2 = db.transaction(() => {
+    for (const [roleId, slugs] of Object.entries(ROLE_PERMISSIONS)) {
+      for (const slug of slugs) {
+        const perm = getPermId.get(slug);
+        if (perm) insertRP.run(Number(roleId), perm.id);
+      }
+    }
+  });
+  tx2();
+
+  // الموظفون الحاليون (بلا role_id بعد) يصيرون "مدير عام" افتراضيًا — يحافظ
+  // هذا على وصولهم الكامل الحالي بدل ما ينكسر فجأة بعد هذا التحديث.
+  db.exec('UPDATE workers SET role_id = 1 WHERE role_id IS NULL');
+}
+seedRoles();
 
 function seedIfEmpty() {
   const workerCount = db.prepare('SELECT COUNT(*) AS c FROM workers').get().c;

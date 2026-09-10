@@ -8,6 +8,7 @@ const TABS = [
   { key: 'shop', label: 'بيانات المطبعة' },
   { key: 'services', label: 'أسعار الخدمات' },
   { key: 'workers', label: 'العاملون' },
+  { key: 'roles', label: 'الأدوار' },
   { key: 'network', label: 'الشبكة المحلية' },
   { key: 'backup', label: 'النسخ الاحتياطي' },
   ...(isElectron ? [{ key: 'license', label: 'الترخيص والحماية 🔒' }] : []),
@@ -34,6 +35,7 @@ export default function Settings() {
       {tab === 'shop' && <ShopSettings />}
       {tab === 'services' && <ServicesSettings />}
       {tab === 'workers' && <WorkersSettings />}
+      {tab === 'roles' && <RolesSettings />}
       {tab === 'network' && <NetworkSettings />}
       {tab === 'backup' && <BackupSettings />}
       {tab === 'license' && isElectron && <LicenseSettings />}
@@ -324,11 +326,16 @@ function ServicesSettings() {
 
 function WorkersSettings() {
   const [workers, setWorkers] = useState([]);
-  const [form, setForm] = useState({ name: '', pin: '', role: 'employee' });
+  const [roles, setRoles] = useState([]);
+  const [form, setForm] = useState({ name: '', pin: '', role: 'employee', role_id: '' });
   const [error, setError] = useState('');
 
   useEffect(() => {
     load();
+    api
+      .get('/roles')
+      .then((res) => setRoles(res.data.roles))
+      .catch(() => setRoles([])); // موظف عادي بدون صلاحية manage_roles ما يشوف القائمة — طبيعي، مو خطأ
   }, []);
 
   async function load() {
@@ -340,8 +347,8 @@ function WorkersSettings() {
     e.preventDefault();
     setError('');
     try {
-      await api.post('/auth/workers', form);
-      setForm({ name: '', pin: '', role: 'employee' });
+      await api.post('/auth/workers', { ...form, role_id: form.role_id || null });
+      setForm({ name: '', pin: '', role: 'employee', role_id: '' });
       load();
     } catch (err) {
       setError(err.response?.data?.error || 'فشل الإضافة');
@@ -354,8 +361,8 @@ function WorkersSettings() {
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
-      <form onSubmit={addWorker} className="card grid grid-cols-4 gap-2">
+    <div className="max-w-3xl space-y-6">
+      <form onSubmit={addWorker} className="card grid grid-cols-5 gap-2">
         <input className="input" placeholder="اسم العامل" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
         <input
           className="input"
@@ -368,6 +375,14 @@ function WorkersSettings() {
           <option value="employee">موظف</option>
           <option value="owner">مالك</option>
         </select>
+        <select className="input" value={form.role_id} onChange={(e) => setForm({ ...form, role_id: e.target.value })}>
+          <option value="">بدون دور محدد</option>
+          {roles.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.name}
+            </option>
+          ))}
+        </select>
         <button className="btn-primary">+ إضافة</button>
       </form>
       {error && <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</div>}
@@ -378,6 +393,7 @@ function WorkersSettings() {
             <tr>
               <th className="px-4 py-3 text-right">الاسم</th>
               <th className="px-4 py-3 text-right">الصلاحية</th>
+              <th className="px-4 py-3 text-right">الدور</th>
               <th className="px-4 py-3 text-right">الحالة</th>
               <th className="px-4 py-3"></th>
             </tr>
@@ -387,6 +403,7 @@ function WorkersSettings() {
               <tr key={w.id} className="border-t border-slate-100">
                 <td className="px-4 py-3">{w.name}</td>
                 <td className="px-4 py-3 text-slate-500">{w.role === 'owner' ? 'مالك' : 'موظف'}</td>
+                <td className="px-4 py-3 text-slate-500">{w.role_name || '—'}</td>
                 <td className="px-4 py-3">
                   <span className={`badge ${w.active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}>
                     {w.active ? 'فعال' : 'معطل'}
@@ -402,6 +419,212 @@ function WorkersSettings() {
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+// تبويب "الأدوار" — كل دور بطاقة مستقلة: اسمه، عدد الموظفين المرتبطين فيه،
+// وقائمة صلاحيات مجمّعة حسب group_name بشكل checkboxes + زر حفظ خاص فيها.
+function RolesSettings() {
+  const [roles, setRoles] = useState(null);
+  const [error, setError] = useState('');
+  const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  async function load() {
+    setError('');
+    try {
+      const res = await api.get('/roles');
+      setRoles(res.data.roles);
+    } catch (err) {
+      setError(err.response?.data?.error || 'تعذّر تحميل الأدوار');
+    }
+  }
+
+  if (error) {
+    return <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">{error}</div>;
+  }
+  if (!roles) return null;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <button type="button" className="btn-gold" onClick={() => setCreating(true)}>
+          + دور جديد
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {roles.map((role) => (
+          <RoleCard key={role.id} role={role} onSaved={load} />
+        ))}
+      </div>
+
+      {creating && (
+        <NewRoleModal
+          onClose={() => setCreating(false)}
+          onCreated={() => {
+            setCreating(false);
+            load();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function RoleCard({ role, onSaved }) {
+  const [allPermissions, setAllPermissions] = useState(null);
+  const [selected, setSelected] = useState(new Set(role.permissions.map((p) => p.id)));
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    api
+      .get('/permissions')
+      .then((res) => setAllPermissions(res.data.permissions))
+      .catch(() => setAllPermissions([]));
+  }, []);
+
+  useEffect(() => {
+    setSelected(new Set(role.permissions.map((p) => p.id)));
+  }, [role]);
+
+  function toggle(id) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  async function save() {
+    setSaving(true);
+    setError('');
+    try {
+      await api.put(`/roles/${role.id}/permissions`, { permissionIds: Array.from(selected) });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1500);
+      onSaved();
+    } catch (err) {
+      setError(err.response?.data?.error || 'فشل الحفظ');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const groups = {};
+  for (const p of allPermissions || []) {
+    const g = p.group_name || 'أخرى';
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(p);
+  }
+
+  return (
+    <div className="card">
+      <div className="mb-3 flex items-start justify-between gap-2">
+        <div>
+          <p className="font-display text-base font-bold text-slate-800 dark:text-slate-100">{role.name}</p>
+          {role.description && <p className="text-xs text-slate-500 dark:text-slate-400">{role.description}</p>}
+        </div>
+        <span className="shrink-0 rounded-full bg-nili/10 px-2.5 py-1 text-xs font-semibold text-nili dark:bg-nili-light/10 dark:text-nili-light">
+          {role.workerCount} موظف
+        </span>
+      </div>
+
+      {error && (
+        <div className="mb-2 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">{error}</div>
+      )}
+
+      {!allPermissions ? (
+        <p className="text-xs text-slate-400">جاري التحميل...</p>
+      ) : (
+        <div className="max-h-64 space-y-3 overflow-y-auto pr-1">
+          {Object.entries(groups).map(([group, perms]) => (
+            <div key={group}>
+              <p className="mb-1 text-[11px] font-bold text-slate-400 dark:text-slate-500">{group}</p>
+              <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+                {perms.map((p) => (
+                  <label
+                    key={p.id}
+                    className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 text-xs hover:bg-slate-50 dark:hover:bg-white/5"
+                  >
+                    <input type="checkbox" checked={selected.has(p.id)} onChange={() => toggle(p.id)} />
+                    <span className="text-slate-600 dark:text-slate-300">{p.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-3 flex items-center justify-end gap-2">
+        {saved && <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">تم الحفظ ✓</span>}
+        <button type="button" disabled={saving} onClick={save} className="btn-primary !px-4 !py-1.5 !text-xs">
+          {saving ? 'جاري الحفظ...' : 'حفظ'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function NewRoleModal({ onClose, onCreated }) {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  async function submit(e) {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setSaving(true);
+    setError('');
+    try {
+      await api.post('/roles', { name: name.trim(), description });
+      onCreated();
+    } catch (err) {
+      setError(err.response?.data?.error || 'فشل الإنشاء');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+      <form
+        onSubmit={submit}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl dark:border dark:border-slate-800 dark:bg-slate-900"
+      >
+        <h3 className="mb-3 font-display text-base font-bold text-slate-800 dark:text-slate-100">دور جديد</h3>
+        {error && (
+          <div className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">{error}</div>
+        )}
+        <div className="space-y-3">
+          <div>
+            <label className="label">اسم الدور</label>
+            <input className="input" value={name} onChange={(e) => setName(e.target.value)} required autoFocus />
+          </div>
+          <div>
+            <label className="label">الوصف (اختياري)</label>
+            <input className="input" value={description} onChange={(e) => setDescription(e.target.value)} />
+          </div>
+        </div>
+        <div className="mt-4 flex justify-end gap-2">
+          <button type="button" className="btn-secondary" onClick={onClose}>
+            إلغاء
+          </button>
+          <button disabled={saving} className="btn-gold">
+            {saving ? 'جاري الحفظ...' : 'إنشاء'}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

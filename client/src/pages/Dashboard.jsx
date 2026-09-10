@@ -67,6 +67,18 @@ export default function Dashboard() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddName, setQuickAddName] = useState('');
+  const [addMenuOpen, setAddMenuOpen] = useState(false);
+  const addMenuRef = useRef(null);
+
+  // يسكر قائمة "+" (طلب جديد / عميل جديد) إذا ضغط المستخدم بره منها.
+  useEffect(() => {
+    if (!addMenuOpen) return undefined;
+    function onClickOutside(e) {
+      if (addMenuRef.current && !addMenuRef.current.contains(e.target)) setAddMenuOpen(false);
+    }
+    document.addEventListener('mousedown', onClickOutside);
+    return () => document.removeEventListener('mousedown', onClickOutside);
+  }, [addMenuOpen]);
 
   function onSearchChange(value) {
     setSearch(value);
@@ -226,7 +238,7 @@ export default function Dashboard() {
               matches with a (+) quick-order button, and an "add new customer"
               fallback when nothing matches. */}
           <motion.div variants={heroItem} className="relative mx-auto mt-8 max-w-2xl">
-            <div className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-[0_16px_48px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white py-4 pl-14 pr-5 shadow-[0_16px_48px_rgba(0,0,0,0.06)] dark:border-slate-800 dark:bg-slate-900">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-black">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
                   <circle cx="11" cy="11" r="7" />
@@ -242,6 +254,43 @@ export default function Dashboard() {
                 className="flex-1 bg-transparent text-sm text-slate-800 placeholder:text-gray-400 focus:outline-none dark:text-slate-100 dark:placeholder:text-slate-500"
               />
               <kbd className="shrink-0 rounded-md bg-slate-100 px-2 py-1 text-xs font-mono text-slate-500 dark:bg-white/10 dark:text-slate-300">⌘K</kbd>
+            </div>
+
+            {/* زر إضافة سريعة (طلب جديد / عميل جديد) — بديل أزرار الهيدر
+                المنفصلة القديمة، مدموج داخل مربع البحث نفسه. */}
+            <div ref={addMenuRef} className="absolute left-3 top-1/2 -translate-y-1/2">
+              <button
+                type="button"
+                onClick={() => setAddMenuOpen((v) => !v)}
+                title={t('dashboard.quickAddMenu')}
+                className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#C5A880] text-base font-bold leading-none text-[#1A2744] transition hover:brightness-95"
+              >
+                +
+              </button>
+              {addMenuOpen && (
+                <div className="absolute left-0 top-full z-50 mt-2 w-44 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAddMenuOpen(false);
+                      navigate('/orders/new');
+                    }}
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-right text-sm text-slate-700 hover:bg-nili/5 dark:text-slate-200 dark:hover:bg-white/5"
+                  >
+                    ➕ {t('dashboard.quickNewOrder')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAddMenuOpen(false);
+                      openQuickAdd();
+                    }}
+                    className="flex w-full items-center gap-2 border-t border-slate-100 px-4 py-2.5 text-right text-sm text-slate-700 hover:bg-nili/5 dark:border-white/5 dark:text-slate-200 dark:hover:bg-white/5"
+                  >
+                    👤 {t('dashboard.quickNewCustomer')}
+                  </button>
+                </div>
+              )}
             </div>
 
             {showDropdown && (

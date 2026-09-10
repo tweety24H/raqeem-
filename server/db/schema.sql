@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS workers (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   pin_hash TEXT NOT NULL,
-  role TEXT NOT NULL DEFAULT 'employee', -- 'owner' | 'employee'
+  role TEXT NOT NULL DEFAULT 'employee', -- 'owner' | 'employee' (بوابة صلاحية المالك الكاملة)
+  role_id INTEGER REFERENCES roles(id), -- الدور/المنصب (مدير عام | مصمم | عامل طباعة | محاسب...) — يمنح حزمة صلاحيات
   active INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -222,7 +223,23 @@ CREATE TABLE IF NOT EXISTS permissions (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   slug TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
-  description TEXT
+  description TEXT,
+  group_name TEXT -- لتجميع الصلاحيات بالواجهة (الطلبات | الزبائن | الفواتير | ...)
+);
+
+-- الأدوار (RBAC) — كل دور حزمة صلاحيات جاهزة تُمنح للموظف عبر workers.role_id.
+CREATE TABLE IF NOT EXISTS roles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  description TEXT,
+  is_system BOOLEAN NOT NULL DEFAULT 0, -- أدوار النظام الافتراضية (لا تُحذف)
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS role_permissions (
+  role_id INTEGER NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+  permission_id INTEGER NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
+  PRIMARY KEY (role_id, permission_id)
 );
 
 CREATE TABLE IF NOT EXISTS user_permissions (
@@ -234,3 +251,4 @@ CREATE TABLE IF NOT EXISTS user_permissions (
 );
 
 CREATE INDEX IF NOT EXISTS idx_user_permissions_user ON user_permissions(user_id);
+CREATE INDEX IF NOT EXISTS idx_role_permissions_role ON role_permissions(role_id);
