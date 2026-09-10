@@ -1,6 +1,6 @@
 {
   "name": "raqeem-os",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "نظام إدارة مطابع - يعمل محليًا بالكامل",
   "private": true,
   "main": "electron/main.js",
@@ -65,10 +65,12 @@
     "asarUnpack": [
       "**/*.node"
     ],
-    "publish": {
-      "provider": "github",
-      "owner": "tweety24H",
-      "repo": "raqeem-"
-    }
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "tweety24H",
+        "repo": "raqeem-"
+      }
+    ]
   }
 }
