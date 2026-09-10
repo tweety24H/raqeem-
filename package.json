@@ -10,6 +10,7 @@
     "dev:server": "node server/index.js",
     "dev": "concurrently -k -n SERVER,CLIENT -c yellow,cyan \"npm:dev:server\" \"npm:dev:client\"",
     "dev:electron": "cross-env RAQEEM_ENV=dev electron .",
+    "electron:dev": "cross-env RAQEEM_ENV=dev electron .",
     "seed:test": "node server/db/seed-test.js",
     "build:client": "npm --prefix client run build",
     "postinstall": "electron-builder install-app-deps && npm rebuild better-sqlite3 --runtime=node --target=22.23.2 || echo ok",
