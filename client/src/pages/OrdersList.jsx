@@ -41,6 +41,9 @@ export default function OrdersList() {
   const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState('');
   const [mode, setMode] = useViewMode('raqeem_view_orders', 'list');
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkStatus, setBulkStatus] = useState(STATUSES[0]);
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   // Deep link from the Dashboard's stat cards — apply once, then clean the URL
   // so the local filter state (not the query string) stays the source of truth.
@@ -54,6 +57,10 @@ export default function OrdersList() {
   useEffect(() => {
     load();
   }, [status, search]);
+
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [status, search, inProgressOnly, todayOnly, overdueOnly, mode]);
 
   function selectStatus(s) {
     setStatus(s);
@@ -149,6 +156,27 @@ export default function OrdersList() {
     }
   }
 
+  // Task: bulk actions — select rows in the list view and change their
+  // status together, reusing the same single-order status endpoint.
+  function toggleSelect(id) {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
+
+  function toggleSelectAll() {
+    setSelectedIds((prev) => (prev.length === visibleOrders.length ? [] : visibleOrders.map((o) => o.id)));
+  }
+
+  async function applyBulkStatus() {
+    setBulkBusy(true);
+    try {
+      await Promise.all(selectedIds.map((id) => api.patch(`/orders/${id}/status`, { status: bulkStatus })));
+      setSelectedIds([]);
+      await load();
+    } finally {
+      setBulkBusy(false);
+    }
+  }
+
   return (
     <div className="p-6">
       <PageHeader
@@ -225,6 +253,31 @@ export default function OrdersList() {
         />
       </div>
 
+      {mode === 'list' && selectedIds.length > 0 && (
+        <div className="mb-3 flex flex-wrap items-center gap-3 rounded-lg border border-nili/20 bg-nili/5 px-4 py-2.5 text-sm dark:border-gold/20 dark:bg-white/5">
+          <span className="font-semibold text-nili dark:text-gold">
+            {t('orders.bulkSelectedCount', { count: selectedIds.length })}
+          </span>
+          <select className="input !h-auto w-auto !py-1 text-xs" value={bulkStatus} onChange={(e) => setBulkStatus(e.target.value)}>
+            {STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {t(`status.${s}`)}
+              </option>
+            ))}
+          </select>
+          <button type="button" className="btn-secondary !px-3 !py-1.5 !text-xs" disabled={bulkBusy} onClick={applyBulkStatus}>
+            {bulkBusy ? t('common.loading') : t('orders.bulkChangeStatusBtn')}
+          </button>
+          <button
+            type="button"
+            className="mr-auto text-xs font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            onClick={() => setSelectedIds([])}
+          >
+            {t('orders.bulkClearSelection')}
+          </button>
+        </div>
+      )}
+
       {mode === 'grid' ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {visibleOrders.map((o) => {
@@ -264,6 +317,13 @@ export default function OrdersList() {
           <table className="w-full text-sm">
             <thead className="bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-slate-400">
               <tr>
+                <th className="w-10 px-4 py-3">
+                  <input
+                    type="checkbox"
+                    checked={visibleOrders.length > 0 && selectedIds.length === visibleOrders.length}
+                    onChange={toggleSelectAll}
+                  />
+                </th>
                 <th className="px-4 py-3 text-right">{t('orders.orderNumber')}</th>
                 <th className="px-4 py-3 text-right">{t('common.customer')}</th>
                 <th className="px-4 py-3 text-right">{t('orders.status')}</th>
@@ -283,6 +343,9 @@ export default function OrdersList() {
                     className="cursor-pointer border-t border-slate-100 hover:bg-slate-50 dark:border-white/5 dark:hover:bg-white/5"
                     onClick={() => (window.location.hash = `#/orders/${o.id}`)}
                   >
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                      <input type="checkbox" checked={selectedIds.includes(o.id)} onChange={() => toggleSelect(o.id)} />
+                    </td>
                     <td className="px-4 py-3 font-medium text-nili dark:text-gold">{o.order_number}</td>
                     <td className="px-4 py-3 dark:text-slate-200">{o.customer_name}</td>
                     <td className="px-4 py-3">
@@ -313,7 +376,7 @@ export default function OrdersList() {
               })}
               {visibleOrders.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-2">
+                  <td colSpan={9} className="px-4 py-2">
                     <EmptyState icon="📦" title={t('orders.noOrders')} actionLabel={t('orders.newOrderBtn')} actionTo="/orders/new" />
                   </td>
                 </tr>
