@@ -16,19 +16,19 @@ const SECTIONS = [
     titleKey: 'nav.groupOverview',
     items: [
       { to: '/dashboard', key: 'nav.dashboard', Icon: Home, end: true },
-      { to: '/reports', key: 'nav.reports', Icon: BarChart3 },
+      { to: '/reports', key: 'nav.reports', Icon: BarChart3, permission: 'view_reports' },
     ],
   },
   {
     titleKey: 'nav.groupOperations',
     items: [
-      { to: '/orders', key: 'nav.orders', Icon: Package, badge: 'ready' },
-      { to: '/stock', key: 'nav.inventory', Icon: Boxes },
+      { to: '/orders', key: 'nav.orders', Icon: Package, badge: 'ready', permission: 'view_orders' },
+      { to: '/stock', key: 'nav.inventory', Icon: Boxes, permission: 'view_inventory' },
     ],
   },
   {
     titleKey: 'nav.groupClients',
-    items: [{ to: '/customers', key: 'nav.customers', Icon: Users }],
+    items: [{ to: '/customers', key: 'nav.customers', Icon: Users, permission: 'view_customers' }],
   },
   {
     titleKey: 'nav.groupSystem',
@@ -36,6 +36,7 @@ const SECTIONS = [
       {
         submenuKey: 'nav.archiveGroup',
         Icon: Archive,
+        permission: 'view_customers',
         children: [
           { to: '/archive', key: 'nav.archive' },
           { to: '/requests', key: 'nav.requests' },

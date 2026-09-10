@@ -44,16 +44,86 @@ function AppRoutes() {
         }
       >
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/orders/new" element={<NewOrder />} />
-        <Route path="/lightbox-orders" element={<LightboxOrder />} />
-        <Route path="/orders" element={<OrdersList />} />
-        <Route path="/orders/:id" element={<OrderDetail />} />
-        <Route path="/stock" element={<Stock />} />
-        <Route path="/customers" element={<Customers />} />
-        <Route path="/customers/:id" element={<CustomerDetail />} />
-        <Route path="/archive" element={<Archive />} />
-        <Route path="/requests" element={<Requests />} />
-        <Route path="/reports" element={<Reports />} />
+        <Route
+          path="/orders/new"
+          element={
+            <ProtectedRoute permission="create_order">
+              <NewOrder />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lightbox-orders"
+          element={
+            <ProtectedRoute permission="create_order">
+              <LightboxOrder />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute permission="view_orders">
+              <OrdersList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders/:id"
+          element={
+            <ProtectedRoute permission="view_orders">
+              <OrderDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/stock"
+          element={
+            <ProtectedRoute permission="view_inventory">
+              <Stock />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customers"
+          element={
+            <ProtectedRoute permission="view_customers">
+              <Customers />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customers/:id"
+          element={
+            <ProtectedRoute permission="view_customers">
+              <CustomerDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/archive"
+          element={
+            <ProtectedRoute permission="view_customers">
+              <Archive />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/requests"
+          element={
+            <ProtectedRoute permission="view_customers">
+              <Requests />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <ProtectedRoute permission="view_reports">
+              <Reports />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/settings"
           element={
