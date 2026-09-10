@@ -3,8 +3,34 @@ import { useParams, Link } from 'react-router-dom';
 import api from '../api/client';
 import PageHeader from '../components/PageHeader';
 import StatusBadge from '../components/StatusBadge';
+import { SkeletonBlock } from '../components/ui/LoadingSkeleton';
 import { useLanguage } from '../context/LanguageContext';
 import { formatIQD, formatDate, formatDateTime } from '../utils/format';
+
+function CustomerDetailSkeleton() {
+  return (
+    <div className="p-6">
+      <SkeletonBlock className="mb-6 h-8 w-48" />
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        {Array.from({ length: 3 }, (_, i) => (
+          <div key={i} className="card space-y-2">
+            <SkeletonBlock className="h-3 w-20" />
+            <SkeletonBlock className="h-6 w-24" />
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {Array.from({ length: 2 }, (_, i) => (
+          <div key={i} className="card space-y-2">
+            {Array.from({ length: 3 }, (_, j) => (
+              <SkeletonBlock key={j} className="h-10 w-full" />
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function CustomerDetail() {
   const { t } = useLanguage();
@@ -15,7 +41,7 @@ export default function CustomerDetail() {
     api.get(`/customers/${id}`).then((r) => setData(r.data));
   }, [id]);
 
-  if (!data) return <div className="p-6 text-slate-400 dark:text-slate-500">{t('common.loading')}</div>;
+  if (!data) return <CustomerDetailSkeleton />;
   const { customer, orders, payments } = data;
 
   return (
