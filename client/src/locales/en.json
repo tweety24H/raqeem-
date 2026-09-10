@@ -36,6 +36,17 @@
   "offline": {
     "banner": "You're offline — your data is saved locally and works normally"
   },
+  "onboarding": {
+    "step1Title": "Welcome to RaqeemOS",
+    "step1Body": "The dashboard shows your shop's status at a glance: orders, debts, inventory, and anything that needs attention.",
+    "step2Title": "Manage orders",
+    "step2Body": "Create new orders and track their status through to delivery, with quick filters and bulk selection.",
+    "step3Title": "Shortcuts that speed things up",
+    "step3Body": "Ctrl+K for quick search, Ctrl+N for a new order, Ctrl+B to collapse the sidebar, and ? to see all shortcuts.",
+    "skip": "Skip",
+    "next": "Next",
+    "finish": "Get started"
+  },
   "commandPalette": {
     "title": "Quick search",
     "placeholder": "Type to search a page...",

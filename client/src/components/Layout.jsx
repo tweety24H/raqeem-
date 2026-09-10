@@ -10,6 +10,7 @@ import NotificationsBell from './NotificationsBell';
 import CommandPalette from './CommandPalette';
 import ShortcutsHelp from './ShortcutsHelp';
 import OfflineBanner from './OfflineBanner';
+import Onboarding, { shouldShowOnboarding } from './Onboarding';
 
 const COLLAPSE_KEY = 'sidebarCollapsed';
 
@@ -29,6 +30,7 @@ export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(shouldShowOnboarding);
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem(COLLAPSE_KEY) === '1';
@@ -130,6 +132,7 @@ export default function Layout() {
 
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
       <ShortcutsHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
+      <Onboarding open={showOnboarding} onDone={() => setShowOnboarding(false)} />
     </DashboardSummaryProvider>
   );
 }
