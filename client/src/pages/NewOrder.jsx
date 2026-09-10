@@ -190,9 +190,9 @@ export default function NewOrder() {
       <Stepper step={step} customerLocked={Boolean(customerId)} t={t} />
 
       {customerId && step !== 1 && (
-        <div className="mb-6 flex flex-wrap items-center gap-2 rounded-xl border border-nili/20 bg-nili/5 px-4 py-3 text-sm dark:border-violet-500/20 dark:bg-violet-500/10">
+        <div className="mb-6 flex flex-wrap items-center gap-2 rounded-xl border border-nili/20 bg-nili/5 px-4 py-3 text-sm dark:border-nili-light/20 dark:bg-nili-light/10">
           <span className="text-slate-500 dark:text-slate-400">{t('newOrder.orderForPrefix')}:</span>
-          <span className="font-semibold text-nili dark:text-violet-300">
+          <span className="font-semibold text-nili dark:text-gold">
             {customerInfo ? customerInfo.name : '…'}
             {customerInfo?.phone && <span className="mr-1 text-slate-400 dark:text-slate-500"> · {customerInfo.phone}</span>}
           </span>
@@ -201,7 +201,7 @@ export default function NewOrder() {
               ({t('newOrder.debtPrefix')}: {formatIQD(customerInfo.debt)})
             </span>
           )}
-          <button type="button" onClick={changeCustomer} className="mr-auto text-xs font-semibold text-nili underline dark:text-violet-300">
+          <button type="button" onClick={changeCustomer} className="mr-auto text-xs font-semibold text-nili underline dark:text-gold">
             {t('newOrder.changeCustomerLink')}
           </button>
         </div>
@@ -384,7 +384,7 @@ export default function NewOrder() {
                 <span>{t('common.subtotal')}</span>
                 <span>{formatIQD(subtotal)}</span>
               </div>
-              <div className="flex justify-between border-t border-slate-200 pt-2 text-lg font-bold text-nili dark:border-white/10 dark:text-violet-300">
+              <div className="flex justify-between border-t border-slate-200 pt-2 text-lg font-bold text-nili dark:border-white/10 dark:text-gold">
                 <span>{t('common.grandTotal')}</span>
                 <span>{formatIQD(subtotal)}</span>
               </div>
@@ -475,7 +475,7 @@ export default function NewOrder() {
                 <span>{t('common.discount')}</span>
                 <span>- {formatIQD(discount)}</span>
               </div>
-              <div className="mb-3 flex justify-between border-t border-slate-200 pt-2 text-lg font-bold text-nili dark:border-white/10 dark:text-violet-300">
+              <div className="mb-3 flex justify-between border-t border-slate-200 pt-2 text-lg font-bold text-nili dark:border-white/10 dark:text-gold">
                 <span>{t('common.grandTotal')}</span>
                 <span>{formatIQD(total)}</span>
               </div>

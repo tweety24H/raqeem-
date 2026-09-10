@@ -214,7 +214,7 @@ export default function LightboxOrder() {
   }
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#fafafa] p-6 dark:bg-[#0a0a0f]">
+    <div dir="rtl" className="min-h-screen bg-slate-50 p-6 dark:bg-slate-950">
       <div className="mx-auto max-w-4xl">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">طلب إعلان ضوئي</h1>
@@ -222,7 +222,7 @@ export default function LightboxOrder() {
         </div>
 
         {/* الهيدر */}
-        <div className="mb-5 rounded-2xl border border-violet-100 bg-violet-50/60 p-5 dark:border-violet-500/20 dark:bg-violet-500/5">
+        <div className="mb-5 rounded-2xl border border-nili/10 bg-nili/5 p-5 dark:border-nili-light/20 dark:bg-nili-light/5">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="relative sm:col-span-2">
               <label className="label">الزبون</label>
@@ -260,7 +260,7 @@ export default function LightboxOrder() {
                           type="button"
                           key={c.id}
                           onMouseDown={() => pickCustomer(c)}
-                          className="flex w-full items-center justify-between px-4 py-2.5 text-right text-sm hover:bg-violet-50 dark:text-slate-200 dark:hover:bg-white/5"
+                          className="flex w-full items-center justify-between px-4 py-2.5 text-right text-sm hover:bg-nili/5 dark:text-slate-200 dark:hover:bg-white/5"
                         >
                           <span>
                             {c.name} {c.phone && <span className="text-slate-400 dark:text-slate-500">· {c.phone}</span>}
@@ -478,7 +478,7 @@ export default function LightboxOrder() {
             </div>
             <div>
               <label className="label">المساحة</label>
-              <div className="input flex items-center bg-violet-50 font-semibold text-nili dark:bg-violet-500/10 dark:text-violet-300">
+              <div className="input flex items-center bg-nili/5 font-semibold text-nili dark:bg-nili-light/10 dark:text-gold">
                 {area || 0} م²
               </div>
             </div>
@@ -555,7 +555,7 @@ function PrintReceipt({
   return (
     <div className="min-h-screen bg-stone-200 py-8 print:bg-white print:py-0 dark:bg-[#0a0a0f] dark:print:bg-white">
       <div className="no-print mx-auto mb-4 flex max-w-xl items-center justify-between px-4">
-        <Link to="/orders" className="text-sm text-nili hover:underline dark:text-violet-300">
+        <Link to="/orders" className="text-sm text-nili hover:underline dark:text-gold">
           ← رجوع لقائمة الطلبات
         </Link>
         <div className="flex gap-2">

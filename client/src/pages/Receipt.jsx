@@ -27,7 +27,7 @@ export default function Receipt() {
 
   return (
     <div className="min-h-screen bg-stone-200 py-8 print:bg-white print:py-0">
-      <div className="no-print mx-auto mb-4 flex max-w-2xl items-center justify-between px-4">
+      <div className="print:hidden mx-auto mb-4 flex max-w-2xl items-center justify-between px-4">
         {qrWhatsappDataUrl ? (
           <div className="flex items-center gap-2 text-xs text-slate-500">
             <span>{t('receipt.qrLabel')}</span>
@@ -49,9 +49,16 @@ export default function Receipt() {
         ) : (
           <span />
         )}
-        <button onClick={() => window.print()} className="rounded-lg px-4 py-2 text-white" style={{ background: NAVY }}>
-          {t('receipt.printBtn')}
-        </button>
+        <div className="flex items-center gap-2">
+          {/* الاثنين يفتحون نفس نافذة الطباعة — "تحميل PDF" يعتمد على خيار
+              "حفظ كـ PDF" الجاهز بمربع الطباعة (ما يحتاج مكتبة PDF إضافية). */}
+          <button onClick={() => window.print()} className="btn print:hidden">
+            🖨️ {t('receipt.printBtn')}
+          </button>
+          <button onClick={() => window.print()} className="btn-gold print:hidden">
+            ⬇️ تحميل PDF
+          </button>
+        </div>
       </div>
 
       <div className="mx-auto flex max-w-2xl justify-center px-4 print:px-0">
@@ -60,6 +67,12 @@ export default function Receipt() {
           className="receipt-frame w-full p-2"
           style={{ background: CREAM, border: `1px solid ${GOLD}`, boxShadow: `0 0 0 5px ${CREAM}, 0 0 0 6px ${GOLD}` }}
         >
+          {/* هيدر نيلي/ذهبي — شعار رقيم فوق البطاقة الكريمية التقليدية */}
+          <div className="-m-2 mb-2 bg-nili px-6 py-4 text-center">
+            <p className="font-display text-2xl font-bold tracking-wide text-gold">رقيم</p>
+            <p className="mt-0.5 text-[11px] text-slate-300">نظام إدارة المطبعة</p>
+          </div>
+
           <div className="relative p-6 sm:p-10">
             <Corner className="right-1 top-1" />
             <Corner className="left-1 top-1 -scale-x-100" />
@@ -161,7 +174,7 @@ export default function Receipt() {
                 <span>{t('common.discount')}</span>
                 <span style={{ fontVariantNumeric: 'tabular-nums' }}>- {formatIQD(order.discount)}</span>
               </div>
-              <div className="flex justify-between border-t pt-1.5 text-base font-bold" style={{ borderColor: '#e7dcbd', color: NAVY }}>
+              <div className="flex justify-between rounded-lg bg-nili px-3 py-2 text-base font-bold text-white">
                 <span style={{ fontFamily: "'Aref Ruqaa', serif" }}>{t('common.grandTotal')}</span>
                 <span style={{ fontVariantNumeric: 'tabular-nums' }}>{formatIQD(order.total_price)}</span>
               </div>
@@ -202,7 +215,6 @@ export default function Receipt() {
 
       <style>{`
         @media print {
-          .no-print { display: none !important; }
           body { background: white; }
           .receipt-frame, .receipt-frame * {
             -webkit-print-color-adjust: exact;

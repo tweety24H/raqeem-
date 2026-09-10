@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8" />
+<title>رقيم</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 400px;
+    height: 400px;
+    overflow: hidden;
+    background: #0F172A;
+    font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .splash {
+    width: 400px;
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-sizing: border-box;
+  }
+
+  .logo-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #1B2A6B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .logo-circle span {
+    font-size: 52px;
+    font-weight: 700;
+    color: #D4AF37;
+    line-height: 1;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+
+  h1 {
+    margin: 20px 0 4px;
+    font-size: 28px;
+    font-weight: 700;
+    color: #D4AF37;
+  }
+
+  .subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: #94a3b8;
+  }
+
+  .progress-track {
+    position: absolute;
+    bottom: 36px;
+    width: 240px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    width: 0%;
+    background: #D4AF37;
+    border-radius: 999px;
+    animation: load 2.5s ease-out forwards;
+  }
+
+  @keyframes load {
+    from { width: 0%; }
+    to { width: 100%; }
+  }
+</style>
+</head>
+<body>
+  <div class="splash">
+    <div class="logo-circle"><span>ر</span></div>
+    <h1>رقيم</h1>
+    <p class="subtitle">نظام إدارة المطبعة</p>
+    <div class="progress-track"><div class="progress-bar"></div></div>
+  </div>
+</body>
+</html>

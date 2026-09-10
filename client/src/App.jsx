@@ -21,7 +21,6 @@ import Forbidden from './pages/Forbidden';
 import Receipt from './pages/Receipt';
 import MobileDashboard from './pages/MobileDashboard';
 import LightboxOrder from './pages/LightboxOrder';
-import DesignLab from './pages/_DesignLab';
 import Verify from './pages/Verify';
 import Activation from './pages/Activation';
 import TrialBanner from './components/TrialBanner';
@@ -47,7 +46,6 @@ function AppRoutes() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/orders/new" element={<NewOrder />} />
         <Route path="/lightbox-orders" element={<LightboxOrder />} />
-        <Route path="/design-lab" element={<DesignLab />} />
         <Route path="/orders" element={<OrdersList />} />
         <Route path="/orders/:id" element={<OrderDetail />} />
         <Route path="/stock" element={<Stock />} />

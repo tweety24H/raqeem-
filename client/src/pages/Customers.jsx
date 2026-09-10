@@ -125,7 +125,7 @@ export default function Customers() {
               className="card cursor-pointer transition hover:border-nili hover:shadow-md"
               onClick={() => (window.location.hash = `#/customers/${c.id}`)}
             >
-              <p className="font-semibold text-nili dark:text-violet-300">{c.name}</p>
+              <p className="font-semibold text-nili dark:text-gold">{c.name}</p>
               <p className="text-xs text-slate-500 dark:text-slate-400">{c.phone || t('customers.noPhone')}</p>
               <div className="mt-2 flex items-center justify-between text-sm">
                 <span className="text-slate-500 dark:text-slate-400">{t('customers.debtLabel')}</span>
@@ -180,7 +180,7 @@ export default function Customers() {
                   className="cursor-pointer border-t border-slate-100 hover:bg-slate-50 dark:border-white/5 dark:hover:bg-white/5"
                   onClick={() => (window.location.hash = `#/customers/${c.id}`)}
                 >
-                  <td className="px-4 py-3 font-medium text-nili dark:text-violet-300">{c.name}</td>
+                  <td className="px-4 py-3 font-medium text-nili dark:text-gold">{c.name}</td>
                   <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{c.phone || '-'}</td>
                   <td className={`px-4 py-3 font-semibold ${c.debt > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
                     {formatIQD(c.debt)}

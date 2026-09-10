@@ -35,7 +35,7 @@ export default function Layout() {
 
   return (
     <DashboardSummaryProvider>
-      <div className="h-screen w-screen overflow-hidden bg-slate-50 dark:bg-[#0a0a0f]">
+      <div className="h-screen w-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
         <SidebarGlass
           collapsed={collapsed}
           onToggleCollapsed={() => setCollapsed((v) => !v)}
@@ -48,11 +48,11 @@ export default function Layout() {
             collapsed ? 'lg:mr-[72px]' : 'lg:mr-[280px]'
           }`}
         >
-          <header className="flex shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white px-4 py-2 dark:border-brand-500/20 dark:bg-[#0a0a0f] lg:justify-end">
+          <header className="flex shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white px-4 py-2 dark:border-slate-800 dark:bg-slate-950 lg:justify-end">
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-lg transition hover:bg-slate-100 dark:border-brand-500/20 dark:bg-white/5 dark:hover:bg-white/10 lg:hidden"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-lg transition hover:bg-slate-100 dark:border-slate-800 dark:bg-white/5 dark:hover:bg-white/10 lg:hidden"
               aria-label="فتح القائمة"
             >
               ☰

@@ -12,6 +12,25 @@ process.env.RAQEEM_DB_DIR = path.join(app.getPath('userData'), 'data');
 
 const PORT = process.env.RAQEEM_PORT || 4310;
 
+function createSplashWindow() {
+  const splash = new BrowserWindow({
+    width: 400,
+    height: 400,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    resizable: false,
+    movable: false,
+    skipTaskbar: true,
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  splash.loadFile(path.join(__dirname, 'splash.html'));
+  return splash;
+}
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1400,
@@ -19,6 +38,7 @@ function createWindow() {
     minWidth: 1024,
     minHeight: 700,
     autoHideMenuBar: true,
+    show: false,
     icon: path.join(__dirname, '..', 'build', 'icon.png'),
     title: 'مطبعتي - Raqeemos v2',
     webPreferences: {
@@ -48,6 +68,11 @@ function createWindow() {
     win.webContents.openDevTools({ mode: 'detach' });
   } else {
     win.loadFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
+  }
+
+  // التحديث التلقائي يشتغل فقط بالنسخة المحزّمة (مثبّتة عند المستخدم)،
+  // مو أثناء التطوير أو تشغيل غير محزّم — يمنع محاولات تحديث وهمية بجهاز المطوّر.
+  if (app.isPackaged) {
     initAutoUpdater(win);
   }
 
@@ -105,10 +130,31 @@ app.whenReady().then(() => {
   registerIpcHandlers();
   backup.scheduleAutoBackup();
 
-  createWindow();
+  const splash = createSplashWindow();
+  const win = createWindow();
+
+  // يضمن اننا نسكر السبلاش ونعرض النافذة الرئيسية مرة وحدة بس، سواء عن
+  // طريق ready-to-show الطبيعي أو حد أقصى 5 ثواني إذا تعلّق التحميل.
+  let splashDismissed = false;
+  const splashTimeout = setTimeout(dismissSplash, 5000);
+
+  function dismissSplash() {
+    if (splashDismissed) return;
+    splashDismissed = true;
+    clearTimeout(splashTimeout);
+    if (!splash.isDestroyed()) splash.close();
+    if (!win.isDestroyed()) win.show();
+  }
+
+  win.once('ready-to-show', () => {
+    setTimeout(dismissSplash, 800);
+  });
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) {
+      const w = createWindow();
+      w.once('ready-to-show', () => w.show());
+    }
   });
 });
 

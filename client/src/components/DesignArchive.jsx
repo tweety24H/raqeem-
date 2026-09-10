@@ -32,7 +32,7 @@ export function DesignCard({ file, onDeleted, showOrder }) {
         )}
       </a>
       {showOrder && file.order_number && (
-        <div className="truncate text-xs font-semibold text-nili dark:text-violet-300">#{file.order_number}</div>
+        <div className="truncate text-xs font-semibold text-nili dark:text-gold">#{file.order_number}</div>
       )}
       <div className="truncate text-xs font-medium text-slate-800 dark:text-slate-200" title={file.file_name}>
         {file.file_name}
@@ -42,7 +42,7 @@ export function DesignCard({ file, onDeleted, showOrder }) {
       </div>
       <div className="mt-1 flex flex-wrap gap-2 text-xs">
         {isPreviewable(file.file_type) && (
-          <a href={fileUrl(file.file_path)} target="_blank" rel="noreferrer" className="text-nili hover:underline dark:text-violet-300">
+          <a href={fileUrl(file.file_path)} target="_blank" rel="noreferrer" className="text-nili hover:underline dark:text-gold">
             {t('designs.preview')}
           </a>
         )}
@@ -183,7 +183,7 @@ export function CustomerDesignsModal({ customer, onClose }) {
         <div className="space-y-5">
           {groups.map((g) => (
             <div key={g.orderId}>
-              <h3 className="mb-2 text-sm font-semibold text-nili dark:text-violet-300">
+              <h3 className="mb-2 text-sm font-semibold text-nili dark:text-gold">
                 {t('designs.orderPrefix')} #{g.orderNumber}
               </h3>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

@@ -156,7 +156,7 @@ export default function ActivityLogs() {
                 <td className="px-4 py-3 dark:text-slate-200">{r.description}</td>
                 <td className="px-4 py-3">
                   {(r.old_values || r.new_values) && (
-                    <button type="button" className="text-xs font-semibold text-nili underline dark:text-violet-300" onClick={() => setSelected(r)}>
+                    <button type="button" className="text-xs font-semibold text-nili underline dark:text-gold" onClick={() => setSelected(r)}>
                       {t('activityLogs.viewChanges')}
                     </button>
                   )}

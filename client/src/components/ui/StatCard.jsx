@@ -43,7 +43,7 @@ function useCountUp(value, duration = 900) {
 // Task 4: dashboard stat tiles are clickable when given a `to` route — they
 // render as a <Link> (like ui/Card) with a hover lift + shadow so employees
 // can jump straight to the filtered orders/customers/stock/reports view.
-export default function StatCard({ label, value, format, icon, tone = 'default', badge, to }) {
+export default function StatCard({ label, value, format, icon, tone = 'default', badge, to, accent = false }) {
   const display = useCountUp(value);
 
   const toneClasses = {
@@ -63,10 +63,12 @@ export default function StatCard({ label, value, format, icon, tone = 'default',
       animate={{ opacity: 1, y: 0 }}
       whileHover={to ? { y: -3 } : undefined}
       transition={{ duration: 0.35, ease: [0.22, 0.61, 0.36, 1] }}
-      className={`card flex items-center gap-3 ${to ? 'cursor-pointer transition hover:shadow-lg hover:border-brand-300 dark:hover:border-brand-500/40' : ''}`}
+      className={`card flex items-center gap-3 ${accent ? 'border-t-2 border-t-gold' : ''} ${
+        to ? 'cursor-pointer transition hover:shadow-lg hover:border-nili/30 dark:hover:border-nili-light/30' : ''
+      }`}
     >
       {icon && (
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-lg dark:bg-brand-500/10">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-nili/10 text-lg text-nili dark:bg-nili-light/10 dark:text-nili-light">
           {icon}
         </span>
       )}
