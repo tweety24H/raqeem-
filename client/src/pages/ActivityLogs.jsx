@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import api from '../api/client';
 import PageHeader from '../components/PageHeader';
 import Modal from '../components/Modal';
+import EmptyState from '../components/ui/EmptyState';
 import { useLanguage } from '../context/LanguageContext';
-import { formatDateTime } from '../utils/format';
+import { formatDateTime, formatRelativeTime } from '../utils/format';
 
 const ACTIONS = ['create', 'update', 'delete', 'login'];
 const MODEL_TYPES = ['order', 'customer', 'inventory', 'payment', 'user'];
@@ -128,50 +129,40 @@ export default function ActivityLogs() {
         </button>
       </div>
 
-      <div className="card overflow-x-auto p-0">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-slate-400">
-            <tr>
-              <th className="px-4 py-3 text-right">{t('activityLogs.colDate')}</th>
-              <th className="px-4 py-3 text-right">{t('activityLogs.colEmployee')}</th>
-              <th className="px-4 py-3 text-right">{t('activityLogs.colAction')}</th>
-              <th className="px-4 py-3 text-right">{t('activityLogs.colType')}</th>
-              <th className="px-4 py-3 text-right">{t('activityLogs.colDescription')}</th>
-              <th className="px-4 py-3 text-right"></th>
-            </tr>
-          </thead>
-          <tbody>
+      <div className="card">
+        {rows.length === 0 ? (
+          <EmptyState icon="🕓" title={t('common.noData')} />
+        ) : (
+          <div className="border-r-2 border-slate-200 pr-5 dark:border-white/10">
             {rows.map((r) => (
-              <tr key={r.id} className="border-t border-slate-100 dark:border-white/5">
-                <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{formatDateTime(r.created_at)}</td>
-                <td className="px-4 py-3 dark:text-slate-200">{r.user_name || '—'}</td>
-                <td className="px-4 py-3">
+              <div key={r.id} className="relative pb-6 last:pb-0">
+                <span className="absolute -right-[25px] top-1 h-3 w-3 rounded-full border-2 border-white bg-gold dark:border-slate-900" />
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{r.user_name || '—'}</span>
                   <span className={`badge ${ACTION_STYLES[r.action] || 'bg-slate-200 text-slate-600'}`}>
                     {t(`activityLogs.action.${r.action}`) || r.action}
                   </span>
-                </td>
-                <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
-                  {t(`activityLogs.model.${r.model_type}`) || r.model_type}
-                </td>
-                <td className="px-4 py-3 dark:text-slate-200">{r.description}</td>
-                <td className="px-4 py-3">
-                  {(r.old_values || r.new_values) && (
-                    <button type="button" className="text-xs font-semibold text-nili underline dark:text-gold" onClick={() => setSelected(r)}>
-                      {t('activityLogs.viewChanges')}
-                    </button>
-                  )}
-                </td>
-              </tr>
+                  <span className="text-xs text-slate-400 dark:text-slate-500">
+                    {t(`activityLogs.model.${r.model_type}`) || r.model_type}
+                  </span>
+                  <span className="mr-auto text-xs text-slate-400 dark:text-slate-500" title={formatDateTime(r.created_at)}>
+                    {formatRelativeTime(r.created_at)}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{r.description}</p>
+                {(r.old_values || r.new_values) && (
+                  <button
+                    type="button"
+                    className="mt-1 text-xs font-semibold text-nili underline dark:text-gold"
+                    onClick={() => setSelected(r)}
+                  >
+                    {t('activityLogs.viewChanges')}
+                  </button>
+                )}
+              </div>
             ))}
-            {rows.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-slate-400 dark:text-slate-500">
-                  {t('common.noData')}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+          </div>
+        )}
       </div>
 
       {total > 0 && (
