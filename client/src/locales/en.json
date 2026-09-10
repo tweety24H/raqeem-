@@ -33,6 +33,9 @@
     "light": "Light",
     "dark": "Dark"
   },
+  "offline": {
+    "banner": "You're offline — your data is saved locally and works normally"
+  },
   "commandPalette": {
     "title": "Quick search",
     "placeholder": "Type to search a page...",

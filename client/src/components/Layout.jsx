@@ -9,6 +9,7 @@ import ThemeToggle from './ThemeToggle';
 import NotificationsBell from './NotificationsBell';
 import CommandPalette from './CommandPalette';
 import ShortcutsHelp from './ShortcutsHelp';
+import OfflineBanner from './OfflineBanner';
 
 const COLLAPSE_KEY = 'sidebarCollapsed';
 
@@ -95,6 +96,7 @@ export default function Layout() {
             collapsed ? 'lg:mr-[72px]' : 'lg:mr-[280px]'
           }`}
         >
+          <OfflineBanner />
           <header className="flex shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white px-4 py-2 dark:border-slate-800 dark:bg-slate-950 lg:justify-end">
             <button
               type="button"
