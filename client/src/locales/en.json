@@ -13,6 +13,8 @@
     "archive": "Design Archive",
     "requests": "Incoming Requests",
     "reports": "Reports",
+    "activityLogs": "Activity Log",
+    "permissions": "Permissions",
     "settings": "Settings",
     "logout": "Log Out",
     "owner": "Owner",
@@ -64,7 +66,12 @@
     "فرخ": "Sheet",
     "متر": "Meter",
     "مل": "ml",
-    "قطعة": "Piece"
+    "قطعة": "Piece",
+    "كغم": "kg",
+    "لتر": "liter",
+    "كارتون": "carton",
+    "طبقة": "sheet",
+    "رول": "roll"
   },
   "kanban": {
     "title": "Task Board",
@@ -101,6 +108,9 @@
     "quickNewCustomer": "New Customer",
     "quickStock": "Inventory",
     "quickReport": "Today's Report",
+    "quickOrderForCustomer": "New order for this customer",
+    "addNewCustomerWithName": "No customer found — add a new customer named \"{name}\"",
+    "saveAndCreateOrder": "Save and continue order",
     "statOrdersToday": "Orders Today",
     "statInProgress": "In Progress Now",
     "statReady": "Ready for Delivery",
@@ -128,6 +138,13 @@
   "newOrder": {
     "pageTitle": "New Order",
     "pageSubtitle": "Create a new order with automatic pricing and payment options",
+    "stepCustomer": "Customer",
+    "stepDetails": "Order Details",
+    "stepPayment": "Payment",
+    "orderForPrefix": "Order for",
+    "changeCustomerLink": "Change Customer",
+    "nextBtn": "Next",
+    "backBtn": "Back",
     "customerSection": "Customer",
     "searchCustomerPlaceholder": "Search for a customer by name or phone...",
     "newCustomerBtn": "+ New Customer",
@@ -209,7 +226,36 @@
     "movementAdjust": "Adjust",
     "errorSave": "Save failed",
     "errorMovement": "Failed to execute movement",
-    "errorDamage": "Failed to record damage"
+    "errorDamage": "Failed to record damage",
+    "typeLabel": "Material Type",
+    "allTypes": "All Types",
+    "type_خام": "Raw",
+    "type_منتج_تام": "Finished Product",
+    "type_مستهلك": "Consumable",
+    "type_قطع_غيار": "Spare Part",
+    "type_تغليف": "Packaging",
+    "categoryLabel": "Category",
+    "allCategories": "All Categories",
+    "newCategoryPlaceholder": "New category...",
+    "addCategoryBtn": "+ Add",
+    "unitLabel": "Unit",
+    "allUnits": "All Units",
+    "customUnitOption": "Other (custom)",
+    "customUnitPlaceholder": "Enter unit name...",
+    "purchasePriceLabel": "Purchase Price (IQD)",
+    "salePriceLabel": "Sale Price (IQD)",
+    "locationLabel": "Shelf Location",
+    "supplierLabel": "Supplier",
+    "notesLabel": "Notes",
+    "imageLabel": "Item Image",
+    "infoTab": "Item Info",
+    "saveInfoBtn": "Save Changes",
+    "savedInfoMsg": "Item info saved",
+    "exportExcelBtn": "Export Excel",
+    "importExcelBtn": "Import Excel",
+    "importSuccessMsg": "Imported: {created} new, {updated} updated",
+    "importErrorMsg": "Import failed, check file format",
+    "clearFiltersBtn": "Clear Filters"
   },
   "customers": {
     "title": "Customers & Debts",
@@ -227,7 +273,8 @@
     "lastActivity": "{days} days ago",
     "lastActivityHeader": "Last Activity",
     "modalTitle": "New Customer",
-    "errorNoPhone": "No phone number registered for this customer"
+    "errorNoPhone": "No phone number registered for this customer",
+    "debtorsFilterActive": "Showing {count} customer(s) with outstanding debt"
   },
   "customerDetail": {
     "noPhone": "No phone number",
@@ -285,5 +332,55 @@
     "archiveTitlePrefix": "Design Archive",
     "noDesignsCustomer": "No saved designs for this customer",
     "orderPrefix": "Order"
+  },
+  "forbidden": {
+    "subtitle": "You need an additional permission to access this page — contact the shop owner.",
+    "backHome": "Back to Home"
+  },
+  "activityLogs": {
+    "title": "Activity Log",
+    "subtitle": "Who did what and when — for auditing and review",
+    "filterUser": "Employee",
+    "filterAction": "Action",
+    "filterModelType": "Type",
+    "filterFrom": "From",
+    "filterTo": "To",
+    "clearFilters": "Clear Filters",
+    "colDate": "Date",
+    "colEmployee": "Employee",
+    "colAction": "Action",
+    "colType": "Type",
+    "colDescription": "Description",
+    "viewChanges": "View Changes",
+    "oldValues": "Old Values",
+    "newValues": "New Values",
+    "totalCount": "Total: {count}",
+    "prevPage": "Previous",
+    "nextPage": "Next",
+    "errorLoad": "Failed to load activity log",
+    "action": {
+      "create": "Create",
+      "update": "Update",
+      "delete": "Delete",
+      "login": "Login"
+    },
+    "model": {
+      "order": "Order",
+      "customer": "Customer",
+      "inventory": "Inventory",
+      "payment": "Payment",
+      "user": "User"
+    }
+  },
+  "permissionsPage": {
+    "title": "Permissions",
+    "subtitle": "Set each employee's permissions across the system",
+    "role": "Role",
+    "grantedCount": "Granted Permissions",
+    "allGranted": "All permissions (owner)",
+    "editBtn": "Edit Permissions",
+    "modalTitle": "Permissions: {name}",
+    "errorLoad": "Failed to load permissions data",
+    "errorSave": "Failed to save permissions"
   }
 }

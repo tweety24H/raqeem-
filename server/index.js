@@ -60,6 +60,8 @@ app.use('/api/public', publicLimiter, require('./routes/public'));
 app.use('/api/requests', require('./routes/requests'));
 app.use('/api/designs', require('./routes/designs'));
 app.use('/api/expenses', require('./routes/expenses'));
+app.use('/api/activity-logs', require('./routes/activityLogs'));
+app.use('/api/permissions', require('./routes/permissions'));
 
 app.use((err, req, res, next) => {
   console.error(err);

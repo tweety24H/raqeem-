@@ -11,7 +11,12 @@ export const NAV_ITEMS = [
   { to: '/archive', key: 'nav.archive', icon: '🗂️', ownerOnly: false },
   { to: '/requests', key: 'nav.requests', icon: '📥', ownerOnly: false },
   { to: '/reports', key: 'nav.reports', icon: '📈', ownerOnly: false },
+  // Task 6: Activity Log — visible to the owner always; a non-owner with the
+  // view_activity_logs permission also sees it (checked via `permission` in
+  // SidebarGlass/Dashboard, since ownerOnly alone would hide it from them).
+  { to: '/activity-logs', key: 'nav.activityLogs', icon: '🕓', ownerOnly: false, permission: 'view_activity_logs' },
   { to: '/settings', key: 'nav.settings', icon: '⚙️', ownerOnly: true },
+  { to: '/settings/permissions', key: 'nav.permissions', icon: '🔐', ownerOnly: true },
 ];
 
 // Subset shown as "app sections" cards on the Dashboard home — everything

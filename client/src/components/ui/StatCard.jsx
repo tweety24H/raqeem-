@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+
+const MotionLink = motion(Link);
 
 const REDUCE_MOTION = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -37,7 +40,10 @@ function useCountUp(value, duration = 900) {
   return display;
 }
 
-export default function StatCard({ label, value, format, icon, tone = 'default', badge }) {
+// Task 4: dashboard stat tiles are clickable when given a `to` route — they
+// render as a <Link> (like ui/Card) with a hover lift + shadow so employees
+// can jump straight to the filtered orders/customers/stock/reports view.
+export default function StatCard({ label, value, format, icon, tone = 'default', badge, to }) {
   const display = useCountUp(value);
 
   const toneClasses = {
@@ -47,12 +53,17 @@ export default function StatCard({ label, value, format, icon, tone = 'default',
     success: 'text-emerald-600 dark:text-emerald-400',
   };
 
+  const Component = to ? MotionLink : motion.div;
+  const linkProps = to ? { to } : {};
+
   return (
-    <motion.div
+    <Component
+      {...linkProps}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
+      whileHover={to ? { y: -3 } : undefined}
       transition={{ duration: 0.35, ease: [0.22, 0.61, 0.36, 1] }}
-      className="card flex items-center gap-3"
+      className={`card flex items-center gap-3 ${to ? 'cursor-pointer transition hover:shadow-lg hover:border-brand-300 dark:hover:border-brand-500/40' : ''}`}
     >
       {icon && (
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-lg dark:bg-brand-500/10">
@@ -70,6 +81,6 @@ export default function StatCard({ label, value, format, icon, tone = 'default',
           {badge}
         </span>
       )}
-    </motion.div>
+    </Component>
   );
 }

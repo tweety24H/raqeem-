@@ -8,11 +8,13 @@
     "newOrder": "طلب جديد",
     "lightboxOrder": "طلب اعلان ضوئي",
     "orders": "الطلبات",
-    "inventory": "الجرد",
+    "inventory": "المخزون",
     "customers": "الزبائن والديون",
     "archive": "أرشيف التصاميم",
     "requests": "طلبات الزبائن الواردة",
     "reports": "التقارير",
+    "activityLogs": "سجل النشاطات",
+    "permissions": "الصلاحيات",
     "settings": "الإعدادات",
     "logout": "تسجيل الخروج",
     "owner": "مالك",
@@ -64,7 +66,12 @@
     "فرخ": "فرخ",
     "متر": "متر",
     "مل": "مل",
-    "قطعة": "قطعة"
+    "قطعة": "قطعة",
+    "كغم": "كغم",
+    "لتر": "لتر",
+    "كارتون": "كارتون",
+    "طبقة": "طبقة",
+    "رول": "رول"
   },
   "kanban": {
     "title": "لوحة المهام",
@@ -101,6 +108,9 @@
     "quickNewCustomer": "عميل جديد",
     "quickStock": "المخزون",
     "quickReport": "تقرير اليوم",
+    "quickOrderForCustomer": "طلب جديد لهذا الزبون",
+    "addNewCustomerWithName": "لا يوجد زبون بهذا الاسم — إضافة زبون جديد باسم \"{name}\"",
+    "saveAndCreateOrder": "حفظ ومتابعة الطلب",
     "statOrdersToday": "طلبات اليوم",
     "statInProgress": "قيد التنفيذ الآن",
     "statReady": "جاهزة للتسليم",
@@ -128,6 +138,13 @@
   "newOrder": {
     "pageTitle": "طلب جديد",
     "pageSubtitle": "إنشاء طلب جديد مع تسعير تلقائي وخيار الدفع",
+    "stepCustomer": "الزبون",
+    "stepDetails": "تفاصيل الطلب",
+    "stepPayment": "الدفع",
+    "orderForPrefix": "الطلب لصالح",
+    "changeCustomerLink": "تغيير الزبون",
+    "nextBtn": "التالي",
+    "backBtn": "رجوع",
     "customerSection": "الزبون",
     "searchCustomerPlaceholder": "ابحث عن زبون بالاسم أو الهاتف...",
     "newCustomerBtn": "+ زبون جديد",
@@ -173,7 +190,7 @@
     "detailsHeading": "تفاصيل"
   },
   "stock": {
-    "title": "الجرد",
+    "title": "المخزون",
     "subtitle": "متابعة المخزون، الوحدات المختلفة، والتالف",
     "addItemBtn": "+ إضافة صنف",
     "lowStockWarning": "⚠️ يوجد {count} صنف بمخزون منخفض أو أقل من الحد الأدنى.",
@@ -209,7 +226,36 @@
     "movementAdjust": "تصحيح",
     "errorSave": "فشل الحفظ",
     "errorMovement": "فشل تنفيذ الحركة",
-    "errorDamage": "فشل تسجيل التالف"
+    "errorDamage": "فشل تسجيل التالف",
+    "typeLabel": "نوع المادة",
+    "allTypes": "كل الأنواع",
+    "type_خام": "خام",
+    "type_منتج_تام": "منتج تام",
+    "type_مستهلك": "مستهلك",
+    "type_قطع_غيار": "قطع غيار",
+    "type_تغليف": "تغليف",
+    "categoryLabel": "التصنيف",
+    "allCategories": "كل التصنيفات",
+    "newCategoryPlaceholder": "تصنيف جديد...",
+    "addCategoryBtn": "+ إضافة",
+    "unitLabel": "الوحدة",
+    "allUnits": "كل الوحدات",
+    "customUnitOption": "أخرى (تخصيص)",
+    "customUnitPlaceholder": "اكتب اسم الوحدة...",
+    "purchasePriceLabel": "سعر الشراء (د.ع)",
+    "salePriceLabel": "سعر البيع (د.ع)",
+    "locationLabel": "موقع الرف",
+    "supplierLabel": "المورّد",
+    "notesLabel": "ملاحظات",
+    "imageLabel": "صورة المادة",
+    "infoTab": "بيانات الصنف",
+    "saveInfoBtn": "حفظ التعديلات",
+    "savedInfoMsg": "تم حفظ بيانات الصنف",
+    "exportExcelBtn": "تصدير Excel",
+    "importExcelBtn": "استيراد Excel",
+    "importSuccessMsg": "تم الاستيراد: {created} صنف جديد، {updated} صنف محدث",
+    "importErrorMsg": "فشل الاستيراد، تأكد من صيغة الملف",
+    "clearFiltersBtn": "مسح الفلاتر"
   },
   "customers": {
     "title": "الزبائن والديون",
@@ -227,7 +273,8 @@
     "lastActivity": "منذ {days} يوم",
     "lastActivityHeader": "آخر نشاط",
     "modalTitle": "زبون جديد",
-    "errorNoPhone": "لا يوجد رقم هاتف مسجل لهذا الزبون"
+    "errorNoPhone": "لا يوجد رقم هاتف مسجل لهذا الزبون",
+    "debtorsFilterActive": "عرض {count} زبون عليهم ديون مستحقة"
   },
   "customerDetail": {
     "noPhone": "بدون رقم هاتف",
@@ -285,5 +332,55 @@
     "archiveTitlePrefix": "أرشيف تصاميم",
     "noDesignsCustomer": "لا توجد تصاميم محفوظة لهذا الزبون",
     "orderPrefix": "طلب"
+  },
+  "forbidden": {
+    "subtitle": "تحتاج صلاحية إضافية للوصول لهذه الصفحة، تواصل مع مالك المطبعة.",
+    "backHome": "العودة للرئيسية"
+  },
+  "activityLogs": {
+    "title": "سجل النشاطات",
+    "subtitle": "من فعل ماذا ومتى — لأغراض التدقيق والمراجعة",
+    "filterUser": "الموظف",
+    "filterAction": "الإجراء",
+    "filterModelType": "النوع",
+    "filterFrom": "من تاريخ",
+    "filterTo": "إلى تاريخ",
+    "clearFilters": "مسح الفلاتر",
+    "colDate": "التاريخ",
+    "colEmployee": "الموظف",
+    "colAction": "الإجراء",
+    "colType": "النوع",
+    "colDescription": "الوصف",
+    "viewChanges": "عرض التغييرات",
+    "oldValues": "القيم القديمة",
+    "newValues": "القيم الجديدة",
+    "totalCount": "الإجمالي: {count}",
+    "prevPage": "السابق",
+    "nextPage": "التالي",
+    "errorLoad": "تعذّر تحميل سجل النشاطات",
+    "action": {
+      "create": "إنشاء",
+      "update": "تعديل",
+      "delete": "حذف",
+      "login": "تسجيل دخول"
+    },
+    "model": {
+      "order": "طلب",
+      "customer": "زبون",
+      "inventory": "مخزون",
+      "payment": "دفعة",
+      "user": "مستخدم"
+    }
+  },
+  "permissionsPage": {
+    "title": "الصلاحيات",
+    "subtitle": "تحديد صلاحيات كل موظف داخل النظام",
+    "role": "الدور",
+    "grantedCount": "الصلاحيات الممنوحة",
+    "allGranted": "كل الصلاحيات (مالك)",
+    "editBtn": "تعديل الصلاحيات",
+    "modalTitle": "صلاحيات: {name}",
+    "errorLoad": "تعذّر تحميل بيانات الصلاحيات",
+    "errorSave": "فشل حفظ الصلاحيات"
   }
 }

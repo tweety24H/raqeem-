@@ -4,6 +4,8 @@ const db = require('../db/db');
 const { requireAuth } = require('../middleware/auth');
 const settingsService = require('../services/settingsService');
 const whatsappService = require('../services/whatsappService');
+const { normalizeArabic } = require('../utils/arabicSearch');
+const { logActivity } = require('../services/activityLogService');
 
 const router = express.Router();
 
@@ -46,8 +48,10 @@ router.get('/', requireAuth, (req, res) => {
     params.push(customer_id);
   }
   if (search) {
-    sql += ' AND (o.order_number LIKE ? OR c.name LIKE ?)';
-    params.push(`%${search}%`, `%${search}%`);
+    // مطابقة اسم الزبون تتم على search_name الموحّد (أحمد/احمد/أحمد كلها متطابقة)،
+    // بينما رقم الطلب يبقى مطابقة نصية عادية.
+    sql += ' AND (o.order_number LIKE ? OR c.search_name LIKE ?)';
+    params.push(`%${search}%`, `%${normalizeArabic(search)}%`);
   }
   if (dueSoon === '1') {
     sql += " AND o.due_date IS NOT NULL AND o.due_date <= date('now', '+2 day') AND o.status != 'تم التسليم'";
@@ -170,6 +174,15 @@ router.post('/', requireAuth, (req, res) => {
 
   try {
     const result = tx();
+    logActivity({
+      userId: req.worker.workerId,
+      action: 'create',
+      modelType: 'order',
+      modelId: result.orderId,
+      description: `${req.worker.name} أنشأ طلبًا جديدًا #${result.orderNumber} للزبون ${customer.name}`,
+      newValues: { order_number: result.orderNumber, customer_id, total, payment_type, paid },
+      req,
+    });
     res.json(result);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -196,6 +209,17 @@ router.patch('/:id/status', requireAuth, (req, res) => {
     whatsappService.notifyReady(order).catch((e) => console.error('whatsapp notify failed:', e.message));
   }
 
+  logActivity({
+    userId: req.worker.workerId,
+    action: 'update',
+    modelType: 'order',
+    modelId: order.id,
+    description: `${req.worker.name} غيّر حالة الطلب #${order.order_number} إلى "${status}"`,
+    oldValues: { status: order.status },
+    newValues: { status },
+    req,
+  });
+
   res.json({ ok: true });
 });
 
@@ -216,6 +240,15 @@ router.post('/:id/payment', requireAuth, (req, res) => {
     db.prepare('UPDATE orders SET paid_amount = paid_amount + ? WHERE id = ?').run(amt, order.id);
   });
   tx();
+  logActivity({
+    userId: req.worker.workerId,
+    action: 'update',
+    modelType: 'payment',
+    modelId: order.id,
+    description: `${req.worker.name} سجّل دفعة بقيمة ${amt} على الطلب #${order.order_number}`,
+    newValues: { amount: amt, method: method || 'cash', note: note || null },
+    req,
+  });
   res.json({ ok: true });
 });
 

@@ -15,8 +15,12 @@ CREATE TABLE IF NOT EXISTS customers (
   name TEXT NOT NULL,
   phone TEXT,
   notes TEXT,
+  search_name TEXT, -- نسخة موحّدة (normalizeArabic) من name، تُستخدم للبحث فقط
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+-- ملاحظة: فهرس search_name يُنشأ برمجيًا في db.js بعد التأكد من وجود العمود
+-- (migrateCustomersSearchName) — وليس هنا، لأن قاعدة بيانات موجودة مسبقًا
+-- تكون بلا هذا العمود وقت ما ينفّذ هذا الملف، فإنشاء الفهرس هنا يفشل عليها.
 
 CREATE TABLE IF NOT EXISTS services (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,15 +32,30 @@ CREATE TABLE IF NOT EXISTS services (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS stock_categories (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS stock_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
-  unit TEXT NOT NULL DEFAULT 'قطعة', -- فرخ | متر | مل | قطعة
+  unit TEXT NOT NULL DEFAULT 'قطعة', -- فرخ | متر | مل | قطعة | كغم | لتر | كارتون | طبقة | رول | (مخصص)
   quantity REAL NOT NULL DEFAULT 0,
   min_quantity REAL NOT NULL DEFAULT 0,
   cost_per_unit REAL NOT NULL DEFAULT 0, -- IQD
   barcode TEXT UNIQUE,
   category TEXT,
+  -- الأعمدة التالية أُضيفت لتوحيد موديول المخزون (type/category_id/أسعار/موقع/مورّد/صورة/ملاحظات)
+  type TEXT,                -- خام | منتج_تام | مستهلك | قطع_غيار | تغليف
+  category_id INTEGER REFERENCES stock_categories(id) ON DELETE SET NULL,
+  purchase_price REAL NOT NULL DEFAULT 0,
+  sale_price REAL NOT NULL DEFAULT 0,
+  location TEXT,
+  supplier TEXT,
+  image_path TEXT,
+  notes TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -177,3 +196,41 @@ CREATE INDEX IF NOT EXISTS idx_debt_reminders_customer ON debt_reminders(custome
 CREATE INDEX IF NOT EXISTS idx_design_files_order ON design_files(order_id);
 CREATE INDEX IF NOT EXISTS idx_design_files_customer ON design_files(customer_id);
 CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(date);
+
+-- سجل النشاطات (Activity log) — من فعل ماذا ومتى، لأغراض التدقيق.
+CREATE TABLE IF NOT EXISTS activity_logs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER REFERENCES workers(id) ON DELETE SET NULL,
+  action TEXT NOT NULL, -- create | update | delete | login
+  model_type TEXT NOT NULL, -- order | customer | inventory | payment | user
+  model_id INTEGER,
+  description TEXT,
+  old_values TEXT, -- JSON nullable
+  new_values TEXT, -- JSON nullable
+  ip_address TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_activity_logs_user ON activity_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_activity_logs_model ON activity_logs(model_type, model_id);
+CREATE INDEX IF NOT EXISTS idx_activity_logs_created ON activity_logs(created_at);
+
+-- الصلاحيات (Permissions) — قائمة ثابتة تُزرع تلقائيًا، وصلاحيات كل موظف
+-- (user_permissions) هي المجموعة الممنوحة فعليًا له. المالك (role='owner')
+-- يملك كل الصلاحيات ضمنيًا بدون الحاجة لصفوف هنا (انظر checkPermission).
+CREATE TABLE IF NOT EXISTS permissions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  description TEXT
+);
+
+CREATE TABLE IF NOT EXISTS user_permissions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL REFERENCES workers(id) ON DELETE CASCADE,
+  permission_slug TEXT NOT NULL REFERENCES permissions(slug) ON DELETE CASCADE,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  UNIQUE(user_id, permission_slug)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_permissions_user ON user_permissions(user_id);

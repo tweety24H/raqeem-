@@ -35,6 +35,16 @@ function recordSuccess(ip) {
   attemptsByIp.delete(ip);
 }
 
+// صلاحيات الموظف الفعلية: المالك يملك كل شيء ضمنيًا ('all')، غيره يحصل على
+// قائمة الـ slugs الممنوحة له من user_permissions فقط.
+function permissionsFor(worker) {
+  if (worker.role === 'owner') return 'all';
+  return db
+    .prepare('SELECT permission_slug FROM user_permissions WHERE user_id = ?')
+    .all(worker.id)
+    .map((r) => r.permission_slug);
+}
+
 // POST /api/auth/login { pin }
 router.post('/login', (req, res) => {
   const { pin } = req.body;
@@ -66,13 +76,15 @@ router.post('/login', (req, res) => {
 
   res.json({
     token,
-    worker: { id: match.id, name: match.name, role: match.role },
+    worker: { id: match.id, name: match.name, role: match.role, permissions: permissionsFor(match) },
   });
 });
 
 // GET /api/auth/me
 router.get('/me', requireAuth, (req, res) => {
-  res.json({ worker: req.worker });
+  const worker = db.prepare('SELECT * FROM workers WHERE id = ?').get(req.worker.workerId);
+  if (!worker) return res.status(404).json({ error: 'المستخدم غير موجود' });
+  res.json({ worker: { ...req.worker, permissions: permissionsFor(worker) } });
 });
 
 // --- Worker management (owner only) ---

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import api from '../api/client';
 import PageHeader from '../components/PageHeader';
 import Modal from '../components/Modal';
@@ -49,14 +49,22 @@ function TabButton({ active, onClick, children }) {
 }
 
 function OverviewTab() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [summaries, setSummaries] = useState(null); // { today, week, month, all }
-  const [activeRange, setActiveRange] = useState('today');
+  // Task 4: the Dashboard's "Today's Profits" tile links here with ?range=today
+  // (already the default, but this also honors ?range=week/month/all if ever linked that way).
+  const [activeRange, setActiveRange] = useState(() => {
+    const r = searchParams.get('range');
+    return RANGES.some((x) => x.key === r) ? r : 'today';
+  });
   const [daily, setDaily] = useState(null);
   const [showAddExpense, setShowAddExpense] = useState(false);
 
   useEffect(() => {
     loadSummaries();
     loadDaily();
+    if (searchParams.get('range')) setSearchParams({}, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function loadSummaries() {

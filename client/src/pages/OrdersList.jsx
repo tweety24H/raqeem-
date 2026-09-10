@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import api from '../api/client';
 import PageHeader from '../components/PageHeader';
 import StatusBadge, { STATUSES, STATUS_STYLES, STATUS_SOLID } from '../components/StatusBadge';
@@ -9,18 +9,52 @@ import { useLanguage } from '../context/LanguageContext';
 import { formatIQD, formatDate } from '../utils/format';
 import { exportToExcel } from '../utils/exportExcel';
 
+// Task 4: the Dashboard's "In Progress" tile links here with ?status=in_progress
+// — that's not a single order status (it covers two: قيد التصميم + قيد الطباعة),
+// so it's applied as a client-side filter rather than sent to the API.
+const IN_PROGRESS_STATUSES = ['قيد التصميم', 'قيد الطباعة'];
+const READY_STATUS = 'جاهز للتسليم';
+
 export default function OrdersList() {
   const { t } = useLanguage();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [orders, setOrders] = useState([]);
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState(() => (searchParams.get('status') === 'ready' ? READY_STATUS : ''));
+  const [inProgressOnly, setInProgressOnly] = useState(() => searchParams.get('status') === 'in_progress');
+  const [todayOnly, setTodayOnly] = useState(() => searchParams.get('filter') === 'today');
   const [search, setSearch] = useState('');
   const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState('');
   const [mode, setMode] = useViewMode('raqeem_view_orders', 'list');
 
+  // Deep link from the Dashboard's stat cards — apply once, then clean the URL
+  // so the local filter state (not the query string) stays the source of truth.
+  useEffect(() => {
+    if (searchParams.get('status') || searchParams.get('filter')) {
+      setSearchParams({}, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     load();
   }, [status, search]);
+
+  function selectStatus(s) {
+    setStatus(s);
+    setInProgressOnly(false);
+    setTodayOnly(false);
+  }
+
+  const visibleOrders = useMemo(() => {
+    let list = orders;
+    if (inProgressOnly) list = list.filter((o) => IN_PROGRESS_STATUSES.includes(o.status));
+    if (todayOnly) {
+      const today = new Date().toISOString().slice(0, 10);
+      list = list.filter((o) => (o.created_at || '').slice(0, 10) === today);
+    }
+    return list;
+  }, [orders, inProgressOnly, todayOnly]);
 
   async function load() {
     setError('');
@@ -36,7 +70,7 @@ export default function OrdersList() {
     exportToExcel(
       `طلبات-${new Date().toISOString().slice(0, 10)}`,
       'الطلبات',
-      orders.map((o) => ({
+      visibleOrders.map((o) => ({
         'رقم الطلب': o.order_number,
         الزبون: o.customer_name,
         الحالة: o.status,
@@ -82,20 +116,30 @@ export default function OrdersList() {
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <button
-          onClick={() => setStatus('')}
-          className={`badge cursor-pointer ${status === '' ? 'bg-nili text-white' : 'bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300'}`}
+          onClick={() => selectStatus('')}
+          className={`badge cursor-pointer ${status === '' && !inProgressOnly && !todayOnly ? 'bg-nili text-white' : 'bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300'}`}
         >
           {t('orders.all')}
         </button>
         {STATUSES.map((s) => (
           <button
             key={s}
-            onClick={() => setStatus(s)}
-            className={`badge cursor-pointer ${status === s ? STATUS_SOLID[s] : STATUS_STYLES[s]} dark:ring-1 dark:ring-white/10`}
+            onClick={() => selectStatus(s)}
+            className={`badge cursor-pointer ${status === s && !inProgressOnly ? STATUS_SOLID[s] : STATUS_STYLES[s]} dark:ring-1 dark:ring-white/10`}
           >
             {t(`status.${s}`)}
           </button>
         ))}
+        {inProgressOnly && (
+          <span className="badge cursor-pointer bg-amber-500 text-white" onClick={() => selectStatus('')}>
+            {t('dashboard.statInProgress')} ✕
+          </span>
+        )}
+        {todayOnly && (
+          <span className="badge cursor-pointer bg-nili text-white" onClick={() => setTodayOnly(false)}>
+            {t('dashboard.today')} ✕
+          </span>
+        )}
         <input
           className="input mr-auto max-w-xs"
           placeholder={t('orders.searchPlaceholder')}
@@ -106,7 +150,7 @@ export default function OrdersList() {
 
       {mode === 'grid' ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {orders.map((o) => {
+          {visibleOrders.map((o) => {
             const remaining = o.total_price - o.paid_amount;
             return (
               <Link
@@ -132,7 +176,7 @@ export default function OrdersList() {
               </Link>
             );
           })}
-          {orders.length === 0 && (
+          {visibleOrders.length === 0 && (
             <div className="col-span-full py-8 text-center text-slate-400 dark:text-slate-500">{t('orders.noOrders')}</div>
           )}
         </div>
@@ -152,7 +196,7 @@ export default function OrdersList() {
               </tr>
             </thead>
             <tbody>
-              {orders.map((o) => {
+              {visibleOrders.map((o) => {
                 const remaining = o.total_price - o.paid_amount;
                 return (
                   <tr
@@ -188,7 +232,7 @@ export default function OrdersList() {
                   </tr>
                 );
               })}
-              {orders.length === 0 && (
+              {visibleOrders.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-4 py-8 text-center text-slate-400 dark:text-slate-500">
                     {t('orders.noOrders')}

@@ -15,6 +15,7 @@ export default function Customers() {
   const [customers, setCustomers] = useState([]);
   const [search, setSearch] = useState('');
   const [overdueOnly, setOverdueOnly] = useState(false);
+  const [debtorsOnly, setDebtorsOnly] = useState(false);
   const [overdue, setOverdue] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [showAdd, setShowAdd] = useState(searchParams.get('new') === '1');
@@ -28,9 +29,16 @@ export default function Customers() {
 
   // Deep link from the Dashboard's "New Customer" quick action (?new=1):
   // open the Add Customer modal automatically, then clean the URL.
+  // Also handles the Dashboard's "Total Debts" stat card (?filter=debtors),
+  // which shows customers with an outstanding balance (Task 4).
   useEffect(() => {
     if (searchParams.get('new') === '1') {
       setShowAdd(true);
+    }
+    if (searchParams.get('filter') === 'debtors') {
+      setDebtorsOnly(true);
+    }
+    if (searchParams.get('new') || searchParams.get('filter')) {
       setSearchParams({}, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -64,7 +72,7 @@ export default function Customers() {
     api.post(`/customers/${c.id}/remind`).catch(() => {});
   }
 
-  const list = overdueOnly ? overdue : customers;
+  const list = overdueOnly ? overdue : debtorsOnly ? customers.filter((c) => c.debt > 0) : customers;
 
   return (
     <div className="p-6">
@@ -83,6 +91,15 @@ export default function Customers() {
           </>
         }
       />
+
+      {debtorsOnly && (
+        <div className="mb-4 flex items-center justify-between rounded-lg border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+          <span>{t('customers.debtorsFilterActive', { count: list.length })}</span>
+          <button className="font-semibold underline" onClick={() => setDebtorsOnly(false)}>
+            {t('customers.showAll')}
+          </button>
+        </div>
+      )}
 
       {overdue.length > 0 && (
         <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">

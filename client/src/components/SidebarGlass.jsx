@@ -119,7 +119,7 @@ function Section({ title, items, badges, isExpanded, onCloseMobile, t }) {
 }
 
 export default function SidebarGlass({ collapsed, onToggleCollapsed, mobileOpen, onCloseMobile }) {
-  const { worker, logout, isOwner } = useAuth();
+  const { worker, logout, isOwner, hasPermission } = useAuth();
   const navigate = useNavigate();
   const { t, lang } = useLanguage();
   const { summary } = useDashboardSummary();
@@ -133,7 +133,10 @@ export default function SidebarGlass({ collapsed, onToggleCollapsed, mobileOpen,
     '/stock': summary?.lowStock?.length || 0,
   };
 
-  const visibleItems = useMemo(() => NAV_ITEMS.filter((i) => !i.ownerOnly || isOwner), [isOwner]);
+  const visibleItems = useMemo(
+    () => NAV_ITEMS.filter((i) => (!i.ownerOnly || isOwner) && (!i.permission || isOwner || hasPermission(i.permission))),
+    [isOwner, hasPermission]
+  );
 
   const term = search.trim().toLowerCase();
   const searching = term.length > 0;

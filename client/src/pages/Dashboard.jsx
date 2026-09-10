@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../api/client';
 import ViewToggle, { useViewMode } from '../components/ViewToggle';
@@ -9,6 +9,7 @@ import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import StatCard from '../components/ui/StatCard';
 import EmptyState from '../components/ui/EmptyState';
+import Modal from '../components/Modal';
 import { StatCardsSkeleton, SectionCardsSkeleton, SkeletonBlock } from '../components/ui/LoadingSkeleton';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import { useLanguage } from '../context/LanguageContext';
@@ -35,6 +36,7 @@ function progressFor(order) {
 
 const IN_PROGRESS_STATUSES = ['قيد التصميم', 'قيد الطباعة'];
 const READY_STATUS = 'جاهز للتسليم';
+const SEARCH_DEBOUNCE_MS = 300;
 
 const heroContainer = { hidden: {}, show: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } } };
 const heroItem = {
@@ -48,15 +50,65 @@ const sectionReveal = {
 
 export default function Dashboard() {
   const { t } = useLanguage();
-  const { isOwner } = useAuth();
+  const { isOwner, hasPermission } = useAuth();
+  const navigate = useNavigate();
   const { summary, loading: summaryLoading, error: summaryError, refresh } = useDashboardSummary();
   const [orders, setOrders] = useState([]);
-  const [customers, setCustomers] = useState([]);
   const [listsLoading, setListsLoading] = useState(true);
-  const [search, setSearch] = useState('');
   const inputRef = useRef(null);
   const sectionsRef = useRef(null);
   const [mode, setMode] = useViewMode('raqeem_view_dashboard', 'list');
+
+  // ---------- Task 1: live customer search + quick order creation ----------
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debounceRef = useRef(null);
+  const [customerResults, setCustomerResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [quickAddName, setQuickAddName] = useState('');
+
+  function onSearchChange(value) {
+    setSearch(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setDebouncedSearch(value), SEARCH_DEBOUNCE_MS);
+  }
+
+  useEffect(() => () => debounceRef.current && clearTimeout(debounceRef.current), []);
+
+  useEffect(() => {
+    const term = debouncedSearch.trim();
+    if (!term) {
+      setCustomerResults([]);
+      setSearchLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setSearchLoading(true);
+    api
+      .get('/customers', { params: { search: term } })
+      .then((res) => {
+        if (!cancelled) setCustomerResults((res.data.customers || []).slice(0, 8));
+      })
+      .catch(() => {
+        if (!cancelled) setCustomerResults([]);
+      })
+      .finally(() => {
+        if (!cancelled) setSearchLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedSearch]);
+
+  function goToNewOrder(customerId) {
+    navigate(`/orders/new?customer_id=${customerId}`);
+  }
+
+  function openQuickAdd() {
+    setQuickAddName(search.trim());
+    setQuickAddOpen(true);
+  }
 
   function loadOrders() {
     return api
@@ -66,10 +118,7 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
-    Promise.all([
-      loadOrders(),
-      api.get('/customers').then((res) => setCustomers(res.data.customers || [])).catch(() => setCustomers([])),
-    ]).finally(() => setListsLoading(false));
+    loadOrders().finally(() => setListsLoading(false));
   }, []);
 
   useEffect(() => {
@@ -97,20 +146,6 @@ export default function Dashboard() {
   const printingOrders = useMemo(() => orders.filter((o) => o.status === 'قيد الطباعة').slice(0, 3), [orders]);
   const readyOrders = useMemo(() => orders.filter((o) => o.status === READY_STATUS).slice(0, 3), [orders]);
 
-  const searchResults = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) return null;
-    const matchedOrders = orders
-      .filter((o) => o.order_number?.toLowerCase().includes(term) || o.customer_name?.toLowerCase().includes(term))
-      .slice(0, 5)
-      .map((o) => ({ type: 'order', id: o.id, label: `${o.order_number} — ${o.customer_name}` }));
-    const matchedCustomers = customers
-      .filter((c) => c.name?.toLowerCase().includes(term) || c.phone?.toLowerCase().includes(term))
-      .slice(0, 5)
-      .map((c) => ({ type: 'customer', id: c.id, label: c.name }));
-    return [...matchedOrders, ...matchedCustomers];
-  }, [search, orders, customers]);
-
   // Real counts derived from GET /dashboard/summary's ordersByStatus (all-time,
   // not day-scoped — the API doesn't offer a per-day breakdown by status, so
   // these tiles are labeled "الآن"/"Now" rather than implying "today").
@@ -129,8 +164,13 @@ export default function Dashboard() {
     sectionsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  const sectionItems = DASHBOARD_SECTION_ITEMS.filter((item) => !item.ownerOnly || isOwner);
+  const sectionItems = DASHBOARD_SECTION_ITEMS.filter(
+    (item) => (!item.ownerOnly || isOwner) && (!item.permission || isOwner || hasPermission(item.permission))
+  );
   const sectionBadges = { '/orders': dueSoonCount, '/stock': lowStockCount };
+
+  const searchTerm = search.trim();
+  const showDropdown = debouncedSearch.trim().length > 0;
 
   if (mode === 'grid') {
     return (
@@ -174,15 +214,17 @@ export default function Dashboard() {
             {t('dashboard.heroSubtitle')}
           </motion.p>
 
+          {/* Task 3: "New Order" / "New Client" quick buttons removed — the
+              search box below (Task 1) is now the only way to start an order. */}
           <motion.div variants={heroItem} className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <Button to="/orders/new" variant="primary" className="!px-6 !py-3 !text-base">
-              {t('dashboard.ctaPrimary')}
-            </Button>
             <Button onClick={scrollToSections} variant="ghost" magnetic={false} className="!px-6 !py-3 !text-base border border-slate-200 dark:border-white/10">
               {t('dashboard.ctaSecondary')}
             </Button>
           </motion.div>
 
+          {/* Task 1: live customer search — debounced 300ms, shows name+phone
+              matches with a (+) quick-order button, and an "add new customer"
+              fallback when nothing matches. */}
           <motion.div variants={heroItem} className="relative mx-auto mt-8 max-w-2xl">
             <div className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-[0_16px_48px_rgba(0,0,0,0.06)] dark:border-brand-500/20 dark:bg-[#1a1a23]">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-black">
@@ -195,39 +237,54 @@ export default function Dashboard() {
                 ref={inputRef}
                 type="text"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => onSearchChange(e.target.value)}
                 placeholder={t('dashboard.searchPlaceholder')}
                 className="flex-1 bg-transparent text-sm text-slate-800 placeholder:text-gray-400 focus:outline-none dark:text-slate-100 dark:placeholder:text-slate-500"
               />
               <kbd className="shrink-0 rounded-md bg-slate-100 px-2 py-1 text-xs font-mono text-slate-500 dark:bg-white/10 dark:text-slate-300">⌘K</kbd>
             </div>
 
-            {searchResults && (
+            {showDropdown && (
               <div className="absolute inset-x-0 top-full z-20 mt-2 max-h-80 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg dark:border-brand-500/20 dark:bg-[#1a1a23]">
-                {searchResults.length === 0 && (
-                  <p className="p-4 text-sm text-slate-400 dark:text-slate-500">{t('dashboard.noSearchResults')}</p>
+                {searchLoading && (
+                  <p className="p-4 text-sm text-slate-400 dark:text-slate-500">{t('common.loading')}</p>
                 )}
-                {searchResults.map((r) => (
-                  <Link
-                    key={`${r.type}-${r.id}`}
-                    to={r.type === 'order' ? `/orders/${r.id}` : `/customers/${r.id}`}
-                    className="flex items-center gap-2 border-b border-slate-100 px-4 py-3 text-sm text-slate-700 last:border-0 hover:bg-brand-50 dark:border-white/5 dark:text-slate-200 dark:hover:bg-white/5"
+                {!searchLoading && customerResults.map((c) => (
+                  <div
+                    key={c.id}
+                    className="flex items-center justify-between gap-2 border-b border-slate-100 px-4 py-3 text-sm last:border-0 hover:bg-brand-50 dark:border-white/5 dark:hover:bg-white/5"
                   >
-                    <span className="text-xs text-slate-400 dark:text-slate-500">{r.type === 'order' ? 'طلب' : 'زبون'}</span>
-                    {r.label}
-                  </Link>
+                    <Link to={`/customers/${c.id}`} className="min-w-0 flex-1 text-slate-700 dark:text-slate-200">
+                      <span className="font-medium">{c.name}</span>
+                      {c.phone && <span className="mr-2 text-slate-400 dark:text-slate-500">· {c.phone}</span>}
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => goToNewOrder(c.id)}
+                      title={t('dashboard.quickOrderForCustomer')}
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black text-lg font-bold leading-none text-white transition hover:bg-brand-600 dark:bg-brand-600 dark:hover:bg-brand-500"
+                    >
+                      +
+                    </button>
+                  </div>
                 ))}
+                {!searchLoading && customerResults.length === 0 && (
+                  <button
+                    type="button"
+                    onClick={openQuickAdd}
+                    className="flex w-full items-center justify-between gap-2 px-4 py-3 text-sm text-slate-600 hover:bg-brand-50 dark:text-slate-300 dark:hover:bg-white/5"
+                  >
+                    <span>
+                      {t('dashboard.addNewCustomerWithName', { name: searchTerm })}
+                    </span>
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-black text-white dark:bg-brand-600">+</span>
+                  </button>
+                )}
               </div>
             )}
           </motion.div>
 
           <motion.div variants={heroItem} className="mt-4 flex flex-wrap items-center justify-center gap-2">
-            <Button to="/orders/new" variant="secondary" className="!px-4 !py-2 !text-sm" magnetic={false}>
-              ➕ {t('dashboard.quickNewOrder')}
-            </Button>
-            <Button to="/customers?new=1" variant="secondary" className="!px-4 !py-2 !text-sm" magnetic={false}>
-              👤 {t('dashboard.quickNewCustomer')}
-            </Button>
             <Button to="/stock" variant="secondary" className="!px-4 !py-2 !text-sm" magnetic={false}>
               📦 {t('dashboard.quickStock')}
             </Button>
@@ -237,22 +294,42 @@ export default function Dashboard() {
           </motion.div>
         </motion.div>
 
-        {/* ---------- Real stats (GET /dashboard/summary + /customers) ---------- */}
+        {/* ---------- Real stats (GET /dashboard/summary + /customers) — Task 4:
+            each tile links to the relevant filtered page. ---------- */}
         {summaryError && <ErrorBanner onRetry={refresh}>تعذّر تحميل الإحصائيات، تأكد من الاتصال بالخادم</ErrorBanner>}
         {summaryLoading ? (
           <StatCardsSkeleton count={6} />
         ) : (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            <StatCard icon="🧾" label={t('dashboard.statOrdersToday')} value={summary?.ordersToday || 0} />
-            <StatCard icon="🎨" label={t('dashboard.statInProgress')} value={statusCounts.inProgress} tone="warning" />
-            <StatCard icon="✅" label={t('dashboard.statReady')} value={statusCounts.ready} tone="success" />
             <StatCard
+              to="/orders?filter=today"
+              icon="🧾"
+              label={t('dashboard.statOrdersToday')}
+              value={summary?.ordersToday || 0}
+            />
+            <StatCard
+              to="/orders?status=in_progress"
+              icon="🎨"
+              label={t('dashboard.statInProgress')}
+              value={statusCounts.inProgress}
+              tone="warning"
+            />
+            <StatCard
+              to="/orders?status=ready"
+              icon="✅"
+              label={t('dashboard.statReady')}
+              value={statusCounts.ready}
+              tone="success"
+            />
+            <StatCard
+              to="/reports?range=today"
               icon="💰"
               label={t('dashboard.statProfitToday')}
               value={summary?.profitToday?.profit || 0}
               format={formatIQD}
             />
             <StatCard
+              to="/customers?filter=debtors"
               icon="⚠️"
               label={t('dashboard.statDebt')}
               value={summary?.totalDebt || 0}
@@ -260,6 +337,7 @@ export default function Dashboard() {
               tone={(summary?.totalDebt || 0) > 0 ? 'danger' : 'default'}
             />
             <StatCard
+              to="/stock?filter=low_stock"
               icon="📦"
               label={t('dashboard.statLowStock')}
               value={lowStockCount}
@@ -304,7 +382,72 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {quickAddOpen && (
+        <QuickAddCustomerModal
+          initialName={quickAddName}
+          onClose={() => setQuickAddOpen(false)}
+          onCreated={(id) => {
+            setQuickAddOpen(false);
+            goToNewOrder(id);
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+// Task 1: "Add new customer with this name" — creates the customer inline
+// then continues straight into the new-order flow with it pre-selected,
+// so the employee never has to pick the customer again.
+function QuickAddCustomerModal({ initialName, onClose, onCreated }) {
+  const { t } = useLanguage();
+  const [name, setName] = useState(initialName || '');
+  const [phone, setPhone] = useState('');
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  async function submit(e) {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setError('');
+    setSaving(true);
+    try {
+      const res = await api.post('/customers', { name: name.trim(), phone: phone || undefined });
+      onCreated(res.data.id);
+    } catch (err) {
+      setError(err.response?.data?.error || t('stock.errorSave'));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal open title={t('customers.modalTitle')} onClose={onClose}>
+      <form onSubmit={submit} className="space-y-3">
+        {error && (
+          <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+            {error}
+          </div>
+        )}
+        <div>
+          <label className="label">{t('common.name')}</label>
+          <input className="input" required autoFocus value={name} onChange={(e) => setName(e.target.value)} />
+        </div>
+        <div>
+          <label className="label">{t('common.phone')}</label>
+          <input className="input" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        </div>
+        <div className="flex justify-end gap-2 pt-2">
+          <button type="button" className="btn-secondary" onClick={onClose}>
+            {t('common.cancel')}
+          </button>
+          <button disabled={saving} className="btn-primary">
+            {saving ? t('newOrder.savingBtn') : t('dashboard.saveAndCreateOrder')}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 

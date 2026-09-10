@@ -15,6 +15,9 @@ import Archive from './pages/Archive';
 import Requests from './pages/Requests';
 import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import PermissionsSettings from './pages/PermissionsSettings';
+import ActivityLogs from './pages/ActivityLogs';
+import Forbidden from './pages/Forbidden';
 import Receipt from './pages/Receipt';
 import MobileDashboard from './pages/MobileDashboard';
 import LightboxOrder from './pages/LightboxOrder';
@@ -61,6 +64,23 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/settings/permissions"
+          element={
+            <ProtectedRoute ownerOnly>
+              <PermissionsSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/activity-logs"
+          element={
+            <ProtectedRoute permission="view_activity_logs">
+              <ActivityLogs />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/403" element={<Forbidden />} />
       </Route>
     </Routes>
   );
