@@ -15,14 +15,28 @@ import { exportToExcel } from '../utils/exportExcel';
 // so it's applied as a client-side filter rather than sent to the API.
 const IN_PROGRESS_STATUSES = ['قيد التصميم', 'قيد الطباعة'];
 const READY_STATUS = 'جاهز للتسليم';
+const DELIVERED_STATUS = 'تم التسليم';
+const QUICK_FILTER_KEY = 'raqeem_orders_quickfilter';
 
 export default function OrdersList() {
   const { t } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
   const [orders, setOrders] = useState([]);
-  const [status, setStatus] = useState(() => (searchParams.get('status') === 'ready' ? READY_STATUS : ''));
+  const hasDeepLink = searchParams.get('status') || searchParams.get('filter');
+  const savedQuickFilter = (() => {
+    if (hasDeepLink) return null;
+    try {
+      return localStorage.getItem(QUICK_FILTER_KEY);
+    } catch {
+      return null;
+    }
+  })();
+  const [status, setStatus] = useState(() =>
+    searchParams.get('status') === 'ready' || savedQuickFilter === 'ready' ? READY_STATUS : ''
+  );
   const [inProgressOnly, setInProgressOnly] = useState(() => searchParams.get('status') === 'in_progress');
-  const [todayOnly, setTodayOnly] = useState(() => searchParams.get('filter') === 'today');
+  const [todayOnly, setTodayOnly] = useState(() => searchParams.get('filter') === 'today' || savedQuickFilter === 'today');
+  const [overdueOnly, setOverdueOnly] = useState(() => savedQuickFilter === 'overdue');
   const [search, setSearch] = useState('');
   const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState('');
@@ -45,7 +59,43 @@ export default function OrdersList() {
     setStatus(s);
     setInProgressOnly(false);
     setTodayOnly(false);
+    setOverdueOnly(false);
   }
+
+  // Task: quick-access filter row (الكل|اليوم|متأخر|جاهز) — the chosen
+  // filter is remembered in localStorage so it's restored on next visit.
+  function applyQuickFilter(key) {
+    try {
+      localStorage.setItem(QUICK_FILTER_KEY, key);
+    } catch {
+      /* ignore */
+    }
+    if (key === 'today') {
+      setStatus('');
+      setInProgressOnly(false);
+      setOverdueOnly(false);
+      setTodayOnly(true);
+    } else if (key === 'overdue') {
+      setStatus('');
+      setInProgressOnly(false);
+      setTodayOnly(false);
+      setOverdueOnly(true);
+    } else if (key === 'ready') {
+      selectStatus(READY_STATUS);
+    } else {
+      selectStatus('');
+    }
+  }
+
+  const activeQuickFilter = overdueOnly
+    ? 'overdue'
+    : todayOnly
+    ? 'today'
+    : status === READY_STATUS && !inProgressOnly
+    ? 'ready'
+    : status === '' && !inProgressOnly
+    ? 'all'
+    : null;
 
   const visibleOrders = useMemo(() => {
     let list = orders;
@@ -54,8 +104,12 @@ export default function OrdersList() {
       const today = new Date().toISOString().slice(0, 10);
       list = list.filter((o) => (o.created_at || '').slice(0, 10) === today);
     }
+    if (overdueOnly) {
+      const today = new Date().toISOString().slice(0, 10);
+      list = list.filter((o) => o.due_date && o.due_date < today && o.status !== DELIVERED_STATUS);
+    }
     return list;
-  }, [orders, inProgressOnly, todayOnly]);
+  }, [orders, inProgressOnly, todayOnly, overdueOnly]);
 
   async function load() {
     setError('');
@@ -114,6 +168,28 @@ export default function OrdersList() {
       />
 
       <ErrorBanner onRetry={load}>{error}</ErrorBanner>
+
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        {[
+          { key: 'all', label: t('orders.all') },
+          { key: 'today', label: t('dashboard.today') },
+          { key: 'overdue', label: t('orders.overdue') },
+          { key: 'ready', label: t(`status.${READY_STATUS}`) },
+        ].map((f) => (
+          <button
+            key={f.key}
+            type="button"
+            onClick={() => applyQuickFilter(f.key)}
+            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+              activeQuickFilter === f.key
+                ? 'bg-nili text-white'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <button

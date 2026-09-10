@@ -151,6 +151,7 @@
     "subtitle": "Order list with status filtering",
     "newOrderBtn": "+ New Order",
     "all": "All",
+    "overdue": "Overdue",
     "searchPlaceholder": "Search by order number or customer name...",
     "quickChange": "Quick Change",
     "paidMark": "Paid",

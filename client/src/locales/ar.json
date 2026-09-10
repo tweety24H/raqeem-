@@ -151,6 +151,7 @@
     "subtitle": "قائمة الطلبات مع فلترة حسب الحالة",
     "newOrderBtn": "+ طلب جديد",
     "all": "الكل",
+    "overdue": "متأخر",
     "searchPlaceholder": "بحث برقم الطلب أو اسم الزبون...",
     "quickChange": "تغيير سريع",
     "paidMark": "مسدد",
