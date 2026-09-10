@@ -5,6 +5,7 @@ import PageHeader from '../components/PageHeader';
 import StatusBadge, { STATUSES, STATUS_STYLES, STATUS_SOLID } from '../components/StatusBadge';
 import ViewToggle, { useViewMode } from '../components/ViewToggle';
 import ErrorBanner from '../components/ui/ErrorBanner';
+import EmptyState from '../components/ui/EmptyState';
 import { useLanguage } from '../context/LanguageContext';
 import { formatIQD, formatDate } from '../utils/format';
 import { exportToExcel } from '../utils/exportExcel';
@@ -177,7 +178,9 @@ export default function OrdersList() {
             );
           })}
           {visibleOrders.length === 0 && (
-            <div className="col-span-full py-8 text-center text-slate-400 dark:text-slate-500">{t('orders.noOrders')}</div>
+            <div className="col-span-full">
+              <EmptyState icon="📦" title={t('orders.noOrders')} actionLabel={t('orders.newOrderBtn')} actionTo="/orders/new" />
+            </div>
           )}
         </div>
       ) : (
@@ -234,8 +237,8 @@ export default function OrdersList() {
               })}
               {visibleOrders.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-slate-400 dark:text-slate-500">
-                    {t('orders.noOrders')}
+                  <td colSpan={8} className="px-4 py-2">
+                    <EmptyState icon="📦" title={t('orders.noOrders')} actionLabel={t('orders.newOrderBtn')} actionTo="/orders/new" />
                   </td>
                 </tr>
               )}

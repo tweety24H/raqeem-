@@ -4,6 +4,7 @@ import api from '../api/client';
 import PageHeader from '../components/PageHeader';
 import Modal from '../components/Modal';
 import ViewToggle, { useViewMode } from '../components/ViewToggle';
+import EmptyState from '../components/ui/EmptyState';
 import { useLanguage } from '../context/LanguageContext';
 import { formatIQD } from '../utils/format';
 import { buildDebtReminderLink } from '../utils/whatsapp';
@@ -158,7 +159,9 @@ export default function Customers() {
             </div>
           ))}
           {list.length === 0 && (
-            <div className="col-span-full py-8 text-center text-slate-400 dark:text-slate-500">{t('common.noData')}</div>
+            <div className="col-span-full">
+              <EmptyState icon="👥" title={t('common.noData')} actionLabel={t('customers.addBtn')} onAction={() => setShowAdd(true)} />
+            </div>
           )}
         </div>
       ) : (
@@ -216,8 +219,8 @@ export default function Customers() {
               ))}
               {list.length === 0 && (
                 <tr>
-                  <td colSpan={overdueOnly ? 6 : 5} className="px-4 py-8 text-center text-slate-400 dark:text-slate-500">
-                    {t('common.noData')}
+                  <td colSpan={overdueOnly ? 6 : 5} className="px-4 py-2">
+                    <EmptyState icon="👥" title={t('common.noData')} actionLabel={t('customers.addBtn')} onAction={() => setShowAdd(true)} />
                   </td>
                 </tr>
               )}

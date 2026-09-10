@@ -4,6 +4,7 @@ import api, { fileUrl } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import Modal from '../components/Modal';
 import ViewToggle, { useViewMode } from '../components/ViewToggle';
+import EmptyState from '../components/ui/EmptyState';
 import { useLanguage } from '../context/LanguageContext';
 import { formatIQD, formatDateTime } from '../utils/format';
 import { buildStockAlertLink } from '../utils/whatsapp';
@@ -244,7 +245,9 @@ export default function Stock() {
             );
           })}
           {items.length === 0 && (
-            <div className="col-span-full py-8 text-center text-slate-400 dark:text-slate-500">{t('stock.noItems')}</div>
+            <div className="col-span-full">
+              <EmptyState icon="📦" title={t('stock.noItems')} actionLabel={t('stock.addItemBtn')} onAction={() => setShowAdd(true)} />
+            </div>
           )}
         </div>
       ) : (
@@ -300,8 +303,8 @@ export default function Stock() {
               })}
               {items.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center text-slate-400 dark:text-slate-500">
-                    {t('stock.noItems')}
+                  <td colSpan={9} className="px-4 py-2">
+                    <EmptyState icon="📦" title={t('stock.noItems')} actionLabel={t('stock.addItemBtn')} onAction={() => setShowAdd(true)} />
                   </td>
                 </tr>
               )}
