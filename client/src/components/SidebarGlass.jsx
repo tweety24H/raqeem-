@@ -181,8 +181,8 @@ export default function SidebarGlass({ collapsed, onToggleCollapsed, mobileOpen,
       >
         {/* Logo + زر الطي */}
         <div className={`flex items-center gap-2.5 border-b border-white/10 px-4 py-4 ${!isExpanded ? 'justify-center px-2' : ''}`}>
-          <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-nili text-lg text-white">
-            🖨️
+          <span className="relative flex h-9 w-9 shrink-0 items-center justify-center">
+            <img src="/logo.png" alt="RaqeemOS" className="h-9 w-9 rounded-xl bg-white/5 object-contain p-1" />
             <span className="absolute -bottom-0.5 -left-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#1A2744] bg-emerald-500" />
           </span>
           {isExpanded && (
