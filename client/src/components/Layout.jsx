@@ -1,17 +1,33 @@
 import { useEffect, useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { DashboardSummaryProvider } from '../context/DashboardSummaryContext';
+import { useAuth } from '../context/AuthContext';
 import SidebarGlass from './SidebarGlass';
 import LanguageToggle from './LanguageToggle';
 import ThemeToggle from './ThemeToggle';
 import NotificationsBell from './NotificationsBell';
+import CommandPalette from './CommandPalette';
+import ShortcutsHelp from './ShortcutsHelp';
 
 const COLLAPSE_KEY = 'sidebarCollapsed';
 
+// Editable form fields shouldn't be hijacked by the chorded shortcuts below
+// (Ctrl+N/Ctrl+B/?) — only Escape and the palette's own input keep working
+// while the user is typing.
+function isTypingTarget(el) {
+  if (!el) return false;
+  const tag = el.tagName;
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+}
+
 export default function Layout() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isOwner, hasPermission } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem(COLLAPSE_KEY) === '1';
@@ -32,6 +48,37 @@ export default function Layout() {
       /* ignore */
     }
   }, [collapsed]);
+
+  // Global keyboard shortcuts: Ctrl+K command palette, Ctrl+N new order,
+  // Ctrl+B collapse sidebar, ? shortcuts help.
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (e.key === 'Escape') {
+        setPaletteOpen(false);
+        setHelpOpen(false);
+        return;
+      }
+      if (isTypingTarget(e.target)) return;
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setPaletteOpen(true);
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+        if (isOwner || hasPermission('create_order')) {
+          e.preventDefault();
+          navigate('/orders/new');
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        setCollapsed((v) => !v);
+      } else if (e.key === '?') {
+        setHelpOpen(true);
+      }
+    }
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [navigate, isOwner, hasPermission]);
 
   return (
     <DashboardSummaryProvider>
@@ -78,6 +125,9 @@ export default function Layout() {
           </main>
         </div>
       </div>
+
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+      <ShortcutsHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
     </DashboardSummaryProvider>
   );
 }

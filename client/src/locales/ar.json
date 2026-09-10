@@ -33,6 +33,17 @@
     "light": "لايت",
     "dark": "دارك"
   },
+  "commandPalette": {
+    "title": "بحث سريع",
+    "placeholder": "اكتب للبحث عن صفحة...",
+    "noResults": "لا نتائج"
+  },
+  "shortcuts": {
+    "title": "اختصارات لوحة المفاتيح",
+    "newOrder": "طلب جديد",
+    "toggleSidebar": "طي/إظهار القائمة الجانبية",
+    "showHelp": "عرض هذه القائمة"
+  },
   "common": {
     "save": "حفظ",
     "cancel": "إلغاء",

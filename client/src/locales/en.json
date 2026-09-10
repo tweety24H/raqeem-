@@ -33,6 +33,17 @@
     "light": "Light",
     "dark": "Dark"
   },
+  "commandPalette": {
+    "title": "Quick search",
+    "placeholder": "Type to search a page...",
+    "noResults": "No results"
+  },
+  "shortcuts": {
+    "title": "Keyboard shortcuts",
+    "newOrder": "New order",
+    "toggleSidebar": "Collapse/expand sidebar",
+    "showHelp": "Show this list"
+  },
   "common": {
     "save": "Save",
     "cancel": "Cancel",
