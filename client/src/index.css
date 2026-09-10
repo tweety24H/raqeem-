@@ -104,6 +104,13 @@ body {
   background: #3f3f52;
 }
 
+/* يخفي السايدبار (aside) عند طباعة أي صفحة — عنصر <aside> وحيد بالتطبيق كله. */
+@media print {
+  aside {
+    display: none !important;
+  }
+}
+
 /* Shimmer keyframe for skeleton loading states (see components/ui/LoadingSkeleton.jsx). */
 .skeleton-shimmer {
   position: relative;
