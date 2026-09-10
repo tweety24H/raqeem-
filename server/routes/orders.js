@@ -2,6 +2,7 @@ const express = require('express');
 const QRCode = require('qrcode');
 const db = require('../db/db');
 const { requireAuth } = require('../middleware/auth');
+const { authorize } = require('../middleware/authorize');
 const settingsService = require('../services/settingsService');
 const whatsappService = require('../services/whatsappService');
 const { normalizeArabic } = require('../utils/arabicSearch');
@@ -30,7 +31,7 @@ function debtFor(customerId) {
 }
 
 // GET /api/orders ?status=&customer_id=&search=&dueSoon=1
-router.get('/', requireAuth, (req, res) => {
+router.get('/', requireAuth, authorize('view_orders'), (req, res) => {
   const { status, customer_id, search, dueSoon } = req.query;
   let sql = `
     SELECT o.*, c.name AS customer_name, c.phone AS customer_phone,
@@ -62,7 +63,7 @@ router.get('/', requireAuth, (req, res) => {
 });
 
 // GET /api/orders/:id
-router.get('/:id', requireAuth, (req, res) => {
+router.get('/:id', requireAuth, authorize('view_orders'), (req, res) => {
   const order = db
     .prepare(
       `SELECT o.*, c.name AS customer_name, c.phone AS customer_phone
@@ -83,7 +84,7 @@ router.get('/:id', requireAuth, (req, res) => {
 });
 
 // POST /api/orders
-router.post('/', requireAuth, (req, res) => {
+router.post('/', requireAuth, authorize('create_order'), (req, res) => {
   const { customer_id, items, discount, payment_type, paid_amount, due_date, notes, recurring_interval_days } =
     req.body;
 
@@ -190,7 +191,7 @@ router.post('/', requireAuth, (req, res) => {
 });
 
 // PATCH /api/orders/:id/status { status }
-router.patch('/:id/status', requireAuth, (req, res) => {
+router.patch('/:id/status', requireAuth, authorize('update_order_status'), (req, res) => {
   const { status } = req.body;
   if (!STATUSES.includes(status)) return res.status(400).json({ error: 'حالة غير صالحة' });
 
@@ -224,7 +225,7 @@ router.patch('/:id/status', requireAuth, (req, res) => {
 });
 
 // POST /api/orders/:id/payment { amount, method, note }
-router.post('/:id/payment', requireAuth, (req, res) => {
+router.post('/:id/payment', requireAuth, authorize('edit_order'), (req, res) => {
   const { amount, method, note } = req.body;
   const amt = Number(amount);
   const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id);
@@ -253,7 +254,7 @@ router.post('/:id/payment', requireAuth, (req, res) => {
 });
 
 // GET /api/orders/:id/receipt
-router.get('/:id/receipt', requireAuth, async (req, res) => {
+router.get('/:id/receipt', requireAuth, authorize('view_receipts'), async (req, res) => {
   const order = db
     .prepare(`SELECT o.*, c.name AS customer_name, c.phone AS customer_phone FROM orders o JOIN customers c ON c.id = o.customer_id WHERE o.id = ?`)
     .get(req.params.id);

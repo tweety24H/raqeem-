@@ -65,7 +65,7 @@ function AppRoutes() {
         <Route
           path="/settings/permissions"
           element={
-            <ProtectedRoute ownerOnly>
+            <ProtectedRoute permission="manage_roles">
               <PermissionsSettings />
             </ProtectedRoute>
           }

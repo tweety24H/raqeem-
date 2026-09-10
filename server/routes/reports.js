@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db/db');
 const { requireAuth } = require('../middleware/auth');
+const { authorize } = require('../middleware/authorize');
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ function rangeWhere(range, column) {
 }
 
 // GET /api/reports/summary?range=today|week|month|all
-router.get('/summary', requireAuth, (req, res) => {
+router.get('/summary', requireAuth, authorize('view_reports'), (req, res) => {
   const range = ['today', 'week', 'month', 'all'].includes(req.query.range) ? req.query.range : 'today';
   const orderWhere = rangeWhere(range, 'o.created_at');
   const expenseWhere = rangeWhere(range, 'date');
@@ -66,7 +67,7 @@ router.get('/summary', requireAuth, (req, res) => {
 });
 
 // GET /api/reports/daily?days=30 - الإيراد والمصاريف يوميًا لآخر N يوم (لرسم بياني)
-router.get('/daily', requireAuth, (req, res) => {
+router.get('/daily', requireAuth, authorize('view_reports'), (req, res) => {
   const days = Math.min(Math.max(Number(req.query.days) || 30, 1), 365);
 
   const revenueRows = db
@@ -97,7 +98,7 @@ router.get('/daily', requireAuth, (req, res) => {
 });
 
 // GET /api/reports/profit?from=&to=
-router.get('/profit', requireAuth, (req, res) => {
+router.get('/profit', requireAuth, authorize('view_profits'), (req, res) => {
   const { from, to } = req.query;
   let where = '1=1';
   const params = [];
@@ -140,7 +141,7 @@ router.get('/profit', requireAuth, (req, res) => {
 });
 
 // GET /api/reports/worker-performance?from=&to=
-router.get('/worker-performance', requireAuth, (req, res) => {
+router.get('/worker-performance', requireAuth, authorize('view_reports'), (req, res) => {
   const { from, to } = req.query;
   let where = '1=1';
   const params = [];

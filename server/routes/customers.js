@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db/db');
 const { requireAuth } = require('../middleware/auth');
+const { authorize } = require('../middleware/authorize');
 const debtService = require('../services/debtService');
 const { debtFor } = debtService;
 const { normalizeArabic } = require('../utils/arabicSearch');
@@ -11,7 +12,7 @@ const router = express.Router();
 // GET /api/customers ?search=
 // البحث يطابق على search_name الموحّد (بدون تشكيل/همزات/تاء مربوطة/ألف مقصورة)
 // حتى تتطابق كل أشكال كتابة نفس الاسم — راجع server/utils/arabicSearch.js.
-router.get('/', requireAuth, (req, res) => {
+router.get('/', requireAuth, authorize('view_customers'), (req, res) => {
   const { search } = req.query;
   let sql = 'SELECT * FROM customers WHERE 1=1';
   const params = [];
@@ -27,13 +28,13 @@ router.get('/', requireAuth, (req, res) => {
 });
 
 // GET /api/customers/overdue?days=45
-router.get('/overdue', requireAuth, (req, res) => {
+router.get('/overdue', requireAuth, authorize('view_debts'), (req, res) => {
   const days = Number(req.query.days) || 30;
   res.json({ customers: debtService.getOverdueCustomers(days) });
 });
 
 // GET /api/customers/:id
-router.get('/:id', requireAuth, (req, res) => {
+router.get('/:id', requireAuth, authorize('view_customers'), (req, res) => {
   const customer = db.prepare('SELECT * FROM customers WHERE id = ?').get(req.params.id);
   if (!customer) return res.status(404).json({ error: 'الزبون غير موجود' });
   const orders = db
@@ -46,7 +47,7 @@ router.get('/:id', requireAuth, (req, res) => {
 });
 
 // POST /api/customers { name, phone, notes }
-router.post('/', requireAuth, (req, res) => {
+router.post('/', requireAuth, authorize('create_customer'), (req, res) => {
   const { name, phone, notes } = req.body;
   if (!name) return res.status(400).json({ error: 'اسم الزبون مطلوب' });
   const info = db
@@ -65,7 +66,7 @@ router.post('/', requireAuth, (req, res) => {
 });
 
 // PATCH /api/customers/:id
-router.patch('/:id', requireAuth, (req, res) => {
+router.patch('/:id', requireAuth, authorize('edit_customer'), (req, res) => {
   const { name, phone, notes } = req.body;
   const before = db.prepare('SELECT * FROM customers WHERE id = ?').get(req.params.id);
   if (!before) return res.status(404).json({ error: 'الزبون غير موجود' });
@@ -88,7 +89,7 @@ router.patch('/:id', requireAuth, (req, res) => {
 });
 
 // POST /api/customers/:id/remind - يسجّل أن تذكير واتساب أُرسل لهذا الزبون
-router.post('/:id/remind', requireAuth, (req, res) => {
+router.post('/:id/remind', requireAuth, authorize('edit_customer'), (req, res) => {
   const customer = db.prepare('SELECT * FROM customers WHERE id = ?').get(req.params.id);
   if (!customer) return res.status(404).json({ error: 'الزبون غير موجود' });
   const debt = debtFor(customer.id);

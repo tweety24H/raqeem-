@@ -4,6 +4,7 @@ const fs = require('fs');
 const multer = require('multer');
 const db = require('../db/db');
 const { requireAuth } = require('../middleware/auth');
+const { authorize } = require('../middleware/authorize');
 const stockAlertService = require('../services/stockAlertService');
 
 const router = express.Router();
@@ -35,7 +36,7 @@ const UNITS = ['قطعة', 'كغم', 'متر', 'لتر', 'كارتون', 'طبق
 const TYPES = ['خام', 'منتج_تام', 'مستهلك', 'قطع_غيار', 'تغليف'];
 
 // GET /api/stock ?search=&category=&category_id=&type=&unit=&lowOnly=1
-router.get('/', requireAuth, (req, res) => {
+router.get('/', requireAuth, authorize('view_inventory'), (req, res) => {
   const { search, category, category_id, type, unit, lowOnly } = req.query;
   let sql = `
     SELECT si.*, sc.name AS category_name
@@ -71,12 +72,12 @@ router.get('/', requireAuth, (req, res) => {
 });
 
 // GET /api/stock/categories
-router.get('/categories', requireAuth, (req, res) => {
+router.get('/categories', requireAuth, authorize('view_inventory'), (req, res) => {
   res.json({ categories: db.prepare('SELECT * FROM stock_categories ORDER BY name').all() });
 });
 
 // POST /api/stock/categories { name }
-router.post('/categories', requireAuth, (req, res) => {
+router.post('/categories', requireAuth, authorize('edit_inventory'), (req, res) => {
   const name = (req.body.name || '').trim();
   if (!name) return res.status(400).json({ error: 'اسم التصنيف مطلوب' });
   try {
@@ -92,7 +93,7 @@ router.post('/categories', requireAuth, (req, res) => {
 });
 
 // GET /api/stock/barcode/:code
-router.get('/barcode/:code', requireAuth, (req, res) => {
+router.get('/barcode/:code', requireAuth, authorize('view_inventory'), (req, res) => {
   const item = db
     .prepare(
       `SELECT si.*, sc.name AS category_name FROM stock_items si
@@ -105,7 +106,7 @@ router.get('/barcode/:code', requireAuth, (req, res) => {
 });
 
 // GET /api/stock/reports/waste?from=&to=
-router.get('/reports/waste', requireAuth, (req, res) => {
+router.get('/reports/waste', requireAuth, authorize('view_inventory'), (req, res) => {
   const { from, to } = req.query;
   let sql = `
     SELECT sm.id, sm.stock_item_id, si.name AS item_name, si.unit, sm.quantity,
@@ -132,7 +133,7 @@ router.get('/reports/waste', requireAuth, (req, res) => {
 });
 
 // POST /api/stock/alert - يسجّل أن تنبيه واتساب للمخزون المنخفض أُرسل
-router.post('/alert', requireAuth, (req, res) => {
+router.post('/alert', requireAuth, authorize('edit_inventory'), (req, res) => {
   const lowItems = stockAlertService.getLowStockItems();
   stockAlertService.logAlert({
     itemsCount: lowItems.length,
@@ -145,7 +146,7 @@ router.post('/alert', requireAuth, (req, res) => {
 // POST /api/stock/import  { items: [{ name, unit, quantity, min_quantity, purchase_price, sale_price, barcode, category, type, location, supplier, notes }, ...] }
 // استيراد جماعي (من ملف Excel تتم قراءته بالواجهة وتحويله لصفوف JSON): تحديث الصنف
 // إذا الباركود موجود مسبقًا، وإلا إضافة صنف جديد. لا يحذف أي بيانات موجودة.
-router.post('/import', requireAuth, (req, res) => {
+router.post('/import', requireAuth, authorize('edit_inventory'), (req, res) => {
   const rows = Array.isArray(req.body.items) ? req.body.items : [];
   if (!rows.length) return res.status(400).json({ error: 'لا توجد بيانات للاستيراد' });
 
@@ -238,7 +239,7 @@ router.post('/import', requireAuth, (req, res) => {
 });
 
 // GET /api/stock/:id
-router.get('/:id', requireAuth, (req, res) => {
+router.get('/:id', requireAuth, authorize('view_inventory'), (req, res) => {
   const item = db
     .prepare(
       `SELECT si.*, sc.name AS category_name FROM stock_items si
@@ -255,7 +256,7 @@ router.get('/:id', requireAuth, (req, res) => {
 
 // POST /api/stock  (multipart أو JSON)
 // { name, unit, quantity, min_quantity, purchase_price, sale_price, barcode, category, category_id, type, location, supplier, notes, image? }
-router.post('/', requireAuth, uploadItemImage.single('image'), (req, res) => {
+router.post('/', requireAuth, authorize('edit_inventory'), uploadItemImage.single('image'), (req, res) => {
   const { name, unit, quantity, min_quantity, barcode, category, category_id, type, location, supplier, notes } = req.body;
   const purchase_price = req.body.purchase_price ?? req.body.cost_per_unit;
   const sale_price = req.body.sale_price;
@@ -300,7 +301,7 @@ router.post('/', requireAuth, uploadItemImage.single('image'), (req, res) => {
 });
 
 // PATCH /api/stock/:id (multipart أو JSON) — تعديل بيانات الصنف الوصفية (مو الكمية مباشرة)
-router.patch('/:id', requireAuth, uploadItemImage.single('image'), (req, res) => {
+router.patch('/:id', requireAuth, authorize('edit_inventory'), uploadItemImage.single('image'), (req, res) => {
   const { name, unit, min_quantity, barcode, category, category_id, type, location, supplier, notes } = req.body;
   const purchase_price = req.body.purchase_price ?? req.body.cost_per_unit;
   const sale_price = req.body.sale_price;
@@ -351,7 +352,7 @@ router.patch('/:id', requireAuth, uploadItemImage.single('image'), (req, res) =>
 });
 
 // POST /api/stock/:id/movement  { type: in|out|adjust, quantity, reason }
-router.post('/:id/movement', requireAuth, (req, res) => {
+router.post('/:id/movement', requireAuth, authorize('edit_inventory'), (req, res) => {
   const { type, quantity, reason } = req.body;
   const qty = Number(quantity);
   if (!['in', 'out', 'adjust'].includes(type) || !qty || qty < 0) {
@@ -387,7 +388,7 @@ router.post('/:id/movement', requireAuth, (req, res) => {
 });
 
 // POST /api/stock/:id/damage  (multipart form: quantity, reason, photo)
-router.post('/:id/damage', requireAuth, uploadDamage.single('photo'), (req, res) => {
+router.post('/:id/damage', requireAuth, authorize('edit_inventory'), uploadDamage.single('photo'), (req, res) => {
   const qty = Number(req.body.quantity);
   const reason = req.body.reason || 'تالف';
   if (!qty || qty <= 0) return res.status(400).json({ error: 'أدخل كمية صحيحة' });

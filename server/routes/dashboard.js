@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db/db');
 const { requireAuth } = require('../middleware/auth');
+const { authorize } = require('../middleware/authorize');
 
 const router = express.Router();
 
@@ -21,7 +22,7 @@ function profitBetween(fromExpr) {
 }
 
 // GET /api/dashboard/summary
-router.get('/summary', requireAuth, (req, res) => {
+router.get('/summary', requireAuth, authorize('view_dashboard'), (req, res) => {
   const today = profitBetween("date(created_at) = date('now')");
   const month = profitBetween("strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')");
 
