@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard';
 import NewOrder from './pages/NewOrder';
 import OrdersList from './pages/OrdersList';
 import OrderDetail from './pages/OrderDetail';
+import PrintQueue from './pages/PrintQueue';
 import Stock from './pages/Stock';
 import Customers from './pages/Customers';
 import CustomerDetail from './pages/CustomerDetail';
@@ -102,6 +103,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute permission="view_orders">
               <OrderDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/print-queue"
+          element={
+            <ProtectedRoute permission="view_orders">
+              <PrintQueue />
             </ProtectedRoute>
           }
         />

@@ -10,6 +10,7 @@ export const NAV_ITEMS = [
   { to: '/orders/new', key: 'nav.newOrder', icon: '🧾', ownerOnly: false, permission: 'create_order' },
   { to: '/lightbox-orders', key: 'nav.lightboxOrder', icon: '💡', ownerOnly: false, permission: 'create_order' },
   { to: '/orders', key: 'nav.orders', icon: '📋', ownerOnly: false, permission: 'view_orders' },
+  { to: '/print-queue', key: 'nav.printQueue', icon: '🖨️', ownerOnly: false, permission: 'view_orders' },
   { to: '/stock', key: 'nav.inventory', icon: '📦', ownerOnly: false, permission: 'view_inventory' },
   { to: '/customers', key: 'nav.customers', icon: '👥', ownerOnly: false, permission: 'view_customers' },
   { to: '/archive', key: 'nav.archive', icon: '🗂️', ownerOnly: false, permission: 'view_customers' },

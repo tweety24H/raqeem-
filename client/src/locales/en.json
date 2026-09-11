@@ -8,6 +8,7 @@
     "newOrder": "New Order",
     "lightboxOrder": "Lightbox Order",
     "orders": "Orders",
+    "printQueue": "Print Queue",
     "inventory": "Inventory",
     "customers": "Customers & Debts",
     "archive": "Design Archive",
@@ -33,6 +34,12 @@
   "theme": {
     "light": "Light",
     "dark": "Dark"
+  },
+  "focusMode": {
+    "toggle": "Focus Mode",
+    "heading": "Orders Ready for Delivery",
+    "exit": "Exit",
+    "empty": "No orders ready for delivery right now"
   },
   "offline": {
     "banner": "You're offline — your data is saved locally and works normally"
@@ -326,7 +333,9 @@
     "ordersHeading": "Orders",
     "noOrders": "No orders",
     "paymentHistory": "Payment History",
-    "noPayments": "No payments"
+    "noPayments": "No payments",
+    "loyaltyHeading": "Loyalty Points",
+    "loyaltyHint": "500 points = 5% discount (1 point per 1,000 IQD)"
   },
   "receipt": {
     "qrLabel": "QR Code:",
@@ -378,6 +387,11 @@
   "forbidden": {
     "subtitle": "You need an additional permission to access this page — contact the shop owner.",
     "backHome": "Back to Home"
+  },
+  "printQueue": {
+    "title": "Print Queue",
+    "subtitle": "Orders currently printing",
+    "empty": "No orders currently printing"
   },
   "activityLogs": {
     "title": "Activity Log",

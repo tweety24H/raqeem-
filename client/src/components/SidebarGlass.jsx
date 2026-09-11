@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { Home, Package, Boxes, Users, BarChart3, Archive, Clock, Shield, Settings, ChevronLeft, ChevronDown, LogOut, Repeat } from 'lucide-react';
+import { Home, Package, Boxes, Users, BarChart3, Archive, Clock, Shield, Settings, ChevronLeft, ChevronDown, LogOut, Repeat, Printer } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useDashboardSummary } from '../context/DashboardSummaryContext';
@@ -24,6 +24,7 @@ const SECTIONS = [
     titleKey: 'nav.groupOperations',
     items: [
       { to: '/orders', key: 'nav.orders', Icon: Package, badge: 'ready', permission: 'view_orders' },
+      { to: '/print-queue', key: 'nav.printQueue', Icon: Printer, permission: 'view_orders' },
       { to: '/stock', key: 'nav.inventory', Icon: Boxes, permission: 'view_inventory' },
     ],
   },
