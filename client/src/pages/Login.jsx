@@ -47,9 +47,7 @@ export default function Login() {
 
       <div className="relative w-full max-w-sm mx-4 rounded-[28px] border-2 border-nili/10 bg-white p-8 shadow-2xl">
         <div className="mb-7 text-center">
-          <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-nili text-2xl text-white rotate-3">
-            🖨️
-          </span>
+          <img src="/logo.png" alt="RaqeemOS" className="mx-auto mb-4 h-14 w-14 rounded-2xl object-contain rotate-3" />
           <h1 className="font-display text-lg font-bold tracking-[-0.02em] text-nili">RaqeemOS</h1>
           <p className="font-arabic mt-1 text-xs text-slate-400 font-medium">أدخل رمز PIN الخاص بك لتسجيل الدخول</p>
         </div>

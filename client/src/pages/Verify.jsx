@@ -60,7 +60,7 @@ export default function Verify() {
     <div dir="rtl" className="min-h-screen bg-stone-100 dark:bg-[#0a0a0f]">
       <header className="no-print flex items-center justify-between border-b border-stone-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950">
         <div className="flex items-center gap-2">
-          <span className="text-xl">🖨️</span>
+          <img src="/logo.png" alt="RaqeemOS" className="h-6 w-6 rounded-lg object-contain" />
           <span className="font-bold text-slate-800 dark:text-slate-100">RaqeemOS</span>
         </div>
         <div className="flex items-center gap-2">

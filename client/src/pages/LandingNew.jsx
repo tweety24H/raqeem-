@@ -21,7 +21,7 @@ export default function LandingNew() {
         {/* Header */}
         <header className="flex items-center justify-between px-8 lg:px-16 py-6">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-nili text-white text-lg">🖨️</span>
+            <img src="/logo.png" alt="RaqeemOS" className="h-10 w-10 rounded-xl object-contain" />
             <div className="leading-tight">
               <div className="font-display text-lg font-bold tracking-[-0.02em] text-gold">RaqeemOS</div>
               <div className="font-arabic text-[11px] text-slate-400 font-medium">نظام إدارة المطبعة</div>
