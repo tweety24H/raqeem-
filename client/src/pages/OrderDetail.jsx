@@ -6,6 +6,7 @@ import StatusBadge from '../components/StatusBadge';
 import { useLanguage } from '../context/LanguageContext';
 import { formatIQD, formatDateTime } from '../utils/format';
 import { OrderDesignsSection } from '../components/DesignArchive';
+import { notifyIfCompleted } from '../utils/feedback';
 
 const STATUSES = ['جديد', 'قيد التصميم', 'قيد الطباعة', 'جاهز للتسليم', 'تم التسليم'];
 
@@ -30,6 +31,7 @@ export default function OrderDetail() {
     setBusy(true);
     try {
       await api.patch(`/orders/${id}/status`, { status });
+      notifyIfCompleted(status);
       await load();
     } finally {
       setBusy(false);

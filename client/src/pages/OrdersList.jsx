@@ -9,6 +9,7 @@ import EmptyState from '../components/ui/EmptyState';
 import { useLanguage } from '../context/LanguageContext';
 import { formatIQD, formatDate } from '../utils/format';
 import { exportToExcel } from '../utils/exportExcel';
+import { notifyIfCompleted } from '../utils/feedback';
 
 // Task 4: the Dashboard's "In Progress" tile links here with ?status=in_progress
 // — that's not a single order status (it covers two: قيد التصميم + قيد الطباعة),
@@ -150,6 +151,7 @@ export default function OrdersList() {
     setBusyId(orderId);
     try {
       await api.patch(`/orders/${orderId}/status`, { status: newStatus });
+      notifyIfCompleted(newStatus);
       await load();
     } finally {
       setBusyId(null);
