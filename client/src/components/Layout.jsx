@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Focus } from 'lucide-react';
 import { DashboardSummaryProvider } from '../context/DashboardSummaryContext';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import SidebarGlass from './SidebarGlass';
 import LanguageToggle from './LanguageToggle';
 import ThemeToggle from './ThemeToggle';
@@ -10,9 +12,11 @@ import NotificationsBell from './NotificationsBell';
 import CommandPalette from './CommandPalette';
 import ShortcutsHelp from './ShortcutsHelp';
 import OfflineBanner from './OfflineBanner';
+import FocusModeView from './FocusModeView';
 import Onboarding, { shouldShowOnboarding } from './Onboarding';
 
 const COLLAPSE_KEY = 'sidebarCollapsed';
+const FOCUS_MODE_KEY = 'focusMode';
 
 // Editable form fields shouldn't be hijacked by the chorded shortcuts below
 // (Ctrl+N/Ctrl+B/?) — only Escape and the palette's own input keep working
@@ -27,10 +31,18 @@ export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { isOwner, hasPermission } = useAuth();
+  const { t } = useLanguage();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(shouldShowOnboarding);
+  const [focusMode, setFocusMode] = useState(() => {
+    try {
+      return localStorage.getItem(FOCUS_MODE_KEY) === '1';
+    } catch {
+      return false;
+    }
+  });
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem(COLLAPSE_KEY) === '1';
@@ -52,6 +64,14 @@ export default function Layout() {
     }
   }, [collapsed]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(FOCUS_MODE_KEY, focusMode ? '1' : '0');
+    } catch {
+      /* ignore */
+    }
+  }, [focusMode]);
+
   // Global keyboard shortcuts: Ctrl+K command palette, Ctrl+N new order,
   // Ctrl+B collapse sidebar, ? shortcuts help.
   useEffect(() => {
@@ -59,6 +79,7 @@ export default function Layout() {
       if (e.key === 'Escape') {
         setPaletteOpen(false);
         setHelpOpen(false);
+        setFocusMode(false);
         return;
       }
       if (isTypingTarget(e.target)) return;
@@ -82,6 +103,14 @@ export default function Layout() {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [navigate, isOwner, hasPermission]);
+
+  if (focusMode) {
+    return (
+      <DashboardSummaryProvider>
+        <FocusModeView onExit={() => setFocusMode(false)} />
+      </DashboardSummaryProvider>
+    );
+  }
 
   return (
     <DashboardSummaryProvider>
@@ -109,6 +138,15 @@ export default function Layout() {
               ☰
             </button>
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setFocusMode(true)}
+                title={t('focusMode.toggle')}
+                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 dark:border-slate-800 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
+              >
+                <Focus className="h-4 w-4" strokeWidth={1.75} />
+                <span className="hidden sm:inline">{t('focusMode.toggle')}</span>
+              </button>
               <NotificationsBell />
               <LanguageToggle />
               <ThemeToggle />
