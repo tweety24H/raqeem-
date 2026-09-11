@@ -160,6 +160,12 @@ router.post('/', requireAuth, authorize('create_order'), (req, res) => {
       ).run(orderId, customer_id, paid, req.worker.workerId);
     }
 
+    // نقاط ولاء: نقطة واحدة لكل 1000 د.ع من قيمة الطلب الكلية.
+    const earnedPoints = Math.floor(total / 1000);
+    if (earnedPoints > 0) {
+      db.prepare('UPDATE customers SET points = points + ? WHERE id = ?').run(earnedPoints, customer_id);
+    }
+
     if (recurring_interval_days && Number(recurring_interval_days) > 0) {
       const nextDate = new Date(Date.now() + Number(recurring_interval_days) * 86400000)
         .toISOString()

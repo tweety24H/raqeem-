@@ -125,6 +125,16 @@ function migrateWorkersRoleId() {
 }
 migrateWorkersRoleId();
 
+// ترقية: نقاط ولاء بسيطة للزبون — نقطة واحدة لكل 1000 د.ع بقيمة الطلب،
+// تُحسب محليًا عند إنشاء كل طلب (orders.js)، بدون أي خدمة خارجية.
+function migrateCustomersPoints() {
+  const existing = db.prepare('PRAGMA table_info(customers)').all().map((c) => c.name);
+  if (!existing.includes('points')) {
+    db.exec('ALTER TABLE customers ADD COLUMN points INTEGER NOT NULL DEFAULT 0');
+  }
+}
+migrateCustomersPoints();
+
 // زرع الأدوار الأربعة الافتراضية + توزيع الصلاحيات عليها (idempotent).
 function seedRoles() {
   const ROLES = [

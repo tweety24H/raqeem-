@@ -67,6 +67,20 @@ export default function CustomerDetail() {
         </div>
       </div>
 
+      <div className="card mb-6">
+        <div className="mb-2 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-300">{t('customerDetail.loyaltyHeading')}</h3>
+          <span className="text-lg font-bold text-gold">{customer.points || 0}</span>
+        </div>
+        <div className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
+          <div
+            className="h-full rounded-full bg-gold transition-all"
+            style={{ width: `${Math.min(100, ((customer.points || 0) / 500) * 100)}%` }}
+          />
+        </div>
+        <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">{t('customerDetail.loyaltyHint')}</p>
+      </div>
+
       {customer.notes && (
         <div className="card mb-6">
           <h3 className="mb-1 text-sm font-semibold text-slate-600 dark:text-slate-300">{t('common.notes')}</h3>
