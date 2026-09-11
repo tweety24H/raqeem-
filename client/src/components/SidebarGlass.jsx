@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { Home, Package, Boxes, Users, BarChart3, Archive, Clock, Shield, Settings, ChevronLeft, ChevronDown, LogOut } from 'lucide-react';
+import { Home, Package, Boxes, Users, BarChart3, Archive, Clock, Shield, Settings, ChevronLeft, ChevronDown, LogOut, Repeat } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useDashboardSummary } from '../context/DashboardSummaryContext';
+import SwitchUserModal from './SwitchUserModal';
 
 const READY_STATUS = 'جاهز للتسليم';
 const EXPANDED_W = 280;
@@ -154,6 +155,7 @@ export default function SidebarGlass({ collapsed, onToggleCollapsed, mobileOpen,
   const { t, lang } = useLanguage();
   const { summary } = useDashboardSummary();
   const [hoverExpand, setHoverExpand] = useState(false);
+  const [showSwitchUser, setShowSwitchUser] = useState(false);
 
   // "جاهز" = بادج قسم الطلبات — عدد الطلبات الجاهزة للتسليم فعليًا (من نفس
   // مصدر بيانات الداشبورد)، مو "قرب الاستحقاق" كان بالتصميم القديم.
@@ -221,19 +223,27 @@ export default function SidebarGlass({ collapsed, onToggleCollapsed, mobileOpen,
           ))}
         </nav>
 
-        {/* بطاقة المستخدم + تسجيل الخروج */}
+        {/* بطاقة المستخدم + تبديل سريع + تسجيل الخروج */}
         <div className={`border-t border-white/10 p-4 ${!isExpanded ? 'px-2' : ''}`}>
-          <div className={`flex items-center gap-3 ${!isExpanded ? 'justify-center' : ''}`}>
+          <button
+            type="button"
+            onClick={() => setShowSwitchUser(true)}
+            title={t('nav.switchUser')}
+            className={`flex w-full items-center gap-3 rounded-lg p-1 transition hover:bg-white/10 ${!isExpanded ? 'justify-center' : ''}`}
+          >
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold/20 text-sm font-bold text-gold">
               {(worker?.name || '?').trim().charAt(0)}
             </span>
             {isExpanded && (
-              <div className="font-arabic min-w-0 flex-1 leading-tight">
-                <div className="truncate text-sm font-semibold text-white">{worker?.name}</div>
-                <div className="truncate text-xs text-slate-400">{worker?.role === 'owner' ? t('nav.owner') : t('nav.employee')}</div>
-              </div>
+              <>
+                <div className="font-arabic min-w-0 flex-1 text-right leading-tight">
+                  <div className="truncate text-sm font-semibold text-white">{worker?.name}</div>
+                  <div className="truncate text-xs text-slate-400">{worker?.role === 'owner' ? t('nav.owner') : t('nav.employee')}</div>
+                </div>
+                <Repeat className="h-4 w-4 shrink-0 text-slate-400" strokeWidth={1.5} />
+              </>
             )}
-          </div>
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -250,6 +260,8 @@ export default function SidebarGlass({ collapsed, onToggleCollapsed, mobileOpen,
           </button>
         </div>
       </aside>
+
+      <SwitchUserModal open={showSwitchUser} onClose={() => setShowSwitchUser(false)} />
     </>
   );
 }

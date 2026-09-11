@@ -56,6 +56,27 @@ function permissionsFor(worker) {
   return Array.from(new Set([...direct, ...viaRole]));
 }
 
+// GET /api/auth/login-options — public (no auth), used by the new
+// card-picker login screen. Deliberately minimal: name + role only, never
+// pin_hash or permissions, so it's safe to expose before authentication.
+router.get('/login-options', (req, res) => {
+  const workers = db
+    .prepare(
+      `SELECT w.id, w.name, w.role, r.name AS role_name
+       FROM workers w LEFT JOIN roles r ON r.id = w.role_id
+       WHERE w.active = 1
+       ORDER BY w.created_at`
+    )
+    .all();
+  res.json({
+    workers: workers.map((w) => ({
+      id: w.id,
+      name: w.name,
+      roleLabel: w.role === 'owner' ? 'مالك' : w.role_name || 'موظف',
+    })),
+  });
+});
+
 // POST /api/auth/login { pin }
 router.post('/login', (req, res) => {
   const { pin } = req.body;

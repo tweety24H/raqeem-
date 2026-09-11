@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { useAuth } from './context/AuthContext';
 import LandingNew from './pages/LandingNew';
 import Login from './pages/Login';
+import Onboarding, { FIRST_LAUNCH_KEY } from './pages/Onboarding';
+import SplashScreen from './components/SplashScreen';
 import Dashboard from './pages/Dashboard';
 import NewOrder from './pages/NewOrder';
 import OrdersList from './pages/OrdersList';
@@ -27,11 +30,37 @@ import TrialBanner from './components/TrialBanner';
 import UpdateBanner from './components/UpdateBanner';
 import { useLicense } from './hooks/useLicense';
 
+// Case C (دخول مباشر): إذا عندنا جلسة موجودة أصلاً، ما نعرض صفحة الهبوط
+// التسويقية — نعرض splash قصير (800ms) وننتقل مباشرة للداشبورد (أو لمعالج
+// الإعداد الأول إذا لسا ماكو). زائر بدون جلسة يشوف نفس صفحة الهبوط القديمة.
+function RootGate() {
+  const { worker } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!worker) return;
+    const timer = setTimeout(() => {
+      let firstLaunchDone = false;
+      try {
+        firstLaunchDone = localStorage.getItem(FIRST_LAUNCH_KEY) === 'true';
+      } catch {
+        firstLaunchDone = true;
+      }
+      navigate(firstLaunchDone ? '/dashboard' : '/onboarding', { replace: true });
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [worker, navigate]);
+
+  if (worker) return <SplashScreen />;
+  return <LandingNew />;
+}
+
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<LandingNew />} />
+      <Route path="/" element={<RootGate />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
       <Route path="/receipt/:id" element={<ProtectedRoute><Receipt /></ProtectedRoute>} />
       <Route path="/mobile" element={<ProtectedRoute><MobileDashboard /></ProtectedRoute>} />
       <Route path="/verify/:orderNumber" element={<Verify />} />

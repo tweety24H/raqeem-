@@ -1,127 +1,171 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import UserPinPad from '../components/UserPinPad';
+import { FIRST_LAUNCH_KEY } from './Onboarding';
+
+function initials(name) {
+  return (name || '?').trim().charAt(0);
+}
+
+function postLoginRedirect(navigate) {
+  let firstLaunchDone = false;
+  try {
+    firstLaunchDone = localStorage.getItem(FIRST_LAUNCH_KEY) === 'true';
+  } catch {
+    firstLaunchDone = true;
+  }
+  navigate(firstLaunchDone ? '/dashboard' : '/onboarding');
+}
 
 export default function Login() {
-  const [pin, setPin] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const { login, worker } = useAuth();
   const navigate = useNavigate();
-  const inputRef = useRef(null);
+  const [options, setOptions] = useState(null); // null = loading
+  const [selected, setSelected] = useState(null); // worker card chosen, or 'fallback'
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (worker) navigate('/dashboard');
+    if (worker) postLoginRedirect(navigate);
   }, [worker, navigate]);
 
   useEffect(() => {
-    inputRef.current?.focus();
+    api
+      .get('/auth/login-options')
+      .then((r) => setOptions(r.data.workers))
+      .catch(() => setOptions([]));
   }, []);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  async function submitPin(pin) {
     setError('');
     setLoading(true);
     try {
       await login(pin);
-      navigate('/dashboard');
+      postLoginRedirect(navigate);
     } catch (err) {
-      setError(err.response?.data?.error || 'تعذر تسجيل الدخول، تأكد من تشغيل الخادم');
-      setPin('');
+      setError(err.response?.data?.error || 'رمز PIN غير صحيح');
     } finally {
       setLoading(false);
     }
   }
 
-  function pressKey(digit) {
-    setError('');
-    setPin((p) => (p.length < 8 ? p + digit : p));
-  }
+  const showCards = options && options.length > 0 && !selected;
+  const showPinPad = selected || (options && options.length === 0);
 
   return (
-    // لايت بس بالتصميم - قرار مقصود، بدون دعم دارك مود (شوف LandingNew.jsx لنفس الملاحظة).
-    <div dir="rtl" className="flex h-screen w-screen items-center justify-center bg-[#fefcf8] relative overflow-hidden">
-      {/* لمسة "ورق" خفيفة بالخلفية - طابعة شفافة جداً، ديكور بس */}
-      <div className="pointer-events-none absolute top-10 left-10 hidden text-[160px] opacity-[0.04] select-none sm:block">🖨️</div>
-      <div className="pointer-events-none absolute -bottom-16 -right-16 w-80 h-80 rounded-full bg-gold/10 blur-3xl" />
+    // dir="ltr" هنا يتحكم فقط بترتيب عمودي الـ flex (يسار/يمين فيزيائيًا)
+    // بغض النظر عن اتجاه الصفحة العام؛ كل عمود يفرض dir="rtl" الخاص فيه
+    // لمحاذاة نصوصه العربية بشكل صحيح.
+    <div dir="ltr" className="flex h-screen w-screen overflow-hidden font-arabic">
+      {/* يسار: هوية العلامة */}
+      <div dir="rtl" className="relative hidden w-[42%] shrink-0 flex-col items-center justify-center overflow-hidden bg-[#1A2744] px-10 text-center lg:flex">
+        <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.05]" aria-hidden="true">
+          <pattern id="goldDots" width="28" height="28" patternUnits="userSpaceOnUse">
+            <circle cx="2" cy="2" r="1.5" fill="#C5A880" />
+          </pattern>
+          <rect width="100%" height="100%" fill="url(#goldDots)" />
+        </svg>
 
-      <div className="relative w-full max-w-sm mx-4 rounded-[28px] border-2 border-nili/10 bg-white p-8 shadow-2xl">
-        <div className="mb-7 text-center">
-          <img src="/logo.png" alt="RaqeemOS" className="mx-auto mb-4 h-14 w-14 rounded-2xl object-contain rotate-3" />
-          <h1 className="font-display text-lg font-bold tracking-[-0.02em] text-nili">RaqeemOS</h1>
-          <p className="font-arabic mt-1 text-xs text-slate-400 font-medium">أدخل رمز PIN الخاص بك لتسجيل الدخول</p>
+        <motion.img
+          src="/logo.png"
+          alt="RaqeemOS"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="mb-6 h-[120px] w-[120px] rounded-3xl object-contain"
+        />
+        <motion.h1
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="font-display text-3xl font-bold tracking-[-0.02em] text-[#C5A880]"
+        >
+          RaqeemOS
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="mt-2 text-sm text-slate-300"
+        >
+          نظام إدارة المطبعة الذكي
+        </motion.p>
+      </div>
+
+      {/* يمين: اختيار المستخدم / رمز PIN */}
+      <div dir="rtl" className="flex flex-1 items-center justify-center bg-white px-6">
+        <div className="w-full max-w-sm">
+          <div className="mb-8 text-center lg:hidden">
+            <img src="/logo.png" alt="RaqeemOS" className="mx-auto mb-3 h-14 w-14 rounded-2xl object-contain" />
+            <h1 className="font-display text-lg font-bold text-[#1A2744]">RaqeemOS</h1>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {options === null && (
+              <motion.div key="loading" exit={{ opacity: 0 }} className="text-center text-sm text-slate-400">
+                جاري التحميل...
+              </motion.div>
+            )}
+
+            {showCards && (
+              <motion.div key="cards" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                <h2 className="mb-1 text-center font-display text-lg font-bold text-[#1A2744]">من أنت؟</h2>
+                <p className="mb-6 text-center text-xs text-slate-400">اختر اسمك للمتابعة</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {options.map((w) => (
+                    <button
+                      key={w.id}
+                      type="button"
+                      onClick={() => setSelected(w)}
+                      className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-[#C5A880] hover:shadow-md"
+                    >
+                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1A2744] text-lg font-bold text-[#C5A880]">
+                        {initials(w.name)}
+                      </span>
+                      <span className="truncate text-sm font-semibold text-[#1A2744]">{w.name}</span>
+                      <span className="truncate text-[11px] text-slate-400">{w.roleLabel}</span>
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {showPinPad && (
+              <motion.div key="pinpad" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+                {selected && (
+                  <div className="mb-6 flex flex-col items-center">
+                    <span className="mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-[#1A2744] text-xl font-bold text-[#C5A880]">
+                      {initials(selected.name)}
+                    </span>
+                    <p className="font-semibold text-[#1A2744]">{selected.name}</p>
+                    <p className="text-xs text-slate-400">أدخل رمز PIN الخاص بك</p>
+                  </div>
+                )}
+                {!selected && (
+                  <p className="mb-6 text-center text-sm text-slate-500">أدخل رمز PIN الخاص بك للدخول</p>
+                )}
+
+                <UserPinPad onSubmit={submitPin} loading={loading} error={error} onClear={() => setError('')} />
+
+                {selected && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelected(null);
+                      setError('');
+                    }}
+                    className="mt-4 w-full text-center text-xs font-medium text-slate-400 hover:text-slate-600"
+                  >
+                    ← رجوع لاختيار المستخدم
+                  </button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-
-        <form onSubmit={handleSubmit}>
-          {/* حقل حقيقي مخفي بصرياً - يخلي الكيبورد الفيزيائي والـ autofocus
-              يشتغلون عادي، وياه بنفس الوقت النقاط بالأسفل هي الي تظهر للمستخدم. */}
-          <input
-            ref={inputRef}
-            type="password"
-            inputMode="numeric"
-            value={pin}
-            onChange={(e) => setError('') || setPin(e.target.value.replace(/\D/g, '').slice(0, 8))}
-            className="sr-only"
-            aria-label="رمز PIN"
-            autoFocus
-          />
-
-          {/* نقاط PIN بدل خانة نص مقنّعة عادية */}
-          <div className="mb-7 flex items-center justify-center gap-3">
-            {Array.from({ length: Math.max(4, pin.length) }).map((_, i) => (
-              <span
-                key={i}
-                className={`h-3.5 w-3.5 rounded-full border-2 transition-all ${
-                  i < pin.length ? 'border-gold bg-gold' : 'border-gold/30'
-                }`}
-              />
-            ))}
-          </div>
-
-          {error && <div className="mb-4 rounded-xl bg-rose-50 px-3 py-2 text-center text-sm text-rose-600">{error}</div>}
-
-          <div className="mb-5 grid grid-cols-3 gap-3">
-            {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((d) => (
-              <button
-                type="button"
-                key={d}
-                onClick={() => pressKey(d)}
-                className="rounded-2xl bg-[#fefcf8] py-4 text-lg font-display font-semibold text-nili transition hover:bg-gold/10"
-              >
-                {d}
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={() => setPin('')}
-              className="rounded-2xl bg-[#fefcf8] py-4 text-xs font-bold text-slate-400 transition hover:bg-gold/10"
-            >
-              مسح
-            </button>
-            <button
-              type="button"
-              onClick={() => pressKey('0')}
-              className="rounded-2xl bg-[#fefcf8] py-4 text-lg font-display font-semibold text-nili transition hover:bg-gold/10"
-            >
-              0
-            </button>
-            <button
-              type="button"
-              onClick={() => setPin((p) => p.slice(0, -1))}
-              className="rounded-2xl bg-[#fefcf8] py-4 text-sm font-bold text-slate-400 transition hover:bg-gold/10"
-            >
-              ⌫
-            </button>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading || !pin}
-            className="w-full rounded-2xl bg-nili py-4 text-sm font-arabic font-medium text-white shadow-lg shadow-nili/20 transition hover:bg-nili-dark disabled:opacity-50"
-          >
-            {loading ? 'جاري الدخول...' : 'دخول'}
-          </button>
-        </form>
       </div>
     </div>
   );

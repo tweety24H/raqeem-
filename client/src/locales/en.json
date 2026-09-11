@@ -22,6 +22,7 @@
     "groupSystem": "System",
     "archiveGroup": "Archive",
     "logout": "Log Out",
+    "switchUser": "Switch user",
     "owner": "Owner",
     "employee": "Employee"
   },
