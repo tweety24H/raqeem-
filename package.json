@@ -1,6 +1,6 @@
 {
   "name": "raqeem-os",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "نظام إدارة مطابع - يعمل محليًا بالكامل",
   "private": true,
   "main": "electron/main.js",
