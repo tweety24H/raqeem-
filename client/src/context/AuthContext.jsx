@@ -19,25 +19,13 @@ export function AuthProvider({ children }) {
   const [locked, setLocked] = useState(false);
   const idleTimerRef = useRef(null);
 
-  // applySession(data) — نفس منطق حفظ الجلسة اللي يسويه login()، بس مفصول
-  // لحاله حتى نكدر نستخدمه من مصدر ثاني غير /auth/login نفسه: مثلاً
-  // /auth/quick-create (تفعيل كارت مصمم/كاشير تجريبي أول مرة من شاشة "من
-  // أنت؟" — راجع Login.jsx) يرجع نفس شكل الاستجابة { token, worker } تمامًا،
-  // فنطبّقها مباشرة بدل ما نطلب PIN مرة ثانية بطلب /login منفصل.
-  const applySession = useCallback((data) => {
-    localStorage.setItem('raqeem_token', data.token);
-    localStorage.setItem('raqeem_worker', JSON.stringify(data.worker));
-    setWorker(data.worker);
-    return data.worker;
+  const login = useCallback(async (pin) => {
+    const res = await api.post('/auth/login', { pin });
+    localStorage.setItem('raqeem_token', res.data.token);
+    localStorage.setItem('raqeem_worker', JSON.stringify(res.data.worker));
+    setWorker(res.data.worker);
+    return res.data.worker;
   }, []);
-
-  const login = useCallback(
-    async (pin) => {
-      const res = await api.post('/auth/login', { pin });
-      return applySession(res.data);
-    },
-    [applySession]
-  );
 
   const logout = useCallback(() => {
     localStorage.removeItem('raqeem_token');
@@ -106,7 +94,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ worker, login, applySession, logout, isOwner, hasPermission, locked, lock, unlock }}
+      value={{ worker, login, logout, isOwner, hasPermission, locked, lock, unlock }}
     >
       {children}
     </AuthContext.Provider>

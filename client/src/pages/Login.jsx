@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import PinGateModal from '../components/PinGateModal';
-import AddEmployeeModal from '../components/AddEmployeeModal';
 import { FIRST_LAUNCH_KEY } from './Onboarding';
 
 // دالة تجيب أول حرف من الاسم
@@ -22,16 +21,27 @@ function postLoginRedirect(navigate) {
   navigate(firstLaunchDone ? '/dashboard' : '/onboarding');
 }
 
+// النسخة الآمنة للبيع: هاي الشاشة تعرض بس حسابات حقيقية موجودة فعلاً
+// بقاعدة البيانات — ماكو أي مسار ينشئ موظف أو يفعّل حساب بدون تسجيل دخول.
+// اذا دور "مصمم" أو "كاشير" ماكو له حساب بعد، نعرض كارت رمادي مقفول (مو
+// قابل للضغط) يوجّه المالك يضيفه من الإعدادات — هذا يسكر ثغرة كانت موجودة
+// سابقًا (POST /auth/quick-create كان بدون تسجيل دخول، أي شخص يوصل للشاشة
+// يقدر يسوي حساب لنفسه).
 export default function Login() {
   const { login, worker } = useAuth();
   const navigate = useNavigate();
   const [options, setOptions] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null); // المستخدم المختار للمودال
+  const [selectedUser, setSelectedUser] = useState(null);
   const [showPinModal, setShowPinModal] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [rememberedUser, setRememberedUser] = useState(null);
   const [lastBackupLabel, setLastBackupLabel] = useState('اليوم');
+
+  // وقت حي يتحرك كل ثانية
+  useEffect(() => {
+    const t = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   // آخر نسخة احتياطية فعلية - window.raqeem موجود بس داخل Electron
   // (preload.js)، فبوضع المتصفح العادي (npm run dev بالمتصفح) نخليها
@@ -54,18 +64,14 @@ export default function Login() {
       .catch(() => {});
   }, []);
 
-  // وقت حي يتحرك كل ثانية
-  useEffect(() => {
-    const t = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(t);
-  }, []);
-
   // شيك اذا اكو مستخدم محفوظ "تذكرني"
   useEffect(() => {
     try {
       const saved = localStorage.getItem('raqeem_remembered_user');
       if (saved) setRememberedUser(JSON.parse(saved));
-    } catch {}
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   useEffect(() => {
@@ -82,32 +88,13 @@ export default function Login() {
   // لو اكو تذكرني، افتح المودال مباشرة
   useEffect(() => {
     if (rememberedUser && options && options.length > 0) {
-      const found = options.find(w => w.id === rememberedUser.id);
+      const found = options.find((w) => w.id === rememberedUser.id);
       if (found) {
         setSelectedUser(found);
         setShowPinModal(true);
       }
     }
   }, [rememberedUser, options]);
-
-  // كارتات ثابتة اضافية: المصمم والكاشير
-  const extraCards = useMemo(() => {
-    const hasDesigner = options?.some(w => w.role === 'designer' || w.roleLabel?.includes('مصمم'));
-    const hasCashier = options?.some(w => w.role === 'cashier' || w.roleLabel?.includes('كاشير'));
-    const extras = [];
-    if (!hasDesigner) {
-      extras.push({ id: 'designer-demo', name: 'المصمم', role: 'designer', roleLabel: 'مصمم', isDemo: true, color: 'blue' });
-    }
-    if (!hasCashier) {
-      extras.push({ id: 'cashier-demo', name: 'الكاشير', role: 'cashier', roleLabel: 'كاشير', isDemo: true, color: 'green' });
-    }
-    return extras;
-  }, [options]);
-
-  const allCards = useMemo(() => {
-    if (!options) return [];
-    return [...options, ...extraCards];
-  }, [options, extraCards]);
 
   // شاشة تسجيل الدخول تطلع قبل ما نصير مسجلين، يعني ماكو DashboardSummaryProvider
   // بعد (هذا موجود بس داخل Layout.jsx). فنقرأ آخر عدد طلبات متأخرة معروف
@@ -121,48 +108,17 @@ export default function Login() {
     }
   });
 
+  const hasDesigner = useMemo(() => options?.some((w) => w.role === 'designer') || false, [options]);
+  const hasCashier = useMemo(() => options?.some((w) => w.role === 'cashier') || false, [options]);
+
   const handleCardClick = (user) => {
     setSelectedUser(user);
     setShowPinModal(true);
   };
 
+  // منطق آمن وبسيط: ندخل بالـ PIN الحقيقي وبس، بدون أي مسار "تفعيل تجريبي"
+  // ينشئ حساب من الشاشة نفسها.
   const handlePinSuccess = async (pin, remember) => {
-    // اذا حساب تجريبي
-    if (selectedUser.isDemo) {
-      // حاول تنشئ حساب حقيقي بالسيرفر
-      try {
-        const res = await api.post('/auth/quick-create', {
-          name: selectedUser.name,
-          role: selectedUser.role,
-          pin: pin
-        });
-        // اذا نجح، سجل دخول حقيقي
-        await login(res.data.pin || pin);
-        if (remember) {
-          localStorage.setItem('raqeem_remembered_user', JSON.stringify(res.data.worker || selectedUser));
-        }
-        setShowPinModal(false);
-        postLoginRedirect(navigate);
-      } catch (err) {
-        // اذا الـ API ما موجود بعد، اعرض رسالة تجريبي
-        const msg = err.response?.data?.error;
-        if (msg && msg.includes('not found')) {
-          alert('هذا حساب تجريبي — أنشئ حسابًا حقيقيًا من الإعدادات ← الصلاحيات');
-          setShowPinModal(false);
-        } else {
-          // حاول دخول عادي
-          try {
-            await login(pin);
-            postLoginRedirect(navigate);
-          } catch (e) {
-            throw new Error(e.response?.data?.error || 'رمز PIN غير صحيح');
-          }
-        }
-      }
-      return;
-    }
-
-    // حساب حقيقي
     try {
       await login(pin);
       if (remember) {
@@ -175,11 +131,6 @@ export default function Login() {
     } catch (e) {
       throw new Error(e.response?.data?.error || 'رمز PIN غير صحيح');
     }
-  };
-
-  const handleAddEmployee = (newWorker) => {
-    setOptions(prev => [...(prev || []), newWorker]);
-    setShowAddModal(false);
   };
 
   if (options === null) {
@@ -288,10 +239,10 @@ export default function Login() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            {allCards.map((w) => {
-              const isOwner = w.role === 'owner' || w.roleLabel?.includes('مالك');
-              const isBlue = w.color === 'blue' || w.role === 'designer';
-              const isGreen = w.color === 'green' || w.role === 'cashier';
+            {options.map((w) => {
+              const isOwner = w.role === 'owner';
+              const isBlue = w.role === 'designer';
+              const isGreen = w.role === 'cashier';
               return (
                 <motion.button
                   key={w.id}
@@ -322,21 +273,30 @@ export default function Login() {
               );
             })}
 
-            {/* كارت اضافة موظف */}
-            <motion.button
-              type="button"
-              onClick={() => setShowAddModal(true)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
-              className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-white/60 p-4 transition hover:border-[#C5A880] hover:bg-white hover:shadow-md"
-            >
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-xl text-slate-500">+</span>
-              <span className="text-sm font-semibold text-slate-600">اضافة موظف</span>
-              <span className="text-[11px] text-slate-400">جديد</span>
-            </motion.button>
+            {/* كارت رمادي مقفول - يطلع بس إذا ماكو حساب مصمم حقيقي بعد.
+                مو زر، بلا onClick، حتى محد يحاول يفعّله من هذا المكان. */}
+            {!hasDesigner && (
+              <div className="flex cursor-not-allowed flex-col items-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 opacity-70">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-200 text-xl text-slate-400">🔒</span>
+                <span className="text-sm font-semibold text-slate-500">مصمم</span>
+                <span className="text-center text-[11px] text-slate-400">ينشئه المالك من الإعدادات</span>
+              </div>
+            )}
+
+            {!hasCashier && (
+              <div className="flex cursor-not-allowed flex-col items-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 opacity-70">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-200 text-xl text-slate-400">🔒</span>
+                <span className="text-sm font-semibold text-slate-500">كاشير</span>
+                <span className="text-center text-[11px] text-slate-400">ينشئه المالك من الإعدادات</span>
+              </div>
+            )}
           </div>
 
-          <p className="mt-8 text-center text-[11px] text-slate-400">
+          <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center text-[11px] text-amber-800">
+            🔐 لإضافة موظف جديد: سجل دخول كمالك ← الإعدادات ← الموظفون والصلاحيات ← + إضافة موظف
+          </div>
+
+          <p className="mt-6 text-center text-[11px] text-slate-400">
             RaqeemOS v2.0.0 • مطبعتك.. بأرقام
           </p>
         </div>
@@ -349,16 +309,6 @@ export default function Login() {
             user={selectedUser}
             onClose={() => setShowPinModal(false)}
             onSuccess={handlePinSuccess}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* مودال اضافة موظف */}
-      <AnimatePresence>
-        {showAddModal && (
-          <AddEmployeeModal
-            onClose={() => setShowAddModal(false)}
-            onAdded={handleAddEmployee}
           />
         )}
       </AnimatePresence>
