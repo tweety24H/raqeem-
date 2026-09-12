@@ -21,10 +21,13 @@ export default function LandingNew() {
         {/* Header */}
         <header className="flex items-center justify-between px-8 lg:px-16 py-6">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="RaqeemOS" className="h-10 w-10 rounded-xl object-contain" />
+            <img src="/logo.png" alt="Raqeem" className="h-10 w-10 rounded-xl object-contain" />
             <div className="leading-tight">
-              <div className="font-display text-lg font-bold tracking-[-0.02em] text-gold">RaqeemOS</div>
-              <div className="font-arabic text-[11px] text-slate-400 font-medium">نظام إدارة المطبعة</div>
+              <div className="font-display text-lg font-bold tracking-[-0.02em]">
+                <span className="text-white">Raqeem</span>
+                <span className="text-gold text-sm">OS</span>
+              </div>
+              <div className="font-arabic text-[11px] text-slate-400 font-medium">مطبعتك.. بأرقام</div>
             </div>
           </div>
 
@@ -75,7 +78,7 @@ export default function LandingNew() {
         </main>
 
         <footer className="font-arabic border-t border-white/10 px-8 lg:px-16 py-6 text-center text-xs text-slate-500">
-          © {new Date().getFullYear()} RaqeemOS - نظام مطبعة فاخرة
+          © {new Date().getFullYear()} Raqeem - مطبعتك.. بأرقام
         </footer>
       </div>
     </div>

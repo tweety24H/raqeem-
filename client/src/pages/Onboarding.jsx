@@ -76,7 +76,7 @@ export default function Onboarding() {
     <div dir="rtl" className="flex h-screen w-screen flex-col items-center justify-center bg-[#0A0F1C] px-6 font-arabic">
       <motion.img
         src="/logo.png"
-        alt="RaqeemOS"
+        alt="Raqeem"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4 }}

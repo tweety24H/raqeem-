@@ -7,6 +7,7 @@ import LandingNew from './pages/LandingNew';
 import Login from './pages/Login';
 import Onboarding, { FIRST_LAUNCH_KEY } from './pages/Onboarding';
 import SplashScreen from './components/SplashScreen';
+import BootSplash from './components/BootSplash';
 import Dashboard from './pages/Dashboard';
 import NewOrder from './pages/NewOrder';
 import OrdersList from './pages/OrdersList';
@@ -40,6 +41,24 @@ function RootGate() {
   const { worker } = useAuth();
   const navigate = useNavigate();
 
+  // بمتصفح عادي (يعني مو داخل نسخة Electron المبنية - مثلاً وحد فتح رابط
+  // التطوير direct بـ Chrome) نتخطى صفحة الهبوط التسويقية، ونعرض سبلاش
+  // اقلاع قصير (2.5 ثانية) بنفس تصميم شاشة electron/splash.html، وبعدها
+  // نوديه على طول لصفحة "من أنت؟" (تسجيل الدخول). داخل Electron نفسها
+  // سبلاش الاقلاع الأصلي (electron/splash.html) يتكفل بهالجزء قبل لا حتى
+  // تفتح هذي الصفحة، فما نكرره هنا.
+  const isElectron = typeof window !== 'undefined' && !!window.raqeem?.isElectron;
+  const [showWebSplash, setShowWebSplash] = useState(!isElectron && !worker);
+
+  useEffect(() => {
+    if (!showWebSplash) return;
+    const timer = setTimeout(() => {
+      setShowWebSplash(false);
+      navigate('/login', { replace: true });
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [showWebSplash, navigate]);
+
   // اذا عنده جلسة محفوظة، نعرضله splash خفيف وبعدها نوديه للداشبورد مباشرة
   // بدون ما يشوف صفحة الهبوط التسويقية من جديد
   useEffect(() => {
@@ -57,6 +76,7 @@ function RootGate() {
   }, [worker, navigate]);
 
   if (worker) return <SplashScreen />;
+  if (showWebSplash) return <BootSplash />;
   return <LandingNew />;
 }
 

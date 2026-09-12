@@ -45,7 +45,7 @@
   },
   "build": {
     "appId": "com.raqeemos.app",
-    "productName": "مطبعتي - Raqeemos v2",
+    "productName": "Raqeem",
     "files": [
       "electron/**/*",
       "server/**/*",
@@ -64,7 +64,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "مطبعتي"
+      "shortcutName": "Raqeem"
     },
     "asarUnpack": [
       "**/*.node"

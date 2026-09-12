@@ -1,7 +1,12 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import api from '../api/client';
 
 const AuthContext = createContext(null);
+
+// بعد ١٥ دقيقة بدون أي حركة (فأرة، لوحة مفاتيح، لمس)، نرجع المستخدم
+// لشاشة القفل بدل ما نخليه مفتوح للأبد على جهاز مطبعة مشترك بين الموظفين.
+const IDLE_LOCK_MS = 15 * 60 * 1000;
+const IDLE_EVENTS = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'wheel'];
 
 export function AuthProvider({ children }) {
   const [worker, setWorker] = useState(() => {
@@ -9,18 +14,46 @@ export function AuthProvider({ children }) {
     return raw ? JSON.parse(raw) : null;
   });
 
-  const login = useCallback(async (pin) => {
-    const res = await api.post('/auth/login', { pin });
-    localStorage.setItem('raqeem_token', res.data.token);
-    localStorage.setItem('raqeem_worker', JSON.stringify(res.data.worker));
-    setWorker(res.data.worker);
-    return res.data.worker;
+  // locked = "عندنا جلسة صالحة، بس الشاشة مقفولة لازم يدخل رمز PIN من جديد
+  // لايفتحها" — هذا غير تسجيل الخروج الكامل (worker يضل محفوظ بالـ localStorage).
+  const [locked, setLocked] = useState(false);
+  const idleTimerRef = useRef(null);
+
+  // applySession(data) — نفس منطق حفظ الجلسة اللي يسويه login()، بس مفصول
+  // لحاله حتى نكدر نستخدمه من مصدر ثاني غير /auth/login نفسه: مثلاً
+  // /auth/quick-create (تفعيل كارت مصمم/كاشير تجريبي أول مرة من شاشة "من
+  // أنت؟" — راجع Login.jsx) يرجع نفس شكل الاستجابة { token, worker } تمامًا،
+  // فنطبّقها مباشرة بدل ما نطلب PIN مرة ثانية بطلب /login منفصل.
+  const applySession = useCallback((data) => {
+    localStorage.setItem('raqeem_token', data.token);
+    localStorage.setItem('raqeem_worker', JSON.stringify(data.worker));
+    setWorker(data.worker);
+    return data.worker;
   }, []);
+
+  const login = useCallback(
+    async (pin) => {
+      const res = await api.post('/auth/login', { pin });
+      return applySession(res.data);
+    },
+    [applySession]
+  );
 
   const logout = useCallback(() => {
     localStorage.removeItem('raqeem_token');
     localStorage.removeItem('raqeem_worker');
     setWorker(null);
+    setLocked(false);
+  }, []);
+
+  // يفتح شاشة القفل يدويًا لو احتجنا (مثلاً زر "قفل الشاشة" بالمستقبل)
+  const lock = useCallback(() => {
+    setLocked(true);
+  }, []);
+
+  // يفكّ القفل بعد ما المستخدم يدخل رمز PIN الصحيح من جديد بشاشة القفل
+  const unlock = useCallback(() => {
+    setLocked(false);
   }, []);
 
   // Task 7: refresh permissions from the server once on load, in case an
@@ -39,6 +72,25 @@ export function AuthProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // مراقبة الخمول: نشتغل بس اذا عدنا worker مسجل دخول وماكو قفل حالي — لو
+  // الشاشة مقفولة أصلاً ما داعي نراقب لأنها مقفولة فعلاً.
+  useEffect(() => {
+    if (!worker || locked) return undefined;
+
+    function resetTimer() {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = setTimeout(() => setLocked(true), IDLE_LOCK_MS);
+    }
+
+    resetTimer();
+    IDLE_EVENTS.forEach((evt) => window.addEventListener(evt, resetTimer, { passive: true }));
+
+    return () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      IDLE_EVENTS.forEach((evt) => window.removeEventListener(evt, resetTimer));
+    };
+  }, [worker, locked]);
+
   const isOwner = worker?.role === 'owner';
 
   // hasPermission(slug) — the owner passes every check implicitly, matching
@@ -53,7 +105,9 @@ export function AuthProvider({ children }) {
   );
 
   return (
-    <AuthContext.Provider value={{ worker, login, logout, isOwner, hasPermission }}>
+    <AuthContext.Provider
+      value={{ worker, login, applySession, logout, isOwner, hasPermission, locked, lock, unlock }}
+    >
       {children}
     </AuthContext.Provider>
   );

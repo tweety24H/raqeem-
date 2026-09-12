@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "RaqeemOS",
-    "tagline": "Print Shop Management System"
+    "name": "Raqeem",
+    "tagline": "Your print shop, in numbers"
   },
   "nav": {
     "dashboard": "Home",
@@ -45,7 +45,7 @@
     "banner": "You're offline — your data is saved locally and works normally"
   },
   "onboarding": {
-    "step1Title": "Welcome to RaqeemOS",
+    "step1Title": "Welcome to Raqeem",
     "step1Body": "The dashboard shows your shop's status at a glance: orders, debts, inventory, and anything that needs attention.",
     "step2Title": "Manage orders",
     "step2Body": "Create new orders and track their status through to delivery, with quick filters and bulk selection.",
@@ -374,7 +374,7 @@
     "downloadBtn": "⬇️ Download PDF",
     "downloadHint": "Opens the print dialog — choose \"Save as PDF\"",
     "qrCaption": "Scan to verify invoice authenticity",
-    "shareMessage": "Verify my invoice from RaqeemOS"
+    "shareMessage": "Verify my invoice from Raqeem"
   },
   "designs": {
     "dropHint": "Drop a file here or click to choose (PDF, JPG, PNG, AI, PSD, CDR, EPS — up to 20MB)",

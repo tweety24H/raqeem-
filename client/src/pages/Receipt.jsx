@@ -73,7 +73,7 @@ export default function Receipt() {
           {/* هيدر نيلي/ذهبي — شعار رقيم فوق البطاقة الكريمية التقليدية */}
           <div className="-m-2 mb-2 bg-nili px-6 py-4 text-center">
             <p className="font-display text-2xl font-bold tracking-wide text-gold">رقيم</p>
-            <p className="mt-0.5 text-[11px] text-slate-300">نظام إدارة المطبعة</p>
+            <p className="mt-0.5 text-[11px] text-slate-300">مطبعتك.. بأرقام</p>
           </div>
 
           <div className="relative p-6 sm:p-10">

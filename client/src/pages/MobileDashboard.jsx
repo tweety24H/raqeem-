@@ -39,7 +39,10 @@ export default function MobileDashboard() {
       <div className="bg-nili px-4 py-5 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-lg font-bold">RaqeemOS</div>
+            <div className="text-lg font-bold">
+              <span className="text-white">Raqeem</span>
+              <span className="text-[#C5A880] text-sm">OS</span>
+            </div>
             <div className="text-sm opacity-80">نسخة الموبايل للمالك</div>
           </div>
           <button onClick={handleLogout} className="rounded-lg bg-white/10 px-3 py-1.5 text-sm">

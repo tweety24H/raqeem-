@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import UserPinPad from '../components/UserPinPad';
+import PinGateModal from '../components/PinGateModal';
+import AddEmployeeModal from '../components/AddEmployeeModal';
 import { FIRST_LAUNCH_KEY } from './Onboarding';
 
+// دالة تجيب أول حرف من الاسم
 function initials(name) {
   return (name || '?').trim().charAt(0);
 }
@@ -23,10 +25,48 @@ function postLoginRedirect(navigate) {
 export default function Login() {
   const { login, worker } = useAuth();
   const navigate = useNavigate();
-  const [options, setOptions] = useState(null); // null = loading
-  const [selected, setSelected] = useState(null); // worker card chosen, or 'fallback'
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [options, setOptions] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null); // المستخدم المختار للمودال
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [rememberedUser, setRememberedUser] = useState(null);
+  const [lastBackupLabel, setLastBackupLabel] = useState('اليوم');
+
+  // آخر نسخة احتياطية فعلية - window.raqeem موجود بس داخل Electron
+  // (preload.js)، فبوضع المتصفح العادي (npm run dev بالمتصفح) نخليها
+  // القيمة الافتراضية "اليوم" لأنه ماكو وصول لنظام الملفات أصلاً.
+  useEffect(() => {
+    if (!window.raqeem?.backup?.list) return;
+    window.raqeem.backup
+      .list()
+      .then((backups) => {
+        if (!backups || backups.length === 0) {
+          setLastBackupLabel('لا توجد بعد');
+          return;
+        }
+        const last = new Date(backups[0].date);
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const lastStr = last.toISOString().slice(0, 10);
+        if (lastStr === todayStr) setLastBackupLabel('اليوم');
+        else setLastBackupLabel(last.toLocaleDateString('ar-EG', { day: 'numeric', month: 'long' }));
+      })
+      .catch(() => {});
+  }, []);
+
+  // وقت حي يتحرك كل ثانية
+  useEffect(() => {
+    const t = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  // شيك اذا اكو مستخدم محفوظ "تذكرني"
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('raqeem_remembered_user');
+      if (saved) setRememberedUser(JSON.parse(saved));
+    } catch {}
+  }, []);
 
   useEffect(() => {
     if (worker) postLoginRedirect(navigate);
@@ -35,34 +75,129 @@ export default function Login() {
   useEffect(() => {
     api
       .get('/auth/login-options')
-      .then((r) => setOptions(r.data.workers))
+      .then((r) => setOptions(r.data.workers || []))
       .catch(() => setOptions([]));
   }, []);
 
-  async function submitPin(pin) {
-    setError('');
-    setLoading(true);
+  // لو اكو تذكرني، افتح المودال مباشرة
+  useEffect(() => {
+    if (rememberedUser && options && options.length > 0) {
+      const found = options.find(w => w.id === rememberedUser.id);
+      if (found) {
+        setSelectedUser(found);
+        setShowPinModal(true);
+      }
+    }
+  }, [rememberedUser, options]);
+
+  // كارتات ثابتة اضافية: المصمم والكاشير
+  const extraCards = useMemo(() => {
+    const hasDesigner = options?.some(w => w.role === 'designer' || w.roleLabel?.includes('مصمم'));
+    const hasCashier = options?.some(w => w.role === 'cashier' || w.roleLabel?.includes('كاشير'));
+    const extras = [];
+    if (!hasDesigner) {
+      extras.push({ id: 'designer-demo', name: 'المصمم', role: 'designer', roleLabel: 'مصمم', isDemo: true, color: 'blue' });
+    }
+    if (!hasCashier) {
+      extras.push({ id: 'cashier-demo', name: 'الكاشير', role: 'cashier', roleLabel: 'كاشير', isDemo: true, color: 'green' });
+    }
+    return extras;
+  }, [options]);
+
+  const allCards = useMemo(() => {
+    if (!options) return [];
+    return [...options, ...extraCards];
+  }, [options, extraCards]);
+
+  // شاشة تسجيل الدخول تطلع قبل ما نصير مسجلين، يعني ماكو DashboardSummaryProvider
+  // بعد (هذا موجود بس داخل Layout.jsx). فنقرأ آخر عدد طلبات متأخرة معروف
+  // من الكاش المحلي اللي يحدّثه DashboardSummaryContext كل مرة يدخل بيها
+  // موظف حقيقي - مو استدعاء API جديد بدون تسجيل دخول.
+  const [overdueCount] = useState(() => {
+    try {
+      return Number(localStorage.getItem('raqeem_overdue_count')) || 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const handleCardClick = (user) => {
+    setSelectedUser(user);
+    setShowPinModal(true);
+  };
+
+  const handlePinSuccess = async (pin, remember) => {
+    // اذا حساب تجريبي
+    if (selectedUser.isDemo) {
+      // حاول تنشئ حساب حقيقي بالسيرفر
+      try {
+        const res = await api.post('/auth/quick-create', {
+          name: selectedUser.name,
+          role: selectedUser.role,
+          pin: pin
+        });
+        // اذا نجح، سجل دخول حقيقي
+        await login(res.data.pin || pin);
+        if (remember) {
+          localStorage.setItem('raqeem_remembered_user', JSON.stringify(res.data.worker || selectedUser));
+        }
+        setShowPinModal(false);
+        postLoginRedirect(navigate);
+      } catch (err) {
+        // اذا الـ API ما موجود بعد، اعرض رسالة تجريبي
+        const msg = err.response?.data?.error;
+        if (msg && msg.includes('not found')) {
+          alert('هذا حساب تجريبي — أنشئ حسابًا حقيقيًا من الإعدادات ← الصلاحيات');
+          setShowPinModal(false);
+        } else {
+          // حاول دخول عادي
+          try {
+            await login(pin);
+            postLoginRedirect(navigate);
+          } catch (e) {
+            throw new Error(e.response?.data?.error || 'رمز PIN غير صحيح');
+          }
+        }
+      }
+      return;
+    }
+
+    // حساب حقيقي
     try {
       await login(pin);
+      if (remember) {
+        localStorage.setItem('raqeem_remembered_user', JSON.stringify(selectedUser));
+      } else {
+        localStorage.removeItem('raqeem_remembered_user');
+      }
+      setShowPinModal(false);
       postLoginRedirect(navigate);
-    } catch (err) {
-      setError(err.response?.data?.error || 'رمز PIN غير صحيح');
-    } finally {
-      setLoading(false);
+    } catch (e) {
+      throw new Error(e.response?.data?.error || 'رمز PIN غير صحيح');
     }
+  };
+
+  const handleAddEmployee = (newWorker) => {
+    setOptions(prev => [...(prev || []), newWorker]);
+    setShowAddModal(false);
+  };
+
+  if (options === null) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-[#0B1D3A] text-white">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-[#C5A880] border-t-transparent"></div>
+          <p className="text-sm text-slate-300">جاري التحميل...</p>
+        </div>
+      </div>
+    );
   }
 
-  const showCards = options && options.length > 0 && !selected;
-  const showPinPad = selected || (options && options.length === 0);
-
   return (
-    // dir="ltr" هنا يتحكم فقط بترتيب عمودي الـ flex (يسار/يمين فيزيائيًا)
-    // بغض النظر عن اتجاه الصفحة العام؛ كل عمود يفرض dir="rtl" الخاص فيه
-    // لمحاذاة نصوصه العربية بشكل صحيح.
     <div dir="ltr" className="flex h-screen w-screen overflow-hidden font-arabic">
-      {/* يسار: هوية العلامة */}
-      <div dir="rtl" className="relative hidden w-[42%] shrink-0 flex-col items-center justify-center overflow-hidden bg-[#1A2744] px-10 text-center lg:flex">
-        <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.05]" aria-hidden="true">
+      {/* يسار: هوية العلامة - كحلي غامق مع نقاط ذهبية */}
+      <div dir="rtl" className="relative hidden w-[44%] shrink-0 flex-col items-center justify-center overflow-hidden bg-[#0B1D3A] px-10 text-center lg:flex">
+        <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.06]" aria-hidden="true">
           <pattern id="goldDots" width="28" height="28" patternUnits="userSpaceOnUse">
             <circle cx="2" cy="2" r="1.5" fill="#C5A880" />
           </pattern>
@@ -71,102 +206,162 @@ export default function Login() {
 
         <motion.img
           src="/logo.png"
-          alt="RaqeemOS"
+          alt="Raqeem"
           initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="mb-6 h-[120px] w-[120px] rounded-3xl object-contain"
+          animate={{ opacity: 1, y: 0, scale: [1, 1.03, 1] }}
+          transition={{
+            opacity: { duration: 0.5 },
+            y: { duration: 0.5 },
+            scale: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
+          }}
+          className="mb-6 h-[120px] w-[120px] rounded-3xl object-contain shadow-[0_0_40px_rgba(197,168,128,0.15)]"
         />
         <motion.h1
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="font-display text-3xl font-bold tracking-[-0.02em] text-[#C5A880]"
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="font-display text-3xl font-bold tracking-[-0.02em]"
         >
-          RaqeemOS
+          <span className="text-white">Raqeem</span>
+          <span className="text-[#C5A880] text-lg align-top ml-0.5">OS</span>
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
           className="mt-2 text-sm text-slate-300"
         >
-          نظام إدارة المطبعة الذكي
+          مطبعتك.. بأرقام
         </motion.p>
-      </div>
 
-      {/* يمين: اختيار المستخدم / رمز PIN */}
-      <div dir="rtl" className="flex flex-1 items-center justify-center bg-white px-6">
-        <div className="w-full max-w-sm">
-          <div className="mb-8 text-center lg:hidden">
-            <img src="/logo.png" alt="RaqeemOS" className="mx-auto mb-3 h-14 w-14 rounded-2xl object-contain" />
-            <h1 className="font-display text-lg font-bold text-[#1A2744]">RaqeemOS</h1>
+        {/* معلومات حية أسفل اليسار */}
+        <div className="absolute bottom-8 right-10 left-10 flex flex-col gap-3">
+          <div className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-3 backdrop-blur">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-green-400"></span>
+              <span className="text-xs text-slate-200">النظام جاهز - v2.0.0</span>
+            </div>
+            <span className="text-[11px] text-slate-400">
+              {currentTime.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </span>
           </div>
-
-          <AnimatePresence mode="wait">
-            {options === null && (
-              <motion.div key="loading" exit={{ opacity: 0 }} className="text-center text-sm text-slate-400">
-                جاري التحميل...
-              </motion.div>
-            )}
-
-            {showCards && (
-              <motion.div key="cards" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-                <h2 className="mb-1 text-center font-display text-lg font-bold text-[#1A2744]">من أنت؟</h2>
-                <p className="mb-6 text-center text-xs text-slate-400">اختر اسمك للمتابعة</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {options.map((w) => (
-                    <button
-                      key={w.id}
-                      type="button"
-                      onClick={() => setSelected(w)}
-                      className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-[#C5A880] hover:shadow-md"
-                    >
-                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1A2744] text-lg font-bold text-[#C5A880]">
-                        {initials(w.name)}
-                      </span>
-                      <span className="truncate text-sm font-semibold text-[#1A2744]">{w.name}</span>
-                      <span className="truncate text-[11px] text-slate-400">{w.roleLabel}</span>
-                    </button>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {showPinPad && (
-              <motion.div key="pinpad" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-                {selected && (
-                  <div className="mb-6 flex flex-col items-center">
-                    <span className="mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-[#1A2744] text-xl font-bold text-[#C5A880]">
-                      {initials(selected.name)}
-                    </span>
-                    <p className="font-semibold text-[#1A2744]">{selected.name}</p>
-                    <p className="text-xs text-slate-400">أدخل رمز PIN الخاص بك</p>
-                  </div>
-                )}
-                {!selected && (
-                  <p className="mb-6 text-center text-sm text-slate-500">أدخل رمز PIN الخاص بك للدخول</p>
-                )}
-
-                <UserPinPad onSubmit={submitPin} loading={loading} error={error} onClear={() => setError('')} />
-
-                {selected && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelected(null);
-                      setError('');
-                    }}
-                    className="mt-4 w-full text-center text-xs font-medium text-slate-400 hover:text-slate-600"
-                  >
-                    ← رجوع لاختيار المستخدم
-                  </button>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
+            <span>
+              {currentTime.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            </span>
+            <span>آخر نسخ احتياطي: {lastBackupLabel}</span>
+          </div>
         </div>
       </div>
+
+      {/* يمين: اختيار المستخدم */}
+      <div dir="rtl" className="flex flex-1 flex-col items-center justify-center bg-[#F8F9FA] px-6 py-8 overflow-y-auto">
+        <div className="w-full max-w-[380px]">
+          {/* موبايل لوجو */}
+          <div className="mb-6 text-center lg:hidden">
+            <motion.img
+              src="/logo.png"
+              alt="Raqeem"
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+              className="mx-auto mb-3 h-14 w-14 rounded-2xl object-contain"
+            />
+            <h1 className="font-display text-lg font-bold">
+              <span className="text-[#0B1D3A]">Raqeem</span>
+              <span className="text-[#C5A880] text-sm">OS</span>
+            </h1>
+          </div>
+
+          <div className="mb-6 text-center">
+            <h2 className="font-display text-[22px] font-bold text-[#0B1D3A]">من أنت؟</h2>
+            <p className="mt-1 text-xs text-slate-500">اختر اسمك للمتابعة</p>
+            {overdueCount > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 border border-red-200"
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                {overdueCount} طلبات متأخرة
+              </motion.div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {allCards.map((w) => {
+              const isOwner = w.role === 'owner' || w.roleLabel?.includes('مالك');
+              const isBlue = w.color === 'blue' || w.role === 'designer';
+              const isGreen = w.color === 'green' || w.role === 'cashier';
+              return (
+                <motion.button
+                  key={w.id}
+                  type="button"
+                  onClick={() => handleCardClick(w)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`group relative flex flex-col items-center gap-2 rounded-2xl border bg-white p-4 transition-all hover:shadow-lg
+                    ${isOwner ? 'border-[#C5A880]/50 shadow-[0_2px_12px_rgba(197,168,128,0.15)]' : 'border-slate-200 hover:border-[#C5A880]'}
+                    ${isBlue ? 'hover:border-blue-300' : ''}
+                    ${isGreen ? 'hover:border-green-300' : ''}
+                  `}
+                >
+                  {isOwner && (
+                    <span className="absolute -top-2 -right-2 rounded-full bg-gradient-to-br from-[#C5A880] to-[#9c7c4a] px-2 py-0.5 text-[10px] font-bold text-[#0B1D3A] shadow">★ مالك</span>
+                  )}
+                  <span className={`flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold
+                    ${isOwner ? 'bg-[#0B1D3A] text-[#C5A880]' : ''}
+                    ${isBlue ? 'bg-blue-600 text-white' : ''}
+                    ${isGreen ? 'bg-green-600 text-white' : ''}
+                    ${!isOwner && !isBlue && !isGreen ? 'bg-[#0B1D3A] text-[#C5A880]' : ''}
+                  `}>
+                    {initials(w.name)}
+                  </span>
+                  <span className="truncate text-sm font-semibold text-[#0B1D3A]">{w.name}</span>
+                  <span className="truncate text-[11px] text-slate-400">{w.roleLabel}</span>
+                </motion.button>
+              );
+            })}
+
+            {/* كارت اضافة موظف */}
+            <motion.button
+              type="button"
+              onClick={() => setShowAddModal(true)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-white/60 p-4 transition hover:border-[#C5A880] hover:bg-white hover:shadow-md"
+            >
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-xl text-slate-500">+</span>
+              <span className="text-sm font-semibold text-slate-600">اضافة موظف</span>
+              <span className="text-[11px] text-slate-400">جديد</span>
+            </motion.button>
+          </div>
+
+          <p className="mt-8 text-center text-[11px] text-slate-400">
+            RaqeemOS v2.0.0 • مطبعتك.. بأرقام
+          </p>
+        </div>
+      </div>
+
+      {/* مودال الـ PIN */}
+      <AnimatePresence>
+        {showPinModal && selectedUser && (
+          <PinGateModal
+            user={selectedUser}
+            onClose={() => setShowPinModal(false)}
+            onSuccess={handlePinSuccess}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* مودال اضافة موظف */}
+      <AnimatePresence>
+        {showAddModal && (
+          <AddEmployeeModal
+            onClose={() => setShowAddModal(false)}
+            onAdded={handleAddEmployee}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

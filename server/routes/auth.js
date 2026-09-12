@@ -121,6 +121,120 @@ router.post('/login', (req, res) => {
   });
 });
 
+// دور "كاشير" ماكو مزروع افتراضيًا بجدول roles (دالة seedRoles بملف
+// server/db/db.js تزرع بس: مدير عام / مصمم / عامل طباعة / محاسب) — فننشئه
+// هنا أول مرة يفعّل بيها أحد كارت الكاشير من شاشة تسجيل الدخول، بنفس منطق
+// seedRoles تمامًا (idempotent عبر البحث بالاسم أولاً). دور "مصمم" موجود
+// مسبقًا، نجيب معرفه بالاسم فقط بدون أي إنشاء.
+function resolveQuickRoleId(role) {
+  if (role === 'designer') {
+    const row = db.prepare('SELECT id FROM roles WHERE name = ?').get('مصمم');
+    return row ? row.id : null;
+  }
+
+  if (role === 'cashier') {
+    const existing = db.prepare('SELECT id FROM roles WHERE name = ?').get('كاشير');
+    if (existing) return existing.id;
+
+    // أول مرة نحتاج فيها دور "كاشير": ننشئه بصلاحيات تناسب شغل الكاشير
+    // الفعلي (استلام طلبات، فواتير، متابعة زبائن) — مو "مدير عام" ومو بلا
+    // صلاحيات بالمرة.
+    const info = db
+      .prepare('INSERT INTO roles (name, description, is_system) VALUES (?, ?, 0)')
+      .run('كاشير', 'استلام الطلبات والفواتير');
+    const roleId = info.lastInsertRowid;
+
+    const CASHIER_SLUGS = [
+      'view_orders',
+      'create_order',
+      'view_customers',
+      'create_customer',
+      'view_receipts',
+      'print_receipts',
+      'view_dashboard',
+    ];
+    const getPermId = db.prepare('SELECT id FROM permissions WHERE slug = ?');
+    const insertRP = db.prepare(
+      'INSERT INTO role_permissions (role_id, permission_id) VALUES (?, ?) ON CONFLICT DO NOTHING'
+    );
+    for (const slug of CASHIER_SLUGS) {
+      const perm = getPermId.get(slug);
+      if (perm) insertRP.run(roleId, perm.id);
+    }
+    return roleId;
+  }
+
+  return null;
+}
+
+// POST /api/auth/quick-create { name, role: 'designer' | 'cashier', pin } —
+// public (بدون تسجيل دخول)، تستخدمه شاشة "من أنت؟" لتفعيل كارتي
+// المصمم/الكاشير الافتراضيين (وأي كارت "موظف" مضاف يدويًا بنفس الدورين)
+// بحساب حقيقي أول مرة يدخل بيها أحد رمز الـ PIN الصحيح — ترجع نفس شكل
+// استجابة /login بالضبط { token, worker } حتى العميل يطبّقها كجلسة فورًا
+// بدون طلب /login منفصل بعدها.
+//
+// ملاحظة أمنية: هذا المسار مقصود يكون بدون تسجيل دخول (نفس فلسفة كارت
+// الدخول السريع بشاشة تسجيل الدخول) — أي شخص عنده وصول لهاي الشاشة يكدر
+// يفعّل هذولة الكارتين. مناسب لمطبعة صغيرة بجهاز واحد محلي؛ اذا احتجت
+// تشديد أكثر بالمستقبل (مثلاً قفله بعد أول استخدام، أو خلف موافقة المالك)
+// هذا مكانه بالضبط.
+router.post('/quick-create', (req, res) => {
+  const { name, role, pin } = req.body;
+  const ip = req.ip;
+
+  if (isLocked(ip)) {
+    return res.status(429).json({ error: 'محاولات كثيرة خاطئة، انتظر دقيقة وحاول مرة أخرى' });
+  }
+
+  if (!name || !name.trim()) {
+    return res.status(400).json({ error: 'الاسم مطلوب' });
+  }
+  if (!['designer', 'cashier', 'employee'].includes(role)) {
+    return res.status(400).json({ error: 'الدور يجب أن يكون مصمم أو كاشير أو موظف' });
+  }
+  if (!pin || typeof pin !== 'string' || pin.length < 4) {
+    return res.status(400).json({ error: 'رمز PIN (٤ أرقام على الأقل) مطلوب' });
+  }
+
+  const workers = db.prepare('SELECT * FROM workers WHERE active = 1').all();
+  const clash = workers.some((w) => bcrypt.compareSync(pin, w.pin_hash));
+  if (clash) {
+    recordFailure(ip);
+    return res.status(400).json({ error: 'رمز PIN مستخدم من قبل عامل آخر، اختر رمزًا مختلفًا' });
+  }
+
+  recordSuccess(ip);
+
+  const roleId = resolveQuickRoleId(role);
+  const pin_hash = bcrypt.hashSync(pin, 8);
+  const info = db
+    .prepare('INSERT INTO workers (name, pin_hash, role, role_id) VALUES (?, ?, ?, ?)')
+    .run(name.trim(), pin_hash, 'employee', roleId);
+
+  const match = db.prepare('SELECT * FROM workers WHERE id = ?').get(info.lastInsertRowid);
+
+  const token = jwt.sign(
+    { workerId: match.id, name: match.name, role: match.role, roleId: match.role_id },
+    getSecret(),
+    { expiresIn: '12h' }
+  );
+
+  const roleRow = match.role_id ? db.prepare('SELECT name FROM roles WHERE id = ?').get(match.role_id) : null;
+
+  res.json({
+    token,
+    worker: {
+      id: match.id,
+      name: match.name,
+      role: match.role,
+      roleId: match.role_id,
+      roleName: roleRow ? roleRow.name : null,
+      permissions: permissionsFor(match),
+    },
+  });
+});
+
 // GET /api/auth/me
 router.get('/me', requireAuth, (req, res) => {
   const worker = db.prepare('SELECT * FROM workers WHERE id = ?').get(req.worker.workerId);

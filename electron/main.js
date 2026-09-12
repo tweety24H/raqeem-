@@ -12,18 +12,19 @@ process.env.RAQEEM_DB_DIR = path.join(app.getPath('userData'), 'data');
 
 const PORT = process.env.RAQEEM_PORT || 4310;
 
-// هاي تفتح شاشة السبلاش الصغيرة (400x400 بدون إطار) اللي تظهر أول ما تفتح
+// هاي تفتح شاشة السبلاش الصغيرة (400x500 بدون إطار) اللي تظهر أول ما تفتح
 // البرنامج - بس واجهة، ما تسوي شي ثاني
 function createSplashWindow() {
   const splash = new BrowserWindow({
     width: 400,
-    height: 400,
+    height: 500,
     frame: false,
     transparent: true,
     alwaysOnTop: true,
     resizable: false,
     movable: false,
     skipTaskbar: true,
+    center: true,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -43,8 +44,12 @@ function createWindow() {
     minHeight: 700,
     autoHideMenuBar: true,
     show: false,
-    icon: path.join(__dirname, '..', 'build', 'icon.png'),
-    title: 'مطبعتي - Raqeemos v2',
+    // تبدأ شفافة بالكامل حتى نقدر نسوي "fade in" لما تطلع بعد ما تسكر
+    // شاشة السبلاش (مدعومة بويندوز وماك؛ بلينكس تنترك عادي بدون تأثير)
+    opacity: 0,
+    // ايقونة النافذة الرئيسية - نفس ايقونة Raqeem الجديدة (تظهر بالـ Taskbar وTitle bar وAlt+Tab)
+    icon: path.join(__dirname, 'assets', 'icon.png'),
+    title: 'Raqeem - مطبعتك.. بأرقام',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -141,27 +146,48 @@ app.whenReady().then(() => {
   const splash = createSplashWindow();
   const win = createWindow();
 
-  // يضمن اننا نسكر السبلاش ونعرض النافذة الرئيسية مرة وحدة بس، سواء عن
-  // طريق ready-to-show الطبيعي أو حد أقصى 5 ثواني إذا تعلّق التحميل.
-  let splashDismissed = false;
-  const splashTimeout = setTimeout(dismissSplash, 5000);
-
-  function dismissSplash() {
-    if (splashDismissed) return;
-    splashDismissed = true;
-    clearTimeout(splashTimeout);
-    if (!splash.isDestroyed()) splash.close();
-    if (!win.isDestroyed()) win.show();
+  // نسوي fade-in ناعم للنافذة الرئيسية بالتدريج (opacity 0 -> 1) بدل ما
+  // تطلع فجأة - يشتغل غير محسوس تقريبا بس يعطي احساس احترافي أكثر من
+  // ظهورها دفعة وحدة. setOpacity غير مدعومة بلينكس فتترك بصمت.
+  function fadeInWindow(target, durationMs = 250, steps = 12) {
+    let i = 0;
+    const stepMs = durationMs / steps;
+    const timer = setInterval(() => {
+      i += 1;
+      try {
+        target.setOpacity(Math.min(1, i / steps));
+      } catch {
+        /* منصة ما تدعم setOpacity (مثلا لينكس) - نتجاهل */
+      }
+      if (i >= steps) clearInterval(timer);
+    }, stepMs);
   }
 
-  win.once('ready-to-show', () => {
-    setTimeout(dismissSplash, 800);
-  });
+  // مدة شاشة السبلاش ثابتة (2.5 ثانية) - تتزامن تقريبا مع شريط التحميل
+  // اللي بداخل splash.html (ثانيتين) بالإضافة لهامش بسيط. بعدها نسكر
+  // السبلاش ونطلع النافذة الرئيسية مع fade، بغض النظر إذا خلص التحميل قبل
+  // هذا الوقت أو لا (النافذة أصلا show: false لحد هسه فما يبين أي فلاش).
+  let dismissed = false;
+  setTimeout(() => {
+    if (dismissed) return;
+    dismissed = true;
+    if (!splash.isDestroyed()) splash.close();
+    if (!win.isDestroyed()) {
+      win.show();
+      fadeInWindow(win);
+    }
+  }, 2500);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
+      // هذا المسار غير مرتبط بسبلاش الاقلاع (يصير بعد ما تكون كل
+      // النوافذ مسكرة وضغط المستخدم على أيقونة البرنامج بالـ Dock بالماك)
+      // فنعرضها مباشرة بعتامة كاملة بدون تدرّج
       const w = createWindow();
-      w.once('ready-to-show', () => w.show());
+      w.once('ready-to-show', () => {
+        w.show();
+        w.setOpacity(1);
+      });
     }
   });
 });

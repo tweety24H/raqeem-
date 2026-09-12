@@ -56,7 +56,7 @@ export default function SwitchUserModal({ open, onClose }) {
               onClick={() => setSelected(w)}
               className="flex w-full items-center gap-3 rounded-xl border border-slate-100 px-3 py-2.5 text-right transition hover:border-[#C5A880] hover:bg-slate-50 dark:border-white/10 dark:hover:bg-white/5"
             >
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1A2744] text-sm font-bold text-[#C5A880]">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0B1D3A] text-sm font-bold text-[#C5A880]">
                 {initials(w.name)}
               </span>
               <span className="min-w-0 flex-1">
@@ -69,7 +69,7 @@ export default function SwitchUserModal({ open, onClose }) {
       ) : (
         <div>
           <div className="mb-5 flex flex-col items-center">
-            <span className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-[#1A2744] text-lg font-bold text-[#C5A880]">
+            <span className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-[#0B1D3A] text-lg font-bold text-[#C5A880]">
               {initials(selected.name)}
             </span>
             <p className="font-semibold text-slate-800 dark:text-slate-100">{selected.name}</p>

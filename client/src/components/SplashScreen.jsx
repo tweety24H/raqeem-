@@ -11,7 +11,7 @@ export default function SplashScreen() {
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#1A2744]">
       <motion.img
         src="/logo.png"
-        alt="RaqeemOS"
+        alt="Raqeem"
         className="h-20 w-20 rounded-2xl object-contain"
         animate={{ scale: [1, 1.08, 1] }}
         transition={{ duration: 0.8, repeat: Infinity, ease: 'easeInOut' }}

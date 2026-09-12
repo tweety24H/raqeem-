@@ -58,7 +58,7 @@ export default function UserPinPad({ onSubmit, loading, error, onClear }) {
             key={d}
             disabled={loading}
             onClick={() => pressKey(d)}
-            className="rounded-2xl bg-slate-50 py-4 text-lg font-display font-semibold text-[#1A2744] transition hover:bg-[#C5A880]/10 disabled:opacity-50"
+            className="rounded-2xl bg-slate-50 py-4 text-lg font-display font-semibold text-[#0B1D3A] transition hover:bg-[#C5A880]/10 disabled:opacity-50"
           >
             {d}
           </button>
@@ -78,7 +78,7 @@ export default function UserPinPad({ onSubmit, loading, error, onClear }) {
           type="button"
           disabled={loading}
           onClick={() => pressKey('0')}
-          className="rounded-2xl bg-slate-50 py-4 text-lg font-display font-semibold text-[#1A2744] transition hover:bg-[#C5A880]/10 disabled:opacity-50"
+          className="rounded-2xl bg-slate-50 py-4 text-lg font-display font-semibold text-[#0B1D3A] transition hover:bg-[#C5A880]/10 disabled:opacity-50"
         >
           0
         </button>
