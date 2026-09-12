@@ -6,18 +6,33 @@ export default {
     extend: {
       colors: {
         // Primary brand color — used for buttons, links, active states, headers.
+        // Matches the hex already hardcoded on the login screen (#0B1D3A) so
+        // every page shares the exact same navy instead of a slightly-off shade.
         nili: {
-          DEFAULT: '#1B2A6B',
-          dark: '#121d4d',
-          light: '#2c3f96',
+          DEFAULT: '#0B1D3A',
+          dark: '#071429',
+          light: '#132A50',
+        },
+        // `primary` is an alias for `nili` (same values) — kept so both
+        // `bg-nili`/`bg-primary` resolve to one design token; new code should
+        // prefer `primary`, existing `nili` usages don't need a mass rename.
+        primary: {
+          DEFAULT: '#0B1D3A',
+          dark: '#071429',
+          light: '#132A50',
         },
         // Single accent color, reserved for important/highlighted actions
         // (e.g. .btn-gold) — not a general-purpose interactive color.
+        // Matches the hex already hardcoded on the login screen (#C5A880).
         gold: {
-          DEFAULT: '#D4AF37',
-          light: '#e6c866',
-          dark: '#b8932a',
+          DEFAULT: '#C5A880',
+          light: '#E0C9A6',
+          dark: '#9c7c4a',
         },
+        surface: '#F8F9FA',
+        success: '#10B981',
+        danger: '#EF4444',
+        muted: '#64748B',
         // Secondary, low-emphasis accent. Used only for focus rings and
         // chart/data-viz series — never as a button or card background.
         brand: {
@@ -48,9 +63,13 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['IBM Plex Sans Arabic', 'Sora'],
-        display: ['Sora'],
-        arabic: ['IBM Plex Sans Arabic'],
+        // Single font family for the whole app (weights 400/600/700 only,
+        // loaded via <link> in index.html). `display`/`arabic` are kept as
+        // aliases so existing font-display/font-arabic usages don't need a
+        // mass rename — they now resolve to the same family as font-sans.
+        sans: ['IBM Plex Sans Arabic', 'sans-serif'],
+        display: ['IBM Plex Sans Arabic', 'sans-serif'],
+        arabic: ['IBM Plex Sans Arabic', 'sans-serif'],
       },
       borderRadius: {
         // Large, luxurious corner radius driven by a single CSS variable

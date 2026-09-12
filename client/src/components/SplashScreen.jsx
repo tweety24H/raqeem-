@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 // الحقيقية (هاي موجودة بـ electron/splash.html)
 export default function SplashScreen() {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#1A2744]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#0B1D3A]">
       <motion.img
         src="/logo.png"
         alt="Raqeem"

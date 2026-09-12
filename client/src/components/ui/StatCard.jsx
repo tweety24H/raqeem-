@@ -48,9 +48,9 @@ export default function StatCard({ label, value, format, icon, tone = 'default',
 
   const toneClasses = {
     default: 'text-slate-900 dark:text-slate-100',
-    warning: 'text-amber-600 dark:text-amber-400',
-    danger: 'text-rose-600 dark:text-rose-400',
-    success: 'text-emerald-600 dark:text-emerald-400',
+    warning: 'text-gold-dark dark:text-gold-light',
+    danger: 'text-danger dark:text-danger',
+    success: 'text-success dark:text-success',
   };
 
   const Component = to ? MotionLink : motion.div;
@@ -79,7 +79,7 @@ export default function StatCard({ label, value, format, icon, tone = 'default',
         </p>
       </div>
       {badge != null && badge > 0 && (
-        <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-600 dark:bg-rose-500/15 dark:text-rose-300">
+        <span className="rounded-full bg-danger/15 px-2 py-0.5 text-xs font-semibold text-danger dark:bg-danger/15 dark:text-danger">
           {badge}
         </span>
       )}

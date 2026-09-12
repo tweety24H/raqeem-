@@ -7,34 +7,36 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import StatusBadge from './StatusBadge';
 
+// تلوين خفيف لكل عمود بالكانبان — ألوان النظام فقط (نيلي/ذهبي/رمادي) بدل
+// درجات عشوائية (خوخي/أزرق/أخضر) حتى الأعمدة تبقى مميزة بس بهوية الموقع.
 const COLUMNS = [
   {
     key: 'todo',
     titleKey: 'kanban.todo',
-    bg: '#FFE5D9',
-    bgDark: 'rgba(255,229,217,0.08)',
+    bg: '#F1F5F9',
+    bgDark: 'rgba(255,255,255,0.04)',
     statuses: ['جديد'],
     dropStatus: 'جديد',
   },
   {
     key: 'inprogress',
     titleKey: 'kanban.inProgress',
-    bg: '#DBEAFE',
-    bgDark: 'rgba(219,234,254,0.08)',
+    bg: 'rgba(197,168,128,0.14)',
+    bgDark: 'rgba(197,168,128,0.08)',
     statuses: ['قيد التصميم', 'قيد الطباعة'],
     dropStatus: 'قيد التصميم',
   },
   {
     key: 'ready',
     titleKey: 'kanban.ready',
-    bg: '#DCFCE7',
-    bgDark: 'rgba(220,252,231,0.08)',
+    bg: 'rgba(11,29,58,0.08)',
+    bgDark: 'rgba(11,29,58,0.16)',
     statuses: ['جاهز للتسليم'],
     dropStatus: 'جاهز للتسليم',
   },
 ];
 
-const AVATAR_COLORS = ['#1B2A6B', '#f59e0b', '#10b981', '#0ea5e9', '#ef4444', '#6366f1', '#ec4899'];
+const AVATAR_COLORS = ['#0B1D3A', '#C5A880', '#475569', '#9c7c4a', '#132A50', '#64748B', '#0B1D3A'];
 
 function avatarColor(name) {
   const code = (name || '؟').charCodeAt(0) || 0;
@@ -50,7 +52,7 @@ function priorityFor(order) {
 }
 
 const PRIORITY_KEY = { high: 'kanban.priorityHigh', medium: 'kanban.priorityMedium', low: 'kanban.priorityLow' };
-const PRIORITY_DOT = { high: 'bg-rose-500', medium: 'bg-amber-500', low: 'bg-slate-300 dark:bg-slate-600' };
+const PRIORITY_DOT = { high: 'bg-danger', medium: 'bg-gold', low: 'bg-slate-300 dark:bg-slate-600' };
 
 const IN_PROGRESS_STATUSES = ['قيد التصميم', 'قيد الطباعة'];
 

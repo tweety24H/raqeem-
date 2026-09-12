@@ -8,7 +8,7 @@ import { formatIQD, formatDateTime, formatDiscountLabel } from '../utils/format'
 const GOLD = '#C9A94A';
 const GOLD_DARK = '#8a6d10';
 const CREAM = '#FBF6EA';
-const NAVY = '#1B2A6B';
+const NAVY = '#0B1D3A';
 
 // هاي صفحة الفاتورة القابلة للطباعة - نفس تصميمها يطبع ويطلع PDF لما
 // تستخدم زر الطباعة، وفيها رمز QR يقدر الزبون يمسحه يتحقق من صحة الفاتورة

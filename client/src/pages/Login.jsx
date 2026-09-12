@@ -189,7 +189,7 @@ export default function Login() {
         <div className="absolute bottom-8 right-10 left-10 flex flex-col gap-3">
           <div className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-3 backdrop-blur">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-green-400"></span>
+              <span className="h-2 w-2 animate-pulse rounded-full bg-success"></span>
               <span className="text-xs text-slate-200">النظام جاهز - v2.0.0</span>
             </div>
             <span className="text-[11px] text-slate-400">
@@ -230,9 +230,9 @@ export default function Login() {
               <motion.div
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-600 border border-red-200"
+                className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-danger/30 bg-danger/10 px-3 py-1 text-xs font-semibold text-danger"
               >
-                <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                <span className="h-1.5 w-1.5 rounded-full bg-danger animate-pulse"></span>
                 {overdueCount} طلبات متأخرة
               </motion.div>
             )}
@@ -241,8 +241,6 @@ export default function Login() {
           <div className="grid grid-cols-2 gap-3">
             {options.map((w) => {
               const isOwner = w.role === 'owner';
-              const isBlue = w.role === 'designer';
-              const isGreen = w.role === 'cashier';
               return (
                 <motion.button
                   key={w.id}
@@ -252,19 +250,12 @@ export default function Login() {
                   whileTap={{ scale: 0.98 }}
                   className={`group relative flex flex-col items-center gap-2 rounded-2xl border bg-white p-4 transition-all hover:shadow-lg
                     ${isOwner ? 'border-[#C5A880]/50 shadow-[0_2px_12px_rgba(197,168,128,0.15)]' : 'border-slate-200 hover:border-[#C5A880]'}
-                    ${isBlue ? 'hover:border-blue-300' : ''}
-                    ${isGreen ? 'hover:border-green-300' : ''}
                   `}
                 >
                   {isOwner && (
                     <span className="absolute -top-2 -right-2 rounded-full bg-gradient-to-br from-[#C5A880] to-[#9c7c4a] px-2 py-0.5 text-[10px] font-bold text-[#0B1D3A] shadow">★ مالك</span>
                   )}
-                  <span className={`flex h-12 w-12 items-center justify-center rounded-full text-lg font-bold
-                    ${isOwner ? 'bg-[#0B1D3A] text-[#C5A880]' : ''}
-                    ${isBlue ? 'bg-blue-600 text-white' : ''}
-                    ${isGreen ? 'bg-green-600 text-white' : ''}
-                    ${!isOwner && !isBlue && !isGreen ? 'bg-[#0B1D3A] text-[#C5A880]' : ''}
-                  `}>
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0B1D3A] text-lg font-bold text-[#C5A880]">
                     {initials(w.name)}
                   </span>
                   <span className="truncate text-sm font-semibold text-[#0B1D3A]">{w.name}</span>
@@ -292,7 +283,7 @@ export default function Login() {
             )}
           </div>
 
-          <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center text-[11px] text-amber-800">
+          <div className="mt-5 rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-center text-[11px] text-[#9c7c4a]">
             🔐 لإضافة موظف جديد: سجل دخول كمالك ← الإعدادات ← الموظفون والصلاحيات ← + إضافة موظف
           </div>
 

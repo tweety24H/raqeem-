@@ -40,7 +40,7 @@ function QueueCard({ order }) {
         <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
           {order.order_number}
         </span>
-        <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+        <span className="rounded-full bg-gold/15 px-2.5 py-1 text-xs font-bold text-gold-dark dark:bg-gold/15 dark:text-gold-light">
           {PRINTING_STATUS}
         </span>
       </div>

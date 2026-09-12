@@ -13,7 +13,7 @@ export default function RevenueChart({ data }) {
           <span className="h-2.5 w-2.5 rounded-full bg-nili" /> الإيراد
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-rose-400" /> المصاريف
+          <span className="h-2.5 w-2.5 rounded-full bg-danger" /> المصاريف
         </span>
       </div>
       <div className="flex h-40 items-end gap-[3px]">
@@ -24,7 +24,7 @@ export default function RevenueChart({ data }) {
               style={{ height: `${(d.revenue / max) * 100}%`, minHeight: d.revenue > 0 ? '2px' : 0 }}
             />
             <div
-              className="flex-1 rounded-t bg-rose-400 transition-opacity group-hover:opacity-80"
+              className="flex-1 rounded-t bg-danger transition-opacity group-hover:opacity-80"
               style={{ height: `${(d.expenses / max) * 100}%`, minHeight: d.expenses > 0 ? '2px' : 0 }}
             />
             <div className="pointer-events-none absolute bottom-full z-10 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-800 px-2 py-1 text-[11px] text-white group-hover:block ltr:left-1/2 rtl:right-1/2">

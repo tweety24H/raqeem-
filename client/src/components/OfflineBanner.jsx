@@ -31,7 +31,7 @@ export default function OfflineBanner() {
           animate={{ height: 'auto', opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="shrink-0 overflow-hidden bg-amber-500 text-center text-xs font-semibold text-white"
+          className="shrink-0 overflow-hidden bg-gold text-center text-xs font-semibold text-white"
         >
           <div className="px-3 py-1.5">{t('offline.banner')}</div>
         </motion.div>

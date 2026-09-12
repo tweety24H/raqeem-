@@ -200,7 +200,7 @@ export default function Dashboard() {
               type="button"
               onClick={() => setAddMenuOpen((v) => !v)}
               title={t('dashboard.quickAddMenu')}
-              className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#C5A880] text-base font-bold leading-none text-[#1A2744] transition hover:brightness-95"
+              className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#C5A880] text-base font-bold leading-none text-[#0B1D3A] transition hover:brightness-95"
             >
               +
             </button>
@@ -273,7 +273,7 @@ export default function Dashboard() {
             {dueSoonCount > 0 && (
               <Link
                 to="/orders?filter=today"
-                className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700 transition hover:bg-amber-100 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/20"
+                className="flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm font-medium text-gold-dark transition hover:bg-gold/15 dark:border-gold/20 dark:bg-gold/10 dark:text-gold-light dark:hover:bg-gold/20"
               >
                 ⏰ {t('dashboard.alertDueSoon', { count: dueSoonCount })}
               </Link>
@@ -281,7 +281,7 @@ export default function Dashboard() {
             {lowStockCount > 0 && (
               <Link
                 to="/stock?filter=low_stock"
-                className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 transition hover:bg-rose-100 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20"
+                className="flex items-center gap-2 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm font-medium text-danger transition hover:bg-danger/15 dark:border-danger/20 dark:bg-danger/10 dark:text-danger dark:hover:bg-danger/20"
               >
                 📦 {t('dashboard.alertLowStock', { count: lowStockCount })}
               </Link>
@@ -448,7 +448,7 @@ function QuickAddCustomerModal({ initialName, onClose, onCreated }) {
     <Modal open title={t('customers.modalTitle')} onClose={onClose}>
       <form onSubmit={submit} className="space-y-3">
         {error && (
-          <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">{error}</div>
+          <div className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger dark:bg-danger/10 dark:text-danger">{error}</div>
         )}
         <div>
           <label className="label">{t('common.name')}</label>

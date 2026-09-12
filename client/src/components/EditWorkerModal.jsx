@@ -54,9 +54,9 @@ export default function EditWorkerModal({ worker, roles, onClose, onSaved }) {
           transition={{ duration: 0.2 }}
           onClick={(e) => e.stopPropagation()}
           dir="rtl"
-          className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl dark:border dark:border-slate-800 dark:bg-slate-900"
+          className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl dark:border dark:border-slate-800 dark:bg-slate-900"
         >
-          <h3 className="mb-4 text-center font-bold text-[#1A2744] dark:text-white">✏️ تعديل بيانات {worker.name}</h3>
+          <h3 className="mb-4 text-center font-bold text-[#0B1D3A] dark:text-white">✏️ تعديل بيانات {worker.name}</h3>
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
@@ -95,7 +95,7 @@ export default function EditWorkerModal({ worker, roles, onClose, onSaved }) {
             </div>
 
             {error && (
-              <div className="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+              <div className="rounded-lg bg-danger/10 px-3 py-2 text-xs text-danger dark:bg-danger/10 dark:text-danger">
                 {error}
               </div>
             )}

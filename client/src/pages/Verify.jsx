@@ -10,14 +10,14 @@ import { formatIQD, formatDate } from '../utils/format';
 const GOLD = '#C9A94A';
 const GOLD_DARK = '#8a6d10';
 const CREAM = '#FBF6EA';
-const NAVY = '#1B2A6B';
+const NAVY = '#0B1D3A';
 
 function statusMeta(status, t) {
-  if (status === 'جديد') return { icon: '🟡', label: t('verify.statusTodo'), fg: '#92400e', bg: '#fef3c7' };
+  if (status === 'جديد') return { icon: '🟡', label: t('verify.statusTodo'), fg: '#9c7c4a', bg: 'rgba(197,168,128,0.18)' };
   if (status === 'قيد التصميم' || status === 'قيد الطباعة')
-    return { icon: '🔵', label: t('verify.statusInProgress'), fg: '#1e40af', bg: '#dbeafe' };
-  if (status === 'جاهز للتسليم') return { icon: '🟢', label: t('verify.statusReady'), fg: '#065f46', bg: '#d1fae5' };
-  if (status === 'تم التسليم') return { icon: '✅', label: t('verify.statusDelivered'), fg: '#065f46', bg: '#d1fae5' };
+    return { icon: '🔵', label: t('verify.statusInProgress'), fg: '#475569', bg: '#f1f5f9' };
+  if (status === 'جاهز للتسليم') return { icon: '🟢', label: t('verify.statusReady'), fg: '#0B1D3A', bg: 'rgba(11,29,58,0.1)' };
+  if (status === 'تم التسليم') return { icon: '✅', label: t('verify.statusDelivered'), fg: '#0B1D3A', bg: 'rgba(11,29,58,0.1)' };
   return { icon: '⚪', label: status, fg: '#475569', bg: '#f1f5f9' };
 }
 
@@ -78,10 +78,10 @@ export default function Verify() {
         )}
 
         {notFound && (
-          <div className="rounded-2xl border border-rose-200 bg-rose-50 p-8 text-center dark:border-rose-500/30 dark:bg-rose-500/10">
+          <div className="rounded-2xl border border-danger/30 bg-danger/10 p-8 text-center dark:border-danger/30 dark:bg-danger/10">
             <p className="mb-2 text-4xl">⚠️</p>
-            <h1 className="mb-2 text-lg font-bold text-rose-700 dark:text-rose-300">{t('verify.notFoundTitle')}</h1>
-            <p className="text-sm text-rose-600 dark:text-rose-300">{t('verify.notFoundBody')}</p>
+            <h1 className="mb-2 text-lg font-bold text-danger dark:text-danger">{t('verify.notFoundTitle')}</h1>
+            <p className="text-sm text-danger dark:text-danger">{t('verify.notFoundBody')}</p>
           </div>
         )}
 
@@ -112,7 +112,7 @@ export default function Verify() {
 
                   <div
                     className="mx-auto mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold text-white"
-                    style={{ background: '#0d9668', fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}
+                    style={{ background: '#10B981', fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}
                   >
                     <span>✅</span>
                     {t('verify.verifiedBadge')}
@@ -171,7 +171,7 @@ export default function Verify() {
 
             <div className="no-print mt-6 space-y-2">
               {reordered ? (
-                <p className="rounded-xl bg-emerald-50 px-4 py-3 text-center text-sm font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                <p className="rounded-xl bg-success/10 px-4 py-3 text-center text-sm font-medium text-success dark:bg-success/10 dark:text-success">
                   {t('verify.reorderDone')}
                 </p>
               ) : (
@@ -186,7 +186,7 @@ export default function Verify() {
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={shareWhatsapp}
-                  className="rounded-xl bg-emerald-600 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
+                  className="rounded-xl bg-success py-2.5 text-sm font-semibold text-white hover:bg-success"
                 >
                   {t('verify.shareBtn')}
                 </button>

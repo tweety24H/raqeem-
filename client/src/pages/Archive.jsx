@@ -60,7 +60,7 @@ export default function Archive() {
               <div className="truncate text-sm font-medium text-slate-800">{d.name}</div>
               <div className="truncate text-xs text-slate-400">{d.customer_name || 'بدون زبون'}</div>
               <div className="text-xs text-slate-400">{formatDate(d.created_at)}</div>
-              <button className="mt-1 text-xs text-rose-500 hover:underline" onClick={() => remove(d.id)}>
+              <button className="mt-1 text-xs text-danger hover:underline" onClick={() => remove(d.id)}>
                 حذف
               </button>
             </div>
@@ -116,7 +116,7 @@ function AddDesignModal({ onClose, onSaved }) {
   return (
     <Modal open title="رفع تصميم جديد" onClose={onClose}>
       <form onSubmit={submit} className="space-y-3">
-        {error && <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</div>}
+        {error && <div className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">{error}</div>}
         <div>
           <label className="label">اسم التصميم</label>
           <input className="input" value={name} onChange={(e) => setName(e.target.value)} />

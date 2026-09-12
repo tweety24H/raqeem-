@@ -222,7 +222,7 @@ export default function NewOrder() {
             {customerInfo?.phone && <span className="mr-1 text-slate-400 dark:text-slate-500"> · {customerInfo.phone}</span>}
           </span>
           {customerInfo?.debt > 0 && (
-            <span className="text-rose-600 dark:text-rose-400">
+            <span className="text-danger dark:text-danger">
               ({t('newOrder.debtPrefix')}: {formatIQD(customerInfo.debt)})
             </span>
           )}
@@ -233,13 +233,13 @@ export default function NewOrder() {
       )}
 
       {reorderDraft && (
-        <div className="mb-4 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
+        <div className="mb-4 rounded-lg bg-gold/10 px-4 py-3 text-sm text-gold-dark dark:bg-gold/10 dark:text-gold-light">
           {t('newOrder.reorderNotice')}
         </div>
       )}
 
       {error && (
-        <div className="mb-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+        <div className="mb-4 rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger dark:bg-danger/10 dark:text-danger">
           {error}
         </div>
       )}
@@ -297,7 +297,7 @@ export default function NewOrder() {
                   {c.name} {c.phone && <span className="text-slate-400 dark:text-slate-500">· {c.phone}</span>}
                 </span>
                 {c.debt > 0 && (
-                  <span className="text-rose-600 dark:text-rose-400">
+                  <span className="text-danger dark:text-danger">
                     {t('newOrder.debtPrefix')}: {formatIQD(c.debt)}
                   </span>
                 )}
@@ -390,7 +390,7 @@ export default function NewOrder() {
                       {items.length > 1 && (
                         <button
                           type="button"
-                          className="text-rose-500 hover:underline"
+                          className="text-danger hover:underline"
                           onClick={() => setItems((p) => p.filter((_, i) => i !== idx))}
                         >
                           {t('newOrder.deleteBtn')}
@@ -439,7 +439,7 @@ export default function NewOrder() {
                     onClick={() => setDiscountType('percent')}
                     className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${
                       discountType === 'percent'
-                        ? 'border-[#C5A880] bg-[#C5A880] text-[#1A2744]'
+                        ? 'border-[#C5A880] bg-[#C5A880] text-[#0B1D3A]'
                         : 'border-slate-300 text-slate-600 dark:border-white/10 dark:text-slate-300'
                     }`}
                   >
@@ -450,7 +450,7 @@ export default function NewOrder() {
                     onClick={() => setDiscountType('fixed')}
                     className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${
                       discountType === 'fixed'
-                        ? 'border-[#C5A880] bg-[#C5A880] text-[#1A2744]'
+                        ? 'border-[#C5A880] bg-[#C5A880] text-[#0B1D3A]'
                         : 'border-slate-300 text-slate-600 dark:border-white/10 dark:text-slate-300'
                     }`}
                   >
@@ -488,7 +488,7 @@ export default function NewOrder() {
                         onClick={() => setDiscountAfterType('percent')}
                         className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${
                           discountAfterType === 'percent'
-                            ? 'border-[#C5A880] bg-[#C5A880] text-[#1A2744]'
+                            ? 'border-[#C5A880] bg-[#C5A880] text-[#0B1D3A]'
                             : 'border-slate-300 text-slate-600 dark:border-white/10 dark:text-slate-300'
                         }`}
                       >
@@ -499,7 +499,7 @@ export default function NewOrder() {
                         onClick={() => setDiscountAfterType('fixed')}
                         className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${
                           discountAfterType === 'fixed'
-                            ? 'border-[#C5A880] bg-[#C5A880] text-[#1A2744]'
+                            ? 'border-[#C5A880] bg-[#C5A880] text-[#0B1D3A]'
                             : 'border-slate-300 text-slate-600 dark:border-white/10 dark:text-slate-300'
                         }`}
                       >
@@ -633,13 +633,13 @@ function Stepper({ step, customerLocked, t }) {
                 active
                   ? 'bg-nili text-white'
                   : done
-                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
+                  ? 'bg-success/15 text-success dark:bg-success/15 dark:text-success'
                   : 'bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400'
               }`}
             >
               <span
                 className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] ${
-                  active ? 'bg-white/20' : done ? 'bg-emerald-600 text-white' : 'bg-slate-300 text-slate-600 dark:bg-white/10'
+                  active ? 'bg-white/20' : done ? 'bg-success text-white' : 'bg-slate-300 text-slate-600 dark:bg-white/10'
                 }`}
               >
                 {done ? '✓' : n}

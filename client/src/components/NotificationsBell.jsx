@@ -36,7 +36,7 @@ export default function NotificationsBell() {
       >
         🔔
         {count > 0 && (
-          <span className="absolute -top-1 -left-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white">
+          <span className="absolute -top-1 -left-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-white">
             {count > 9 ? '9+' : count}
           </span>
         )}
@@ -66,7 +66,7 @@ export default function NotificationsBell() {
                         className="flex items-center justify-between gap-2 border-t border-slate-100 px-4 py-2.5 text-sm hover:bg-slate-50 dark:border-white/5 dark:hover:bg-white/5"
                       >
                         <span className="text-slate-700 dark:text-slate-200">{o.customer_name}</span>
-                        <span className="text-xs text-amber-600 dark:text-amber-400">{formatDate(o.due_date)}</span>
+                        <span className="text-xs text-gold-dark dark:text-gold-light">{formatDate(o.due_date)}</span>
                       </Link>
                     ))}
                   </div>
@@ -82,7 +82,7 @@ export default function NotificationsBell() {
                         className="flex items-center justify-between gap-2 border-t border-slate-100 px-4 py-2.5 text-sm hover:bg-slate-50 dark:border-white/5 dark:hover:bg-white/5"
                       >
                         <span className="text-slate-700 dark:text-slate-200">{s.name}</span>
-                        <span className="text-xs text-rose-600 dark:text-rose-400">{s.quantity} {s.unit}</span>
+                        <span className="text-xs text-danger dark:text-danger">{s.quantity} {s.unit}</span>
                       </Link>
                     ))}
                   </div>

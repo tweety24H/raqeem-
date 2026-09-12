@@ -44,14 +44,14 @@ export default function DeleteWorkerModal({ worker, onClose, onDeleted }) {
           transition={{ duration: 0.2 }}
           onClick={(e) => e.stopPropagation()}
           dir="rtl"
-          className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl dark:border dark:border-slate-800 dark:bg-slate-900"
+          className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl dark:border dark:border-slate-800 dark:bg-slate-900"
         >
           <div className="mb-4 text-center">
-            <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 text-2xl dark:bg-rose-500/15">
+            <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-danger/15 text-2xl dark:bg-danger/15">
               🗑️
             </span>
-            <h3 className="font-bold text-[#1A2744] dark:text-white">هل أنت متأكد من حذف {worker.name}؟</h3>
-            <p className="mt-2 text-xs text-rose-600 dark:text-rose-300">سيتم حذف جميع بيانات دخوله، لا يمكن التراجع</p>
+            <h3 className="font-bold text-[#0B1D3A] dark:text-white">هل أنت متأكد من حذف {worker.name}؟</h3>
+            <p className="mt-2 text-xs text-danger dark:text-danger">سيتم حذف جميع بيانات دخوله، لا يمكن التراجع</p>
           </div>
 
           <div className="space-y-3">
@@ -79,7 +79,7 @@ export default function DeleteWorkerModal({ worker, onClose, onDeleted }) {
             </div>
 
             {error && (
-              <div className="rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+              <div className="rounded-lg bg-danger/10 px-3 py-2 text-xs text-danger dark:bg-danger/10 dark:text-danger">
                 {error}
               </div>
             )}
@@ -92,7 +92,7 @@ export default function DeleteWorkerModal({ worker, onClose, onDeleted }) {
                 type="button"
                 disabled={!canConfirm || deleting}
                 onClick={handleDelete}
-                className="flex-1 rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-rose-600/20 transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 rounded-lg bg-danger px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-danger/20 transition hover:bg-danger disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {deleting ? 'جاري الحذف...' : 'تأكيد الحذف'}
               </button>

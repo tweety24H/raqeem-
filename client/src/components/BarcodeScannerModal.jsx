@@ -69,7 +69,7 @@ export default function BarcodeScannerModal({ onDetected, onClose }) {
       <div className="space-y-3">
         {starting && <p className="text-center text-sm text-slate-400 dark:text-slate-500">جاري تشغيل الكاميرا...</p>}
         {error && (
-          <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+          <p className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger dark:bg-danger/10 dark:text-danger">
             {error}
           </p>
         )}

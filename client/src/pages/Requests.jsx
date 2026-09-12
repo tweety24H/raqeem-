@@ -59,7 +59,7 @@ export default function Requests() {
               <div className="mt-1 text-xs text-slate-400">{formatDateTime(r.created_at)}</div>
             </div>
             <div className="flex flex-col items-end gap-2">
-              <span className={`badge ${r.status === 'جديد' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
+              <span className={`badge ${r.status === 'جديد' ? 'bg-gold/15 text-gold-dark' : 'bg-success/15 text-success'}`}>
                 {r.status}
               </span>
               {r.status === 'جديد' && (

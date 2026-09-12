@@ -106,7 +106,7 @@ export default function Onboarding() {
           transition={{ duration: 0.2 }}
           className="w-full max-w-sm rounded-2xl bg-white p-6"
         >
-          <h2 className="mb-1 text-center font-display text-lg font-bold text-[#1A2744]">{current.title}</h2>
+          <h2 className="mb-1 text-center font-display text-lg font-bold text-[#0B1D3A]">{current.title}</h2>
           <p className="mb-5 text-center text-xs text-slate-400">{current.subtitle}</p>
 
           {current.key === 'shop' && (
@@ -166,7 +166,7 @@ export default function Onboarding() {
           type="button"
           disabled={saving}
           onClick={goNext}
-          className="rounded-xl bg-[#C5A880] px-6 py-2.5 text-sm font-bold text-[#1A2744] transition hover:bg-[#B8956A] disabled:opacity-50"
+          className="rounded-xl bg-[#C5A880] px-6 py-2.5 text-sm font-bold text-[#0B1D3A] transition hover:bg-[#B8956A] disabled:opacity-50"
         >
           {saving ? '...' : step === STEPS.length - 1 ? 'ابدأ' : 'التالي'}
         </button>

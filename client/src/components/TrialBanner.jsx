@@ -1,6 +1,6 @@
 export default function TrialBanner({ daysLeft, onActivateClick }) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[200] flex items-center justify-center gap-3 bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-lg">
+    <div className="fixed inset-x-0 bottom-0 z-[200] flex items-center justify-center gap-3 bg-gold px-4 py-2 text-sm font-semibold text-white shadow-lg">
       <span>
         نسخة تجريبية من مطبعتي — متبقي {daysLeft} {daysLeft === 1 ? 'يوم' : 'أيام'}
       </span>

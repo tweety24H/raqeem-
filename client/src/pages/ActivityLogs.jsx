@@ -11,10 +11,10 @@ const MODEL_TYPES = ['order', 'customer', 'inventory', 'payment', 'user'];
 const PAGE_SIZE = 25;
 
 const ACTION_STYLES = {
-  create: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
-  update: 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
-  delete: 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300',
-  login: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
+  create: 'bg-success/15 text-success dark:bg-success/15 dark:text-success',
+  update: 'bg-gold/15 text-gold-dark dark:bg-gold/15 dark:text-gold-light',
+  delete: 'bg-danger/15 text-danger dark:bg-danger/15 dark:text-danger',
+  login: 'bg-slate-200 text-slate-600 dark:bg-white/10 dark:text-slate-300',
 };
 
 // Task 6: /activity-logs — audit trail of who did what, filterable by
@@ -83,7 +83,7 @@ export default function ActivityLogs() {
       <PageHeader title={t('activityLogs.title')} subtitle={t('activityLogs.subtitle')} />
 
       {error && (
-        <div className="mb-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+        <div className="mb-4 rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger dark:bg-danger/10 dark:text-danger">
           {error}
         </div>
       )}

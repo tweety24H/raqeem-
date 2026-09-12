@@ -245,7 +245,7 @@ export default function OrdersList() {
           </button>
         ))}
         {inProgressOnly && (
-          <span className="badge cursor-pointer bg-amber-500 text-white" onClick={() => selectStatus('')}>
+          <span className="badge cursor-pointer bg-gold text-white" onClick={() => selectStatus('')}>
             {t('dashboard.statInProgress')} ✕
           </span>
         )}
@@ -310,7 +310,7 @@ export default function OrdersList() {
                 {o.item_summary && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{o.item_summary}</p>}
                 <div className="mt-3 flex items-center justify-between text-sm">
                   <span className="font-bold text-slate-800 dark:text-slate-100">{formatIQD(o.total_price)}</span>
-                  <span className={remaining > 0 ? 'font-semibold text-rose-600' : 'text-emerald-600'}>
+                  <span className={remaining > 0 ? 'font-semibold text-danger' : 'text-success'}>
                     {remaining > 0 ? formatIQD(remaining) : t('orders.paidMark')}
                   </span>
                 </div>
@@ -387,7 +387,7 @@ export default function OrdersList() {
                       </select>
                     </td>
                     <td className="px-4 py-3 font-bold text-slate-800 dark:text-slate-100">{formatIQD(o.total_price)}</td>
-                    <td className={`px-4 py-3 ${remaining > 0 ? 'text-rose-600 font-semibold' : 'text-emerald-600'}`}>
+                    <td className={`px-4 py-3 ${remaining > 0 ? 'text-danger font-semibold' : 'text-success'}`}>
                       {remaining > 0 ? formatIQD(remaining) : t('orders.paidMark')}
                     </td>
                     <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{formatDate(o.due_date)}</td>

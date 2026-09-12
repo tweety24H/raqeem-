@@ -15,12 +15,12 @@ export function shouldShowOnboarding() {
 function DashboardIcon() {
   return (
     <svg viewBox="0 0 64 64" className="h-16 w-16">
-      <rect x="8" y="8" width="20" height="20" rx="4" fill="#D4AF37" opacity="0.2" />
-      <rect x="36" y="8" width="20" height="20" rx="4" fill="#1B2A6B" opacity="0.15" />
-      <rect x="8" y="36" width="48" height="20" rx="4" fill="#D4AF37" opacity="0.15" />
-      <rect x="8" y="8" width="20" height="20" rx="4" fill="none" stroke="#D4AF37" strokeWidth="2" />
-      <rect x="36" y="8" width="20" height="20" rx="4" fill="none" stroke="#1B2A6B" strokeWidth="2" />
-      <rect x="8" y="36" width="48" height="20" rx="4" fill="none" stroke="#D4AF37" strokeWidth="2" />
+      <rect x="8" y="8" width="20" height="20" rx="4" fill="#C5A880" opacity="0.2" />
+      <rect x="36" y="8" width="20" height="20" rx="4" fill="#0B1D3A" opacity="0.15" />
+      <rect x="8" y="36" width="48" height="20" rx="4" fill="#C5A880" opacity="0.15" />
+      <rect x="8" y="8" width="20" height="20" rx="4" fill="none" stroke="#C5A880" strokeWidth="2" />
+      <rect x="36" y="8" width="20" height="20" rx="4" fill="none" stroke="#0B1D3A" strokeWidth="2" />
+      <rect x="8" y="36" width="48" height="20" rx="4" fill="none" stroke="#C5A880" strokeWidth="2" />
     </svg>
   );
 }
@@ -28,10 +28,10 @@ function DashboardIcon() {
 function OrdersIcon() {
   return (
     <svg viewBox="0 0 64 64" className="h-16 w-16">
-      <rect x="12" y="8" width="40" height="48" rx="4" fill="none" stroke="#1B2A6B" strokeWidth="2" />
-      <line x1="20" y1="20" x2="44" y2="20" stroke="#D4AF37" strokeWidth="3" strokeLinecap="round" />
-      <line x1="20" y1="30" x2="44" y2="30" stroke="#1B2A6B" strokeWidth="3" strokeLinecap="round" opacity="0.4" />
-      <line x1="20" y1="40" x2="36" y2="40" stroke="#1B2A6B" strokeWidth="3" strokeLinecap="round" opacity="0.4" />
+      <rect x="12" y="8" width="40" height="48" rx="4" fill="none" stroke="#0B1D3A" strokeWidth="2" />
+      <line x1="20" y1="20" x2="44" y2="20" stroke="#C5A880" strokeWidth="3" strokeLinecap="round" />
+      <line x1="20" y1="30" x2="44" y2="30" stroke="#0B1D3A" strokeWidth="3" strokeLinecap="round" opacity="0.4" />
+      <line x1="20" y1="40" x2="36" y2="40" stroke="#0B1D3A" strokeWidth="3" strokeLinecap="round" opacity="0.4" />
     </svg>
   );
 }
@@ -39,10 +39,10 @@ function OrdersIcon() {
 function ShortcutsIcon() {
   return (
     <svg viewBox="0 0 64 64" className="h-16 w-16">
-      <rect x="6" y="22" width="22" height="20" rx="4" fill="none" stroke="#1B2A6B" strokeWidth="2" />
-      <text x="17" y="36" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#1B2A6B">K</text>
-      <rect x="36" y="22" width="22" height="20" rx="4" fill="none" stroke="#D4AF37" strokeWidth="2" />
-      <text x="47" y="36" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#D4AF37">N</text>
+      <rect x="6" y="22" width="22" height="20" rx="4" fill="none" stroke="#0B1D3A" strokeWidth="2" />
+      <text x="17" y="36" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#0B1D3A">K</text>
+      <rect x="36" y="22" width="22" height="20" rx="4" fill="none" stroke="#C5A880" strokeWidth="2" />
+      <text x="47" y="36" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#C5A880">N</text>
     </svg>
   );
 }

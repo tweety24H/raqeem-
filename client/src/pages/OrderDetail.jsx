@@ -89,7 +89,7 @@ export default function OrderDetail() {
                   idx === statusIdx
                     ? 'border-nili bg-nili text-white'
                     : idx < statusIdx
-                    ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300'
+                    ? 'border-success/30 bg-success/10 text-success dark:border-success/20 dark:bg-success/10 dark:text-success'
                     : 'border-slate-300 text-slate-500 hover:bg-slate-50 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/5'
                 }`}
               >
@@ -162,11 +162,11 @@ export default function OrderDetail() {
             <h2 className="mb-3 font-semibold text-slate-700 dark:text-slate-200">{t('orderDetail.paymentHeading')}</h2>
             <div className="mb-2 flex justify-between text-sm">
               <span className="text-slate-500 dark:text-slate-400">{t('common.paid')}</span>
-              <span className="font-medium text-emerald-600 dark:text-emerald-400">{formatIQD(order.paid_amount)}</span>
+              <span className="font-medium text-success dark:text-success">{formatIQD(order.paid_amount)}</span>
             </div>
             <div className="mb-3 flex justify-between text-sm">
               <span className="text-slate-500 dark:text-slate-400">{t('common.remaining')}</span>
-              <span className={`font-semibold ${remaining > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+              <span className={`font-semibold ${remaining > 0 ? 'text-danger' : 'text-success'}`}>
                 {formatIQD(remaining)}
               </span>
             </div>
@@ -185,7 +185,7 @@ export default function OrderDetail() {
               </form>
             )}
             {error && (
-              <div className="mb-2 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+              <div className="mb-2 rounded-lg bg-danger/10 px-3 py-2 text-xs text-danger dark:bg-danger/10 dark:text-danger">
                 {error}
               </div>
             )}

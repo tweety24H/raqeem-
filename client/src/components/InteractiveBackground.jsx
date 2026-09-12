@@ -18,18 +18,18 @@ const WAVE_WIDTH = 800;
 
 // Each entry renders as its own <svg> layer: a handful of thin, overlapping
 // lines drifting at a different speed/opacity to fake depth.
-// Palette: nili (#1B2A6B) as the primary tint, a warm gold thread
-// (#D4AF37, matching the `gold` token) as the print-industry accent, and
-// nili-light (#2c3f96) for a lighter secondary line to keep some depth.
+// Palette: nili (#0B1D3A) as the primary tint, a warm gold thread
+// (#C5A880, matching the `gold` token) as the print-industry accent, and
+// nili-light (#132A50) for a lighter secondary line to keep some depth.
 const WAVE_LAYERS = [
   {
     height: 220,
     driftDuration: 46,
     opacity: 0.5,
     lines: [
-      { amplitude: 16, frequency: 1.1, phase: 0, baseline: 70, color: 'rgba(27, 42, 107, 0.24)', width: 1.4 },
-      { amplitude: 12, frequency: 1.4, phase: 1.4, baseline: 120, color: 'rgba(44, 63, 150, 0.26)', width: 1.1 },
-      { amplitude: 10, frequency: 0.9, phase: 2.6, baseline: 165, color: 'rgba(212, 175, 55, 0.2)', width: 1 },
+      { amplitude: 16, frequency: 1.1, phase: 0, baseline: 70, color: 'rgba(11, 29, 58, 0.24)', width: 1.4 },
+      { amplitude: 12, frequency: 1.4, phase: 1.4, baseline: 120, color: 'rgba(19, 42, 80, 0.26)', width: 1.1 },
+      { amplitude: 10, frequency: 0.9, phase: 2.6, baseline: 165, color: 'rgba(197, 168, 128, 0.2)', width: 1 },
     ],
   },
   {
@@ -37,8 +37,8 @@ const WAVE_LAYERS = [
     driftDuration: 62,
     opacity: 0.35,
     lines: [
-      { amplitude: 14, frequency: 0.8, phase: 0.6, baseline: 60, color: 'rgba(44, 63, 150, 0.24)', width: 1 },
-      { amplitude: 9, frequency: 1.6, phase: 2.1, baseline: 110, color: 'rgba(212, 175, 55, 0.16)', width: 1 },
+      { amplitude: 14, frequency: 0.8, phase: 0.6, baseline: 60, color: 'rgba(19, 42, 80, 0.24)', width: 1 },
+      { amplitude: 9, frequency: 1.6, phase: 2.1, baseline: 110, color: 'rgba(197, 168, 128, 0.16)', width: 1 },
     ],
   },
   {
@@ -46,8 +46,8 @@ const WAVE_LAYERS = [
     driftDuration: 34,
     opacity: 0.22,
     lines: [
-      { amplitude: 8, frequency: 1.3, phase: 3.1, baseline: 90, color: 'rgba(27, 42, 107, 0.18)', width: 0.9 },
-      { amplitude: 11, frequency: 0.7, phase: 1.1, baseline: 140, color: 'rgba(44, 63, 150, 0.2)', width: 0.9 },
+      { amplitude: 8, frequency: 1.3, phase: 3.1, baseline: 90, color: 'rgba(11, 29, 58, 0.18)', width: 0.9 },
+      { amplitude: 11, frequency: 0.7, phase: 1.1, baseline: 140, color: 'rgba(19, 42, 80, 0.2)', width: 0.9 },
     ],
   },
 ];
@@ -105,7 +105,7 @@ function useDots(count) {
         left: `${(rand() * 100).toFixed(1)}%`,
         size,
         opacity: 0.25 + rand() * 0.35,
-        color: nili ? 'rgba(27, 42, 107, 0.5)' : 'rgba(212, 175, 55, 0.45)',
+        color: nili ? 'rgba(11, 29, 58, 0.5)' : 'rgba(197, 168, 128, 0.45)',
         drift: i % 3 === 0,
         duration: 7 + rand() * 8,
       };

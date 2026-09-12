@@ -38,7 +38,7 @@ export default function PermissionsSettings() {
       <PageHeader title={t('permissionsPage.title')} subtitle={t('permissionsPage.subtitle')} />
 
       {error && (
-        <div className="mb-4 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+        <div className="mb-4 rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger dark:bg-danger/10 dark:text-danger">
           {error}
         </div>
       )}
@@ -129,7 +129,7 @@ function EditPermissionsModal({ user, allPermissions, onClose, onSaved }) {
   return (
     <Modal open title={t('permissionsPage.modalTitle', { name: user.name })} onClose={onClose} width="max-w-2xl">
       {error && (
-        <div className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+        <div className="mb-3 rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger dark:bg-danger/10 dark:text-danger">
           {error}
         </div>
       )}

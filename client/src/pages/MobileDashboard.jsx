@@ -52,7 +52,7 @@ export default function MobileDashboard() {
       </div>
 
       <div className="space-y-4 p-4">
-        {error && <div className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-600">{error}</div>}
+        {error && <div className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">{error}</div>}
         {!error && !summary && <div className="py-10 text-center text-slate-400">جاري التحميل...</div>}
 
         {summary && (
@@ -113,9 +113,9 @@ export default function MobileDashboard() {
 
 function BigCard({ emoji, label, value, detail, tone }) {
   const tones = {
-    emerald: 'from-emerald-500 to-emerald-600',
-    rose: 'from-rose-500 to-rose-600',
-    amber: 'from-amber-500 to-amber-600',
+    emerald: 'from-success to-success',
+    rose: 'from-danger to-danger',
+    amber: 'from-gold to-gold-dark',
   };
   return (
     <div className={`rounded-2xl bg-gradient-to-br ${tones[tone]} p-5 text-white shadow-sm`}>

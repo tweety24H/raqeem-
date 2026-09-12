@@ -49,7 +49,7 @@ export default function UserPinPad({ onSubmit, loading, error, onClear }) {
         ))}
       </div>
 
-      {error && <div className="mb-4 rounded-xl bg-rose-50 px-3 py-2 text-center text-sm text-rose-600">{error}</div>}
+      {error && <div className="mb-4 rounded-xl bg-danger/10 px-3 py-2 text-center text-sm text-danger">{error}</div>}
 
       <div className="grid grid-cols-3 gap-3">
         {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((d) => (

@@ -136,12 +136,12 @@ function OverviewTab() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <MiniStat label="إجمالي الديون المستحقة" value={active ? formatIQD(active.totalDebts) : '...'} tone="text-rose-600" />
-        <MiniStat label="أصناف بمخزون منخفض" value={active ? `${active.lowStockCount} صنف` : '...'} tone="text-amber-600" />
+        <MiniStat label="إجمالي الديون المستحقة" value={active ? formatIQD(active.totalDebts) : '...'} tone="text-danger" />
+        <MiniStat label="أصناف بمخزون منخفض" value={active ? `${active.lowStockCount} صنف` : '...'} tone="text-gold-dark" />
         <MiniStat
           label={`صافي الربح (${activeLabel})`}
           value={active ? formatIQD(active.netProfit) : '...'}
-          tone="text-emerald-600"
+          tone="text-success"
         />
       </div>
 
@@ -234,7 +234,7 @@ function OverviewTab() {
               <tr key={e.id} className="border-t border-slate-100">
                 <td className="px-3 py-2 text-slate-500">{formatDate(e.date)}</td>
                 <td className="px-3 py-2">{e.reason || '-'}</td>
-                <td className="px-3 py-2 font-medium text-rose-600">{formatIQD(e.amount)}</td>
+                <td className="px-3 py-2 font-medium text-danger">{formatIQD(e.amount)}</td>
               </tr>
             ))}
             {active && active.recentExpenses.length === 0 && (
@@ -318,7 +318,7 @@ function AddExpenseModal({ onClose, onSaved }) {
   return (
     <Modal open title="إضافة مصروف" onClose={onClose}>
       <form onSubmit={submit} className="space-y-3">
-        {error && <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</div>}
+        {error && <div className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">{error}</div>}
         <div>
           <label className="label">المبلغ (د.ع)</label>
           <input
@@ -433,8 +433,8 @@ function DetailedTab() {
           <h2 className="mb-3 font-semibold text-slate-700">الربح الحقيقي حسب الخدمة</h2>
           <div className="mb-3 grid grid-cols-3 gap-4">
             <Stat label="الإيراد" value={formatIQD(profit.totals.revenue)} tone="text-slate-700" />
-            <Stat label="التكلفة" value={formatIQD(profit.totals.cost)} tone="text-rose-600" />
-            <Stat label="صافي الربح" value={formatIQD(profit.totals.profit)} tone="text-emerald-600" />
+            <Stat label="التكلفة" value={formatIQD(profit.totals.cost)} tone="text-danger" />
+            <Stat label="صافي الربح" value={formatIQD(profit.totals.profit)} tone="text-success" />
           </div>
           <table className="w-full text-sm">
             <thead className="bg-slate-100 text-slate-600">
@@ -452,8 +452,8 @@ function DetailedTab() {
                   <td className="px-3 py-2">{s.service_name}</td>
                   <td className="px-3 py-2">{s.quantity}</td>
                   <td className="px-3 py-2">{formatIQD(s.revenue)}</td>
-                  <td className="px-3 py-2 text-rose-500">{formatIQD(s.cost)}</td>
-                  <td className="px-3 py-2 font-medium text-emerald-600">{formatIQD(s.profit)}</td>
+                  <td className="px-3 py-2 text-danger">{formatIQD(s.cost)}</td>
+                  <td className="px-3 py-2 font-medium text-success">{formatIQD(s.profit)}</td>
                 </tr>
               ))}
             </tbody>
@@ -465,7 +465,7 @@ function DetailedTab() {
         <div className="card mb-6">
           <h2 className="mb-3 font-semibold text-slate-700">تقرير الهدر (التالف)</h2>
           <div className="mb-3">
-            <Stat label="إجمالي تكلفة التالف" value={formatIQD(waste.totalCost)} tone="text-rose-600" />
+            <Stat label="إجمالي تكلفة التالف" value={formatIQD(waste.totalCost)} tone="text-danger" />
           </div>
           <table className="w-full text-sm">
             <thead className="bg-slate-100 text-slate-600">
@@ -485,7 +485,7 @@ function DetailedTab() {
                     {r.quantity} {r.unit}
                   </td>
                   <td className="px-3 py-2 text-slate-500">{r.reason || '-'}</td>
-                  <td className="px-3 py-2 text-rose-500">{formatIQD(r.cost_lost)}</td>
+                  <td className="px-3 py-2 text-danger">{formatIQD(r.cost_lost)}</td>
                   <td className="px-3 py-2 text-slate-500">{r.worker_name || '-'}</td>
                 </tr>
               ))}
@@ -514,7 +514,7 @@ function DetailedTab() {
                   <td className="px-3 py-2">{w.orders_count}</td>
                   <td className="px-3 py-2">{formatIQD(w.revenue)}</td>
                   <td className="px-3 py-2">{w.damage_events}</td>
-                  <td className="px-3 py-2 text-rose-500">{formatIQD(w.damage_cost)}</td>
+                  <td className="px-3 py-2 text-danger">{formatIQD(w.damage_cost)}</td>
                 </tr>
               ))}
             </tbody>

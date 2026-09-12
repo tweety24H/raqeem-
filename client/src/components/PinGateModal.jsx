@@ -72,7 +72,7 @@ export default function PinGateModal({ user, onClose, onSuccess }) {
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
+        className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl"
         dir="rtl"
       >
         <div className="text-center mb-6">
@@ -97,10 +97,10 @@ export default function PinGateModal({ user, onClose, onSuccess }) {
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-center text-2xl tracking-[0.5em] focus:border-[#C5A880] focus:bg-white focus:outline-none disabled:opacity-50"
             />
             {error && (
-              <p className="mt-2 text-center text-xs text-red-600">{error}</p>
+              <p className="mt-2 text-center text-xs text-danger">{error}</p>
             )}
             {isLocked && (
-              <p className="mt-2 text-center text-xs font-bold text-red-600">
+              <p className="mt-2 text-center text-xs font-bold text-danger">
                 حاول مرة أخرى بعد {countdown} ثانية
               </p>
             )}

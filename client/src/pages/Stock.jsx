@@ -156,10 +156,10 @@ export default function Stock() {
       />
 
       {lowItems.length > 0 && (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger dark:border-danger/30 dark:bg-danger/10 dark:text-danger">
           <span>{t('stock.lowStockWarning', { count: lowItems.length })}</span>
           <button
-            className="rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25"
+            className="rounded-lg bg-success/10 px-3 py-1.5 text-xs font-semibold text-success hover:bg-success/15 dark:bg-success/15 dark:text-success dark:hover:bg-success/25"
             onClick={sendStockAlert}
           >
             {t('stock.sendAlertBtn')}
@@ -220,7 +220,7 @@ export default function Stock() {
                     <p className="font-semibold text-slate-800 dark:text-slate-100">{item.name}</p>
                   </div>
                   {low && (
-                    <span className="badge bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300">
+                    <span className="badge bg-danger/15 text-danger dark:bg-danger/15 dark:text-danger">
                       {t('stock.low')}
                     </span>
                   )}
@@ -228,7 +228,7 @@ export default function Stock() {
                 <p className="text-xs text-slate-500 dark:text-slate-400">{item.category_name || item.category || t('stock.noCategory')}</p>
                 {item.type && <p className="text-xs text-slate-400 dark:text-slate-500">{t(`stock.type_${item.type}`)}</p>}
                 <div className="mt-3 flex items-center justify-between text-sm">
-                  <span className={`font-bold ${low ? 'text-rose-600' : 'text-slate-800 dark:text-slate-100'}`}>
+                  <span className={`font-bold ${low ? 'text-danger' : 'text-slate-800 dark:text-slate-100'}`}>
                     {item.quantity} {t(`unit.${item.unit}`)}
                   </span>
                   <span className="text-slate-500 dark:text-slate-400">{formatIQD(item.purchase_price || item.cost_per_unit)}</span>
@@ -272,7 +272,7 @@ export default function Stock() {
                 return (
                   <tr
                     key={item.id}
-                    className={`border-t border-slate-100 hover:bg-slate-50 dark:border-white/5 dark:hover:bg-white/5 ${low ? 'bg-rose-50/60 dark:bg-rose-500/5' : ''}`}
+                    className={`border-t border-slate-100 hover:bg-slate-50 dark:border-white/5 dark:hover:bg-white/5 ${low ? 'bg-danger/10 dark:bg-danger/5' : ''}`}
                   >
                     <td className="px-4 py-3">
                       {item.image_path && (
@@ -282,10 +282,10 @@ export default function Stock() {
                     <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-100">{item.name}</td>
                     <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{item.type ? t(`stock.type_${item.type}`) : '-'}</td>
                     <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{item.category_name || item.category || '-'}</td>
-                    <td className={`px-4 py-3 font-semibold ${low ? 'text-rose-600' : 'text-slate-700 dark:text-slate-200'}`}>
+                    <td className={`px-4 py-3 font-semibold ${low ? 'text-danger' : 'text-slate-700 dark:text-slate-200'}`}>
                       {item.quantity}
                       {low && (
-                        <span className="mr-2 badge bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300">
+                        <span className="mr-2 badge bg-danger/15 text-danger dark:bg-danger/15 dark:text-danger">
                           {t('stock.low')}
                         </span>
                       )}
@@ -528,7 +528,7 @@ function AddItemModal({ categories: initialCategories, onClose, onSaved }) {
     <Modal open title={t('stock.addModalTitle')} onClose={onClose} width="max-w-2xl">
       <form onSubmit={submit} className="space-y-3">
         {error && (
-          <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+          <div className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger dark:bg-danger/10 dark:text-danger">
             {error}
           </div>
         )}
@@ -679,7 +679,7 @@ function ItemDetailModal({ item, categories: initialCategories, onClose, onChang
             </button>
             <button
               className={`px-3 py-2 text-sm font-medium ${
-                tab === 'damage' ? 'border-b-2 border-rose-500 text-rose-600 dark:text-rose-300' : 'text-slate-500 dark:text-slate-400'
+                tab === 'damage' ? 'border-b-2 border-danger text-danger dark:text-danger' : 'text-slate-500 dark:text-slate-400'
               }`}
               onClick={() => setTab('damage')}
             >
@@ -696,7 +696,7 @@ function ItemDetailModal({ item, categories: initialCategories, onClose, onChang
           </div>
 
           {error && (
-            <div className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+            <div className="mb-3 rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger dark:bg-danger/10 dark:text-danger">
               {error}
             </div>
           )}
@@ -778,11 +778,11 @@ function ItemDetailModal({ item, categories: initialCategories, onClose, onChang
                   <span
                     className={`badge ml-2 ${
                       m.type === 'in'
-                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'
+                        ? 'bg-success/15 text-success dark:bg-success/15 dark:text-success'
                         : m.type === 'damage'
-                        ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300'
+                        ? 'bg-danger/15 text-danger dark:bg-danger/15 dark:text-danger'
                         : m.type === 'adjust'
-                        ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300'
+                        ? 'bg-gold/15 text-gold-dark dark:bg-gold/15 dark:text-gold-light'
                         : 'bg-slate-200 text-slate-700 dark:bg-white/10 dark:text-slate-300'
                     }`}
                   >

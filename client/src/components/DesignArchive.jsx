@@ -46,10 +46,10 @@ export function DesignCard({ file, onDeleted, showOrder }) {
             {t('designs.preview')}
           </a>
         )}
-        <button onClick={() => downloadDesignFile(api, file)} className="text-emerald-600 hover:underline dark:text-emerald-400">
+        <button onClick={() => downloadDesignFile(api, file)} className="text-success hover:underline dark:text-success">
           {t('designs.download')}
         </button>
-        <button onClick={remove} className="text-rose-500 hover:underline dark:text-rose-400">
+        <button onClick={remove} className="text-danger hover:underline dark:text-danger">
           {t('designs.delete')}
         </button>
       </div>
@@ -131,7 +131,7 @@ export function OrderDesignsSection({ orderId, customerId }) {
       </div>
 
       {error && (
-        <div className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+        <div className="mb-3 rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger dark:bg-danger/10 dark:text-danger">
           {error}
         </div>
       )}

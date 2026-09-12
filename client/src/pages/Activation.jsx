@@ -55,12 +55,12 @@ export default function Activation({ status, onActivated, onDismiss, allowDismis
         </div>
 
         {status?.status === 'trial' && !expired && (
-          <div className="mb-4 rounded-xl bg-amber-50 px-4 py-3 text-center text-sm font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+          <div className="mb-4 rounded-xl bg-gold/10 px-4 py-3 text-center text-sm font-semibold text-gold-dark dark:bg-gold/10 dark:text-gold-light">
             نسخة تجريبية — متبقي {status.daysLeft} {status.daysLeft === 1 ? 'يوم' : 'أيام'}
           </div>
         )}
         {expired && (
-          <div className="mb-4 rounded-xl bg-rose-50 px-4 py-3 text-center text-sm font-semibold text-rose-600 dark:bg-rose-500/10 dark:text-rose-400">
+          <div className="mb-4 rounded-xl bg-danger/10 px-4 py-3 text-center text-sm font-semibold text-danger dark:bg-danger/10 dark:text-danger">
             انتهت الفترة التجريبية (٧ أيام) — التفعيل مطلوب للمتابعة
           </div>
         )}
@@ -85,7 +85,7 @@ export default function Activation({ status, onActivated, onDismiss, allowDismis
             placeholder="الصق مفتاح التفعيل هنا..."
             className="input resize-none font-mono text-xs"
           />
-          {error && <p className="mt-1 text-xs font-semibold text-rose-600 dark:text-rose-400">{error}</p>}
+          {error && <p className="mt-1 text-xs font-semibold text-danger dark:text-danger">{error}</p>}
           <button type="submit" disabled={busy || !key.trim()} className="btn-brand mt-3 w-full">
             {busy ? 'جاري التحقق...' : 'فعّل الآن'}
           </button>
@@ -95,7 +95,7 @@ export default function Activation({ status, onActivated, onDismiss, allowDismis
           href={`https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMsg}`}
           target="_blank"
           rel="noreferrer"
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-success px-4 py-2 text-sm font-semibold text-white transition hover:bg-success"
         >
           💬 تواصل واتساب للحصول على مفتاح
         </a>

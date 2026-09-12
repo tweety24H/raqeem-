@@ -71,7 +71,7 @@ function NavItem({ to, end, Icon, label, badge, isExpanded, onCloseMobile, inden
       <Icon className="h-5 w-5 shrink-0" strokeWidth={1.5} />
       {isExpanded && <span className="truncate">{label}</span>}
       {isExpanded && badge > 0 && (
-        <span className="ml-auto shrink-0 rounded-full bg-[#C5A880] px-2 py-0.5 text-xs font-bold text-[#1A2744]">{badge}</span>
+        <span className="ml-auto shrink-0 rounded-full bg-[#C5A880] px-2 py-0.5 text-xs font-bold text-[#0B1D3A]">{badge}</span>
       )}
     </NavLink>
   );
@@ -178,7 +178,7 @@ export default function SidebarGlass({ collapsed, onToggleCollapsed, mobileOpen,
         onMouseLeave={() => setHoverExpand(false)}
         style={{ width }}
         dir="rtl"
-        className={`fixed inset-y-0 right-0 z-50 flex flex-col overflow-hidden bg-[#1A2744] text-slate-300 shadow-[0_0_40px_rgba(0,0,0,0.3)] transition-all duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-50 flex flex-col overflow-hidden bg-[#0B1D3A] text-slate-300 shadow-[0_0_40px_rgba(0,0,0,0.3)] transition-all duration-300 ease-in-out ${
           mobileOpen ? 'translate-x-0' : 'translate-x-[calc(100%)] lg:translate-x-0'
         }`}
       >
@@ -186,7 +186,7 @@ export default function SidebarGlass({ collapsed, onToggleCollapsed, mobileOpen,
         <div className={`flex items-center gap-2.5 border-b border-white/10 px-4 py-4 ${!isExpanded ? 'justify-center px-2' : ''}`}>
           <span className="relative flex h-9 w-9 shrink-0 items-center justify-center">
             <img src="/logo.png" alt="Raqeem" className="h-9 w-9 rounded-xl bg-white/5 object-contain p-1" />
-            <span className="absolute -bottom-0.5 -left-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#1A2744] bg-emerald-500" />
+            <span className="absolute -bottom-0.5 -left-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0B1D3A] bg-success" />
           </span>
           {isExpanded && (
             <div className="min-w-0 flex-1 leading-tight">
@@ -205,7 +205,7 @@ export default function SidebarGlass({ collapsed, onToggleCollapsed, mobileOpen,
             onClick={onToggleCollapsed}
             title={lang === 'ar' ? (collapsed ? 'إظهار القائمة' : 'طي القائمة') : collapsed ? 'Expand' : 'Collapse'}
             className={`hidden shrink-0 items-center justify-center rounded-lg p-1.5 text-slate-400 transition hover:bg-white/10 hover:text-white lg:flex ${
-              !isExpanded ? 'absolute -left-3 top-4 z-10 border border-white/10 bg-[#1A2744]' : ''
+              !isExpanded ? 'absolute -left-3 top-4 z-10 border border-white/10 bg-[#0B1D3A]' : ''
             }`}
           >
             <ChevronLeft className={`h-4 w-4 transition-transform duration-300 ${collapsed ? 'rotate-180' : ''}`} strokeWidth={2} />

@@ -17,7 +17,7 @@ export default function VerifyQR({ orderNumber, logoUrl, size = 160 }) {
       width: size,
       margin: 1,
       errorCorrectionLevel: 'H',
-      color: { dark: '#1B2A6B', light: '#FBF6EA' },
+      color: { dark: '#0B1D3A', light: '#FBF6EA' },
     }).then(() => {
       if (cancelled || !logoUrl) return;
       const ctx = canvasRef.current.getContext('2d');

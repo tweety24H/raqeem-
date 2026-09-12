@@ -265,13 +265,13 @@ export default function LightboxOrder() {
                           <span>
                             {c.name} {c.phone && <span className="text-slate-400 dark:text-slate-500">· {c.phone}</span>}
                           </span>
-                          {c.debt > 0 && <span className="text-xs text-rose-600 dark:text-rose-400">دين: {formatIQD(c.debt)}</span>}
+                          {c.debt > 0 && <span className="text-xs text-danger dark:text-danger">دين: {formatIQD(c.debt)}</span>}
                         </button>
                       ))}
                     </div>
                   )}
                   {customerId && (
-                    <p className="mt-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">✓ تم اختيار {customerName}</p>
+                    <p className="mt-1 text-xs font-medium text-success dark:text-success">✓ تم اختيار {customerName}</p>
                   )}
                 </>
               ) : (
@@ -362,7 +362,7 @@ export default function LightboxOrder() {
                       {items.length > 1 && (
                         <button
                           type="button"
-                          className="text-rose-500 hover:underline"
+                          className="text-danger hover:underline"
                           onClick={() => setItems((p) => p.filter((_, i) => i !== idx))}
                         >
                           حذف
@@ -392,7 +392,7 @@ export default function LightboxOrder() {
             </div>
             <div className="text-center">
               <div className="text-xs text-slate-500 dark:text-slate-400">المتبقي</div>
-              <div className={`text-lg font-bold ${remaining > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+              <div className={`text-lg font-bold ${remaining > 0 ? 'text-danger' : 'text-success'}`}>
                 {formatIQD(remaining)}
               </div>
             </div>
@@ -434,8 +434,8 @@ export default function LightboxOrder() {
                   onClick={() => setLightingType(opt.value)}
                   className={`rounded-xl border px-3 py-3 text-sm font-semibold transition ${
                     lightingType === opt.value
-                      ? 'border-amber-500 bg-amber-500 text-white shadow-sm'
-                      : 'border-slate-200 bg-white text-slate-600 hover:border-amber-300 dark:border-white/10 dark:bg-[#1a1a23] dark:text-slate-300'
+                      ? 'border-gold bg-gold text-white shadow-sm'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-gold/40 dark:border-white/10 dark:bg-[#1a1a23] dark:text-slate-300'
                   }`}
                 >
                   <span className="mb-1 block text-lg">{opt.icon}</span>
@@ -456,8 +456,8 @@ export default function LightboxOrder() {
                     onClick={() => setFlexType(opt.value)}
                     className={`rounded-xl border px-3 py-2.5 text-sm font-semibold transition ${
                       flexType === opt.value
-                        ? 'border-emerald-500 bg-emerald-500 text-white shadow-sm'
-                        : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-300 dark:border-white/10 dark:bg-[#1a1a23] dark:text-slate-300'
+                        ? 'border-success bg-success text-white shadow-sm'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-success/50 dark:border-white/10 dark:bg-[#1a1a23] dark:text-slate-300'
                     }`}
                   >
                     {opt.label}
@@ -522,7 +522,7 @@ export default function LightboxOrder() {
         </div>
 
         {error && (
-          <div className="mb-4 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+          <div className="mb-4 rounded-lg bg-danger/10 px-4 py-3 text-sm text-danger dark:bg-danger/10 dark:text-danger">
             {error}
           </div>
         )}
@@ -559,7 +559,7 @@ function PrintReceipt({
           ← رجوع لقائمة الطلبات
         </Link>
         <div className="flex gap-2">
-          <button onClick={onSendWhatsapp} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700">
+          <button onClick={onSendWhatsapp} className="rounded-lg bg-success px-4 py-2 text-sm text-white hover:bg-success">
             📱 ارسال واتساب
           </button>
           <button onClick={() => window.print()} className="rounded-lg bg-nili px-4 py-2 text-sm text-white hover:bg-nili-dark">
@@ -589,7 +589,7 @@ function PrintReceipt({
 
             {/* الرأس */}
             <div className="text-center">
-              <p className="text-4xl font-bold text-[#1B2A6B]" style={{ fontFamily: "'Aref Ruqaa', 'IBM Plex Sans Arabic', serif" }}>
+              <p className="text-4xl font-bold text-[#0B1D3A]" style={{ fontFamily: "'Aref Ruqaa', 'IBM Plex Sans Arabic', serif" }}>
                 فاتورة
               </p>
               <div className="mx-auto mt-2 flex items-center justify-center gap-2 text-[#C9A94A]">

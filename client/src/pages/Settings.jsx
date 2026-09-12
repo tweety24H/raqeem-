@@ -72,7 +72,7 @@ function ShopSettings() {
 
   return (
     <form onSubmit={save} className="card max-w-xl space-y-4">
-      {saved && <div className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">تم الحفظ بنجاح</div>}
+      {saved && <div className="rounded-lg bg-success/10 px-3 py-2 text-sm text-success">تم الحفظ بنجاح</div>}
       <div>
         <label className="label">اسم المطبعة</label>
         <input className="input" value={form.shop_name || ''} onChange={(e) => setForm({ ...form, shop_name: e.target.value })} />
@@ -91,7 +91,7 @@ function ShopSettings() {
           <input
             type="color"
             className="h-10 w-full rounded-lg border border-slate-300"
-            value={form.receipt_primary_color || '#1B2A6B'}
+            value={form.receipt_primary_color || '#0B1D3A'}
             onChange={(e) => setForm({ ...form, receipt_primary_color: e.target.value })}
           />
         </div>
@@ -100,7 +100,7 @@ function ShopSettings() {
           <input
             type="color"
             className="h-10 w-full rounded-lg border border-slate-300"
-            value={form.receipt_accent_color || '#D4AF37'}
+            value={form.receipt_accent_color || '#C5A880'}
             onChange={(e) => setForm({ ...form, receipt_accent_color: e.target.value })}
           />
         </div>
@@ -220,7 +220,7 @@ function WhatsAppPairingStatus() {
             type="button"
             disabled={disconnecting}
             onClick={handleDisconnect}
-            className="rounded-lg border border-rose-200 px-3 py-1 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 disabled:opacity-50"
+            className="rounded-lg border border-danger/30 px-3 py-1 text-xs font-semibold text-danger transition hover:bg-danger/10 disabled:opacity-50"
           >
             {disconnecting ? 'جاري القطع...' : 'قطع الاتصال'}
           </button>
@@ -319,7 +319,7 @@ function ServicesSettings() {
                   />
                 </td>
                 <td className="px-4 py-3 text-left">
-                  <button className="text-rose-500 hover:underline" onClick={() => removeService(s.id)}>
+                  <button className="text-danger hover:underline" onClick={() => removeService(s.id)}>
                     حذف
                   </button>
                 </td>
@@ -434,7 +434,7 @@ function WorkersSettings() {
         </select>
         <button className="btn-primary">+ إضافة</button>
       </form>
-      {error && <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">{error}</div>}
+      {error && <div className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">{error}</div>}
 
       <div className="card overflow-hidden p-0">
         <table className="w-full text-sm">
@@ -454,7 +454,7 @@ function WorkersSettings() {
                 <td className="px-4 py-3 text-slate-500">{w.role === 'owner' ? 'مالك' : 'موظف'}</td>
                 <td className="px-4 py-3 text-slate-500">{w.role_name || '—'}</td>
                 <td className="px-4 py-3">
-                  <span className={`badge ${w.active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}>
+                  <span className={`badge ${w.active ? 'bg-success/15 text-success' : 'bg-slate-200 text-slate-500'}`}>
                     {w.active ? 'فعال' : 'معطل'}
                   </span>
                 </td>
@@ -472,7 +472,7 @@ function WorkersSettings() {
                       type="button"
                       title="تعديل"
                       onClick={() => setEditingWorker(w)}
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-sm text-blue-600 transition hover:bg-blue-100 dark:bg-blue-500/15 dark:text-blue-300 dark:hover:bg-blue-500/25"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-nili/10 text-sm text-nili transition hover:bg-nili/15 dark:bg-gold/15 dark:text-gold-light dark:hover:bg-gold/25"
                     >
                       ✏️
                     </button>
@@ -480,7 +480,7 @@ function WorkersSettings() {
                       type="button"
                       title="حذف"
                       onClick={() => handleDeleteClick(w)}
-                      className="flex h-7 w-7 items-center justify-center rounded-full bg-rose-50 text-sm text-rose-600 transition hover:bg-rose-100 dark:bg-rose-500/15 dark:text-rose-300 dark:hover:bg-rose-500/25"
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-danger/10 text-sm text-danger transition hover:bg-danger/15 dark:bg-danger/15 dark:text-danger dark:hover:bg-danger/25"
                     >
                       🗑️
                     </button>
@@ -493,7 +493,7 @@ function WorkersSettings() {
       </div>
 
       {notice && (
-        <div className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+        <div className="rounded-lg bg-success/10 px-3 py-2 text-sm text-success dark:bg-success/10 dark:text-success">
           {notice}
         </div>
       )}
@@ -541,7 +541,7 @@ function RolesSettings() {
   }
 
   if (error) {
-    return <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">{error}</div>;
+    return <div className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger dark:bg-danger/10 dark:text-danger">{error}</div>;
   }
   if (!roles) return null;
 
@@ -634,7 +634,7 @@ function RoleCard({ role, onSaved }) {
       </div>
 
       {error && (
-        <div className="mb-2 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">{error}</div>
+        <div className="mb-2 rounded-lg bg-danger/10 px-3 py-2 text-xs text-danger dark:bg-danger/10 dark:text-danger">{error}</div>
       )}
 
       {!allPermissions ? (
@@ -661,7 +661,7 @@ function RoleCard({ role, onSaved }) {
       )}
 
       <div className="mt-3 flex items-center justify-end gap-2">
-        {saved && <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">تم الحفظ ✓</span>}
+        {saved && <span className="text-xs font-semibold text-success dark:text-success">تم الحفظ ✓</span>}
         <button type="button" disabled={saving} onClick={save} className="btn-primary !px-4 !py-1.5 !text-xs">
           {saving ? 'جاري الحفظ...' : 'حفظ'}
         </button>
@@ -700,7 +700,7 @@ function NewRoleModal({ onClose, onCreated }) {
       >
         <h3 className="mb-3 font-display text-base font-bold text-slate-800 dark:text-slate-100">دور جديد</h3>
         {error && (
-          <div className="mb-3 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">{error}</div>
+          <div className="mb-3 rounded-lg bg-danger/10 px-3 py-2 text-xs text-danger dark:bg-danger/10 dark:text-danger">{error}</div>
         )}
         <div className="space-y-3">
           <div>
@@ -773,7 +773,7 @@ function BackupSettings() {
 
   return (
     <form onSubmit={save} className="card max-w-xl space-y-3">
-      {saved && <div className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">تم الحفظ</div>}
+      {saved && <div className="rounded-lg bg-success/10 px-3 py-2 text-sm text-success">تم الحفظ</div>}
       <p className="text-sm text-slate-500">
         يتم أخذ نسخة احتياطية تلقائية من قاعدة البيانات كل ٦ ساعات. حدد مجلدًا (مثلًا على فلاشة أو قرص خارجي) لحفظ النسخ فيه.
       </p>
@@ -845,7 +845,7 @@ function LicenseSettings() {
             placeholder="تأكيد كلمة السر"
           />
         )}
-        {error && <p className="text-xs font-semibold text-rose-600 dark:text-rose-400">{error}</p>}
+        {error && <p className="text-xs font-semibold text-danger dark:text-danger">{error}</p>}
         <button className="btn-primary w-full">{hasPassword ? 'دخول' : 'حفظ وفتح'}</button>
       </form>
     );
@@ -941,7 +941,7 @@ function LicenseAndBackupPanel() {
         <h3 className="mb-3 font-semibold text-slate-800 dark:text-slate-100">حالة الترخيص</h3>
         {status.status === 'licensed' && (
           <>
-            <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400">
+            <p className="rounded-lg bg-success/10 px-3 py-2 text-sm text-success dark:bg-success/10 dark:text-success">
               ✓ مفعّل مجاناً — {status.shop}
               {new Date(status.expiresAt).getFullYear() - new Date().getFullYear() >= 50 ? (
                 <> — ترخيص مجاني مدى الحياة ♾️</>
@@ -959,12 +959,12 @@ function LicenseAndBackupPanel() {
           </>
         )}
         {status.status === 'trial' && (
-          <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+          <p className="rounded-lg bg-gold/10 px-3 py-2 text-sm text-gold-dark dark:bg-gold/10 dark:text-gold-light">
             نسخة تجريبية — متبقي {status.daysLeft} يوم
           </p>
         )}
         {status.status === 'expired' && (
-          <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-400">
+          <p className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger dark:bg-danger/10 dark:text-danger">
             انتهت الفترة التجريبية
           </p>
         )}
@@ -989,8 +989,8 @@ function LicenseAndBackupPanel() {
               onChange={(e) => setKey(e.target.value)}
               placeholder="الصق مفتاح التفعيل هنا..."
             />
-            {activateError && <p className="mt-1 text-xs font-semibold text-rose-600 dark:text-rose-400">{activateError}</p>}
-            {activateOk && <p className="mt-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">تم التفعيل بنجاح ✓</p>}
+            {activateError && <p className="mt-1 text-xs font-semibold text-danger dark:text-danger">{activateError}</p>}
+            {activateOk && <p className="mt-1 text-xs font-semibold text-success dark:text-success">تم التفعيل بنجاح ✓</p>}
             <button className="btn-brand mt-2">فعّل</button>
           </form>
         )}
@@ -1015,7 +1015,7 @@ function LicenseAndBackupPanel() {
                 type="button"
                 disabled={backupBusy}
                 onClick={() => restoreBackup(b.name, b.date)}
-                className="shrink-0 rounded-md bg-amber-100 px-2 py-1 font-semibold text-amber-700 hover:bg-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:hover:bg-amber-500/25"
+                className="shrink-0 rounded-md bg-gold/15 px-2 py-1 font-semibold text-gold-dark hover:bg-gold/20 dark:bg-gold/15 dark:text-gold-light dark:hover:bg-gold/25"
               >
                 استعادة ⟲
               </button>

@@ -55,13 +55,13 @@ export default function CustomerDetail() {
         </div>
         <div className="card">
           <div className="text-sm text-slate-500 dark:text-slate-400">{t('customerDetail.totalPaid')}</div>
-          <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+          <div className="text-2xl font-bold text-success dark:text-success">
             {formatIQD(orders.reduce((s, o) => s + o.paid_amount, 0))}
           </div>
         </div>
         <div className="card">
           <div className="text-sm text-slate-500 dark:text-slate-400">{t('customerDetail.debtOwed')}</div>
-          <div className={`text-2xl font-bold ${customer.debt > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+          <div className={`text-2xl font-bold ${customer.debt > 0 ? 'text-danger' : 'text-success'}`}>
             {formatIQD(customer.debt)}
           </div>
         </div>
@@ -123,7 +123,7 @@ export default function CustomerDetail() {
                 className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 text-sm dark:border-white/10"
               >
                 <span className="text-slate-500 dark:text-slate-400">{formatDateTime(p.created_at)}</span>
-                <span className="font-semibold text-emerald-600 dark:text-emerald-400">{formatIQD(p.amount)}</span>
+                <span className="font-semibold text-success dark:text-success">{formatIQD(p.amount)}</span>
               </div>
             ))}
             {payments.length === 0 && <div className="text-sm text-slate-400 dark:text-slate-500">{t('customerDetail.noPayments')}</div>}

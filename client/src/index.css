@@ -1,7 +1,8 @@
-/* Sora + IBM Plex Sans Arabic are loaded via <link> in index.html (not @import)
-   so they're discovered by the preconnect hints and don't block first paint.
-   Aref Ruqaa stays here — it's used only for decorative flourishes on the
-   printable receipt/invoice pages and was never part of the UI font swap. */
+/* IBM Plex Sans Arabic (the app's only UI font, weights 400/600/700) is
+   loaded via <link> in index.html (not @import) so it's discovered by the
+   preconnect hints and doesn't block first paint. Aref Ruqaa stays here —
+   it's used only for decorative flourishes on the printable receipt/invoice
+   pages, a separate concern from the UI font. */
 @import url('https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&display=swap');
 
 @tailwind base;
@@ -44,11 +45,11 @@ body {
    used in @apply. */
 @layer components {
   .input {
-    @apply w-full rounded-lg border border-slate-300 px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-gold/30 focus:border-nili;
+    @apply w-full rounded-xl border border-slate-200 px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold;
   }
 
   .dark .input {
-    @apply border-white/10 bg-slate-900 text-white placeholder:text-slate-500 focus:border-nili-light focus:ring-gold/30;
+    @apply border-white/10 bg-slate-900 text-white placeholder:text-slate-500 focus:border-gold focus:ring-gold/20;
   }
 
   .label {
@@ -60,7 +61,7 @@ body {
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-nili px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-nili/20 transition duration-200 ease-out hover:bg-nili/90 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97];
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-nili px-4 py-2 text-sm font-semibold text-gold shadow-sm shadow-nili/20 transition duration-200 ease-out hover:bg-nili-light disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97];
   }
   .btn-primary {
     @apply btn;
@@ -77,26 +78,29 @@ body {
   .btn-gold {
     @apply btn bg-gold text-nili-dark shadow-gold/20 hover:bg-gold-dark;
   }
+  /* Secondary action: white with a gold-tinted border, navy text. */
   .btn-secondary {
-    @apply btn bg-slate-200 text-slate-700 shadow-none hover:bg-slate-300;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-gold/30 bg-white px-4 py-2 text-sm font-semibold text-nili shadow-none transition duration-200 ease-out hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97];
   }
   .dark .btn-secondary {
-    @apply bg-white/10 text-white hover:bg-white/20;
+    @apply border-white/10 bg-white/10 text-white hover:bg-white/20;
   }
+  /* Destructive action: light red fill, never a solid button — reserved for
+     the one confirm button inside a delete-confirmation modal. */
   .btn-danger {
-    @apply btn bg-rose-600 shadow-rose-600/20 hover:bg-rose-700;
+    @apply btn bg-danger/10 text-danger shadow-none border border-danger/30 hover:bg-danger/15;
   }
 
   .card {
-    @apply rounded-2xl border border-slate-200/60 bg-white/90 p-4 shadow-sm backdrop-blur-sm transition duration-200 ease-out;
+    @apply rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition duration-200 ease-out hover:shadow-md hover:border-gold/30;
   }
 
   .dark .card {
-    @apply border-slate-800 bg-slate-900/90 shadow-sm;
+    @apply border-slate-800 bg-slate-900/90 shadow-sm hover:border-gold/20;
   }
 
   .badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold;
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold;
   }
 }
 

@@ -97,7 +97,7 @@ export default function Customers() {
       />
 
       {debtorsOnly && (
-        <div className="mb-4 flex items-center justify-between rounded-lg border border-rose-300 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+        <div className="mb-4 flex items-center justify-between rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger dark:border-danger/30 dark:bg-danger/10 dark:text-danger">
           <span>{t('customers.debtorsFilterActive', { count: list.length })}</span>
           <button className="font-semibold underline" onClick={() => setDebtorsOnly(false)}>
             {t('customers.showAll')}
@@ -106,7 +106,7 @@ export default function Customers() {
       )}
 
       {overdue.length > 0 && (
-        <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
+        <div className="mb-4 rounded-lg border border-gold/40 bg-gold/10 px-4 py-3 text-sm text-gold-dark dark:border-gold/30 dark:bg-gold/10 dark:text-gold-light">
           {t('customers.overdueWarning', { count: overdue.length })}
           <button className="mr-2 font-semibold underline" onClick={() => setOverdueOnly((v) => !v)}>
             {overdueOnly ? t('customers.showAll') : t('customers.showOverdueOnly')}
@@ -133,7 +133,7 @@ export default function Customers() {
               <p className="text-xs text-slate-500 dark:text-slate-400">{c.phone || t('customers.noPhone')}</p>
               <div className="mt-2 flex items-center justify-between text-sm">
                 <span className="text-slate-500 dark:text-slate-400">{t('customers.debtLabel')}</span>
-                <span className={`font-semibold ${c.debt > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                <span className={`font-semibold ${c.debt > 0 ? 'text-danger' : 'text-success'}`}>
                   {formatIQD(c.debt)}
                 </span>
               </div>
@@ -145,7 +145,7 @@ export default function Customers() {
               <div className="mt-3 flex flex-wrap items-center gap-2" onClick={(e) => e.stopPropagation()}>
                 {c.debt > 0 && (
                   <button
-                    className="rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25"
+                    className="rounded-lg bg-success/10 px-3 py-1.5 text-xs font-semibold text-success hover:bg-success/15 dark:bg-success/15 dark:text-success dark:hover:bg-success/25"
                     onClick={(e) => sendReminder(e, c)}
                   >
                     {t('customers.sendReminderBtn')}
@@ -188,14 +188,14 @@ export default function Customers() {
                 >
                   <td className="px-4 py-3 font-medium text-nili dark:text-gold">{c.name}</td>
                   <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{c.phone || '-'}</td>
-                  <td className={`px-4 py-3 font-semibold ${c.debt > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                  <td className={`px-4 py-3 font-semibold ${c.debt > 0 ? 'text-danger' : 'text-success'}`}>
                     {formatIQD(c.debt)}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-wrap items-center gap-2">
                       {c.debt > 0 && (
                         <button
-                          className="rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-500/15 dark:text-emerald-300 dark:hover:bg-emerald-500/25"
+                          className="rounded-lg bg-success/10 px-3 py-1.5 text-xs font-semibold text-success hover:bg-success/15 dark:bg-success/15 dark:text-success dark:hover:bg-success/25"
                           onClick={(e) => sendReminder(e, c)}
                         >
                           {t('customers.sendReminderBtn')}
@@ -269,7 +269,7 @@ function AddCustomerModal({ onClose, onSaved }) {
     <Modal open title={t('customers.modalTitle')} onClose={onClose}>
       <form onSubmit={submit} className="space-y-3">
         {error && (
-          <div className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600 dark:bg-rose-500/10 dark:text-rose-300">
+          <div className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger dark:bg-danger/10 dark:text-danger">
             {error}
           </div>
         )}

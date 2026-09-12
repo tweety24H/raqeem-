@@ -42,7 +42,7 @@
   height: clamp(220px, 30vw, 420px);
 }
 .ib-blob-violet .ib-blob-inner {
-  background: radial-gradient(circle, rgba(27, 42, 107, 0.22) 0%, rgba(27, 42, 107, 0) 70%);
+  background: radial-gradient(circle, rgba(11, 29, 58, 0.22) 0%, rgba(11, 29, 58, 0) 70%);
   animation: ib-float-a 16s ease-in-out infinite;
 }
 
@@ -53,7 +53,7 @@
   height: clamp(240px, 34vw, 480px);
 }
 .ib-blob-slate .ib-blob-inner {
-  background: radial-gradient(circle, rgba(44, 63, 150, 0.18) 0%, rgba(44, 63, 150, 0) 70%);
+  background: radial-gradient(circle, rgba(19, 42, 80, 0.18) 0%, rgba(19, 42, 80, 0) 70%);
   animation: ib-float-b 20s ease-in-out infinite;
 }
 
@@ -64,18 +64,18 @@
   height: clamp(140px, 18vw, 260px);
 }
 .ib-blob-gold .ib-blob-inner {
-  background: radial-gradient(circle, rgba(212, 175, 55, 0.18) 0%, rgba(212, 175, 55, 0) 72%);
+  background: radial-gradient(circle, rgba(197, 168, 128, 0.18) 0%, rgba(197, 168, 128, 0) 72%);
   animation: ib-float-a 14s ease-in-out infinite reverse;
 }
 
 .dark .ib-blob-violet .ib-blob-inner {
-  background: radial-gradient(circle, rgba(27, 42, 107, 0.14) 0%, rgba(27, 42, 107, 0) 70%);
+  background: radial-gradient(circle, rgba(11, 29, 58, 0.14) 0%, rgba(11, 29, 58, 0) 70%);
 }
 .dark .ib-blob-slate .ib-blob-inner {
-  background: radial-gradient(circle, rgba(44, 63, 150, 0.08) 0%, rgba(44, 63, 150, 0) 70%);
+  background: radial-gradient(circle, rgba(19, 42, 80, 0.08) 0%, rgba(19, 42, 80, 0) 70%);
 }
 .dark .ib-blob-gold .ib-blob-inner {
-  background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, rgba(212, 175, 55, 0) 72%);
+  background: radial-gradient(circle, rgba(197, 168, 128, 0.1) 0%, rgba(197, 168, 128, 0) 72%);
 }
 
 @keyframes ib-float-a {

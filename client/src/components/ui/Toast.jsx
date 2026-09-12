@@ -2,8 +2,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useToastList } from '../../context/ToastContext';
 
 const STYLES = {
-  success: 'bg-emerald-600 text-white',
-  error: 'bg-rose-600 text-white',
+  success: 'bg-success text-white',
+  error: 'bg-danger text-white',
   info: 'bg-nili text-white',
 };
 
