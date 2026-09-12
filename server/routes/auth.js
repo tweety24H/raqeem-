@@ -185,9 +185,53 @@ router.post('/workers', requireAuth, requireOwnerOrPermission('manage_users'), (
   res.json({ id: info.lastInsertRowid });
 });
 
-// PATCH /api/auth/workers/:id { active }
+// عدد المالكين الفعّالين حاليًا - نستخدمها بمكانين: منع تنزيل آخر مالك لدور
+// موظف، ومنع تعطيله أو حذفه (نفس الفكرة، لازم يبقى مالك واحد ينفتح بيه البرنامج دائمًا).
+function activeOwnerCount() {
+  return db.prepare("SELECT COUNT(*) AS c FROM workers WHERE role = 'owner' AND active = 1").get().c;
+}
+
+// PATCH /api/auth/workers/:id { active?, role_id?, name?, pin?, role? }
+// name/role_id/active بقوا مفتوحين لمن عنده manage_users (نفس الصلاحية
+// القديمة) — بس تغيير رمز PIN أو دور owner/employee نفسه أحسّس، خليناهم
+// حصرًا للمالك الحرفي (role==='owner') حتى لو المتصل عنده manage_users.
 router.patch('/workers/:id', requireAuth, requireOwnerOrPermission('manage_users'), (req, res) => {
-  const { active, role_id } = req.body;
+  const { active, role_id, name, pin, role } = req.body;
+  const worker = db.prepare('SELECT * FROM workers WHERE id = ?').get(req.params.id);
+  if (!worker) return res.status(404).json({ error: 'الموظف غير موجود' });
+
+  const callerIsOwner = req.worker.role === 'owner';
+  if ((pin !== undefined || role !== undefined) && !callerIsOwner) {
+    return res.status(403).json({ error: 'تغيير رمز PIN أو دور المالك يتطلب صلاحية المالك نفسه' });
+  }
+
+  // ما نخلي آخر مالك ينعطل أو ينزل لموظف عادي - البرنامج لازم يضل عنده
+  // مالك واحد ينفتحله دائمًا.
+  const demotingLastOwner = worker.role === 'owner' && role !== undefined && role !== 'owner';
+  const deactivatingLastOwner = worker.role === 'owner' && active !== undefined && !active;
+  if ((demotingLastOwner || deactivatingLastOwner) && activeOwnerCount() <= 1) {
+    return res.status(400).json({ error: 'يجب أن يبقى مالك واحد على الأقل بالنظام' });
+  }
+
+  if (name !== undefined && name.trim()) {
+    db.prepare('UPDATE workers SET name = ? WHERE id = ?').run(name.trim(), req.params.id);
+  }
+
+  if (role !== undefined) {
+    db.prepare('UPDATE workers SET role = ? WHERE id = ?').run(role === 'owner' ? 'owner' : 'employee', req.params.id);
+  }
+
+  if (pin) {
+    if (typeof pin !== 'string' || pin.length < 4) {
+      return res.status(400).json({ error: 'رمز PIN (٤ أرقام على الأقل) مطلوب' });
+    }
+    const others = db.prepare('SELECT * FROM workers WHERE active = 1 AND id != ?').all(req.params.id);
+    if (others.some((w) => bcrypt.compareSync(pin, w.pin_hash))) {
+      return res.status(400).json({ error: 'رمز PIN مستخدم من قبل عامل آخر، اختر رمزًا مختلفًا' });
+    }
+    db.prepare('UPDATE workers SET pin_hash = ? WHERE id = ?').run(bcrypt.hashSync(pin, 8), req.params.id);
+  }
+
   if (active !== undefined) {
     db.prepare('UPDATE workers SET active = ? WHERE id = ?').run(active ? 1 : 0, req.params.id);
   }
@@ -197,6 +241,39 @@ router.patch('/workers/:id', requireAuth, requireOwnerOrPermission('manage_users
     db.prepare('UPDATE workers SET role_id = ? WHERE id = ?').run(roleRow ? roleRow.id : null, req.params.id);
   }
   res.json({ ok: true });
+});
+
+// DELETE /api/auth/workers/:id { confirmText, ownerPin } - حذف ناعم
+// (active=0) وليس حذف فعلي من الجدول، حتى الطلبات القديمة اللي عليها
+// worker_id تضل تشتغل عادي وما نخسر سجل النشاطات القديم. حصرًا للمالك
+// الحرفي، ويحتاج كتابة "حذف" + رمز PIN المالك نفسه (تأكيد هوية مضاعف
+// لعملية ما ترجع فيها).
+router.delete('/workers/:id', requireAuth, requireOwner, (req, res) => {
+  const { confirmText, ownerPin } = req.body;
+  const targetId = Number(req.params.id);
+  const worker = db.prepare('SELECT * FROM workers WHERE id = ?').get(targetId);
+  if (!worker) return res.status(404).json({ error: 'الموظف غير موجود' });
+
+  if (targetId === req.worker.workerId) {
+    return res.status(400).json({ error: 'لا يمكنك حذف نفسك' });
+  }
+  if (worker.role === 'owner' && activeOwnerCount() <= 1) {
+    return res.status(400).json({ error: 'يجب أن يبقى مالك واحد على الأقل بالنظام' });
+  }
+  if (confirmText !== 'حذف') {
+    return res.status(400).json({ error: 'اكتب كلمة "حذف" للتأكيد' });
+  }
+  const caller = db.prepare('SELECT * FROM workers WHERE id = ?').get(req.worker.workerId);
+  if (!ownerPin || !caller || !bcrypt.compareSync(ownerPin, caller.pin_hash)) {
+    return res.status(400).json({ error: 'رمز PIN غير صحيح' });
+  }
+
+  const openOrders = db
+    .prepare("SELECT COUNT(*) AS c FROM orders WHERE worker_id = ? AND status != 'تم التسليم'")
+    .get(targetId).c;
+
+  db.prepare('UPDATE workers SET active = 0 WHERE id = ?').run(targetId);
+  res.json({ ok: true, openOrders });
 });
 
 module.exports = router;

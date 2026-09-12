@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import api, { fileUrl } from '../api/client';
 import PageHeader from '../components/PageHeader';
+import EditWorkerModal from '../components/EditWorkerModal';
+import DeleteWorkerModal from '../components/DeleteWorkerModal';
+import { useAuth } from '../context/AuthContext';
 
 const isElectron = typeof window !== 'undefined' && !!window.raqeem?.isElectron;
 
@@ -331,11 +334,22 @@ function ServicesSettings() {
 
 // تبويب "الموظفين" - اضافة موظف جديد برمز PIN خاص فيه، وتحديد دوره
 // (مصمم، عامل طباعة..) اللي يحدد شنو يقدر يشوف بالتطبيق
+// عدد المالكين الفعّالين حاليًا بالقائمة - نحتاجه نتأكد ما نعطل/نحذف آخر
+// مالك من الواجهة قبل حتى ما نرسل الطلب للسيرفر (السيرفر يرفضها بالنهاية
+// حتى لو تخطينا هذا الفحص، بس تجربة أفضل نمنعها من زر الواجهة مباشرة).
+function activeOwnerCount(workers) {
+  return workers.filter((w) => w.role === 'owner' && w.active).length;
+}
+
 function WorkersSettings() {
+  const { worker: currentWorker } = useAuth();
   const [workers, setWorkers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [form, setForm] = useState({ name: '', pin: '', role: 'employee', role_id: '' });
   const [error, setError] = useState('');
+  const [editingWorker, setEditingWorker] = useState(null);
+  const [deletingWorker, setDeletingWorker] = useState(null);
+  const [notice, setNotice] = useState('');
 
   useEffect(() => {
     load();
@@ -363,7 +377,35 @@ function WorkersSettings() {
   }
 
   async function toggleActive(w) {
-    await api.patch(`/auth/workers/${w.id}`, { active: !w.active });
+    if (w.role === 'owner' && w.active && activeOwnerCount(workers) <= 1) {
+      setError('يجب أن يبقى مالك واحد على الأقل بالنظام');
+      return;
+    }
+    setError('');
+    try {
+      await api.patch(`/auth/workers/${w.id}`, { active: !w.active });
+      load();
+    } catch (err) {
+      setError(err.response?.data?.error || 'فشل التعديل');
+    }
+  }
+
+  function handleDeleteClick(w) {
+    if (w.id === currentWorker?.id) {
+      setError('لا يمكنك حذف نفسك');
+      return;
+    }
+    if (w.role === 'owner' && activeOwnerCount(workers) <= 1) {
+      setError('يجب أن يبقى مالك واحد على الأقل بالنظام');
+      return;
+    }
+    setError('');
+    setDeletingWorker(w);
+  }
+
+  function handleDeleted(openOrders) {
+    setDeletingWorker(null);
+    setNotice(openOrders > 0 ? `تم الحذف — ملاحظة: عنده ${openOrders} طلب غير مسلَّم بعد` : 'تم الحذف');
     load();
   }
 
@@ -416,16 +458,61 @@ function WorkersSettings() {
                     {w.active ? 'فعال' : 'معطل'}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-left">
-                  <button className="text-nili hover:underline" onClick={() => toggleActive(w)}>
-                    {w.active ? 'تعطيل' : 'تفعيل'}
-                  </button>
+                <td className="px-4 py-3">
+                  <div className="flex items-center justify-end gap-1.5">
+                    <button
+                      type="button"
+                      title={w.active ? 'تعطيل' : 'تفعيل'}
+                      onClick={() => toggleActive(w)}
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-sm text-slate-600 transition hover:bg-slate-200 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20"
+                    >
+                      {w.active ? '⏸️' : '▶️'}
+                    </button>
+                    <button
+                      type="button"
+                      title="تعديل"
+                      onClick={() => setEditingWorker(w)}
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50 text-sm text-blue-600 transition hover:bg-blue-100 dark:bg-blue-500/15 dark:text-blue-300 dark:hover:bg-blue-500/25"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      type="button"
+                      title="حذف"
+                      onClick={() => handleDeleteClick(w)}
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-rose-50 text-sm text-rose-600 transition hover:bg-rose-100 dark:bg-rose-500/15 dark:text-rose-300 dark:hover:bg-rose-500/25"
+                    >
+                      🗑️
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {notice && (
+        <div className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+          {notice}
+        </div>
+      )}
+
+      {editingWorker && (
+        <EditWorkerModal
+          worker={editingWorker}
+          roles={roles}
+          onClose={() => setEditingWorker(null)}
+          onSaved={() => {
+            setEditingWorker(null);
+            load();
+          }}
+        />
+      )}
+
+      {deletingWorker && (
+        <DeleteWorkerModal worker={deletingWorker} onClose={() => setDeletingWorker(null)} onDeleted={handleDeleted} />
+      )}
     </div>
   );
 }
