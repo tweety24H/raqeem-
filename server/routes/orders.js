@@ -12,6 +12,8 @@ const router = express.Router();
 
 const STATUSES = ['جديد', 'قيد التصميم', 'قيد الطباعة', 'جاهز للتسليم', 'تم التسليم'];
 
+// هاي تسوي رقم طلب جديد بالشكل RQ + التاريخ + رقم متسلسل لهذا اليوم
+// مثلاً RQ20260912-0005 يعني خامس طلب اليوم
 function generateOrderNumber() {
   const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   const countToday = db
@@ -20,6 +22,7 @@ function generateOrderNumber() {
   return `RQ${datePart}-${String(countToday + 1).padStart(4, '0')}`;
 }
 
+// هاي تحسب دين الزبون - تجمع كل طلباته وتطرح منها اللي دفعه، والباقي هو الدين
 function debtFor(customerId) {
   const totals = db
     .prepare(
@@ -87,12 +90,16 @@ router.get('/:id', requireAuth, authorize('view_orders'), (req, res) => {
 // على الإجمالي الفرعي، ثم خصم إضافي اختياري (discount_after_type/discount_after_value)
 // يُطبَّق على الباقي بعده — كل مرحلة يمكن أن تكون نسبة % أو مبلغ ثابت بالدينار
 // بشكل مستقل عن الأخرى. النسبة تُقيَّد بين 0-100 لمنع خصم بالسالب أو أكبر من الكل.
+// هاي الدالة تحسب مبلغ خصم وحدة - اذا نسبة % تضرب بالمبلغ الأساسي،
+// واذا مبلغ ثابت بس تاخذه زي ما هو (مع تقييد النسبة بين 0 و100 حتى ما تنكسر)
 function computeDiscountStage(base, type, value) {
   const v = Number(value) || 0;
   if (type === 'percent') return base * (Math.min(Math.max(v, 0), 100) / 100);
   return Math.max(v, 0);
 }
 
+// هاي تجمع الخصمين سوا - الخصم الأول يطبق على المجموع، وبعده الخصم
+// الإضافي (اذا موجود) يطبق على الباقي بعد الخصم الأول، مو على المجموع الأصلي
 function computeOrderTotals(subtotal, body) {
   const discountType = body.discount_type === 'percent' ? 'percent' : 'fixed';
   const discountValue = Number(body.discount_value) || 0;
@@ -108,6 +115,8 @@ function computeOrderTotals(subtotal, body) {
   return { discountType, discountValue, discountAfterType, discountAfterValue, totalDiscount, total };
 }
 
+// هذا الراوت الرئيسي لإنشاء طلب جديد - ياخذ الزبون والعناصر ويحسب المجموع
+// والخصم، يخصم من المخزون اذا محدد، ويسجل الدفعة اذا كو
 // POST /api/orders
 router.post('/', requireAuth, authorize('create_order'), (req, res) => {
   const { customer_id, items, payment_type, paid_amount, due_date, notes, recurring_interval_days } = req.body;
@@ -209,6 +218,9 @@ router.post('/', requireAuth, authorize('create_order'), (req, res) => {
       db.prepare('UPDATE customers SET points = points + ? WHERE id = ?').run(earnedPoints, customer_id);
     }
 
+    // اذا العميل حدد "طلب متكرر"، نسجل هسه بس موعد أول تكرار جاي (بعد كم
+    // يوم يحددها) - اللي فعليًا يسوي الطلب الجديد بيوم استحقاقه هو
+    // recurringOrdersService.js، يشتغل مرة باليوم ويفحص كل التكرارات المستحقة
     if (recurring_interval_days && Number(recurring_interval_days) > 0) {
       const nextDate = new Date(Date.now() + Number(recurring_interval_days) * 86400000)
         .toISOString()

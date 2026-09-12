@@ -81,6 +81,8 @@ export default function PrintQueue() {
     return () => clearInterval(interval);
   }, []);
 
+  // تجيب الطلبات اللي "قيد الطباعة" هسه - تتحدث تلقائي كل 15 ثانية بدون
+  // ما يحتاج المستخدم يعمل رفرش يدوي
   async function load() {
     try {
       const res = await api.get('/orders', { params: { status: PRINTING_STATUS } });

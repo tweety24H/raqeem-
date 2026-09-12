@@ -34,10 +34,14 @@ import { useLicense } from './hooks/useLicense';
 // Case C (دخول مباشر): إذا عندنا جلسة موجودة أصلاً، ما نعرض صفحة الهبوط
 // التسويقية — نعرض splash قصير (800ms) وننتقل مباشرة للداشبورد (أو لمعالج
 // الإعداد الأول إذا لسا ماكو). زائر بدون جلسة يشوف نفس صفحة الهبوط القديمة.
+// هاي الصفحة الأولى اللي تفتح - تشوف اذا المستخدم مسجل دخول من قبل او لا
+// وعلى هذا الأساس تقرر شنو تعرض
 function RootGate() {
   const { worker } = useAuth();
   const navigate = useNavigate();
 
+  // اذا عنده جلسة محفوظة، نعرضله splash خفيف وبعدها نوديه للداشبورد مباشرة
+  // بدون ما يشوف صفحة الهبوط التسويقية من جديد
   useEffect(() => {
     if (!worker) return;
     const timer = setTimeout(() => {
@@ -56,6 +60,8 @@ function RootGate() {
   return <LandingNew />;
 }
 
+// هنا مسجلين كل صفحات التطبيق وشنو الصلاحية اللي تحتاجها كل وحدة منهن —
+// اذا موظف ما عنده صلاحية، ProtectedRoute يردّه على صفحة 403
 function AppRoutes() {
   return (
     <Routes>
@@ -192,13 +198,15 @@ function AppRoutes() {
   );
 }
 
+// هذا أكبر كومبوننت بالتطبيق - يفحص حالة الترخيص اول شي (منتهي، تجريبي،
+// شغال عادي) وعلى هذا الأساس يقرر شنو يعرض للمستخدم
 export default function App() {
   const { status, isElectron, refresh } = useLicense();
   const [showActivation, setShowActivation] = useState(false);
   const [updateInfo, setUpdateInfo] = useState(null);
 
-  // تحديث تلقائي اختياري — يشتغل بالخلفية فقط داخل Electron، وإذا ماكو نت
-  // ببساطة ما يصير شي (لا خطأ يظهر للمستخدم).
+  // لو كو تحديث جديد نزل بالخلفية، نخليه جاهز ونعرض بانر صغير - هذا يشتغل
+  // بس داخل نسخة Electron المبنية، مو وقت التطوير
   useEffect(() => {
     if (!isElectron) return;
     window.raqeem.update.onDownloaded((info) => setUpdateInfo(info));

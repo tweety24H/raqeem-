@@ -57,11 +57,14 @@ export default function Customers() {
     );
   }
 
+  // تجيب قائمة الزبائن من السيرفر - تنفلتر حسب البحث لو المستخدم كاتب شي
   async function load() {
     const res = await api.get('/customers', { params: { search: search || undefined } });
     setCustomers(res.data.customers);
   }
 
+  // زر "تذكير" جنب اسم الزبون المديون - يفتح واتساب ويب برسالة جاهزة
+  // فيها اسمه ومبلغ دينه، مجاني بالكامل بدون أي API مدفوع
   function sendReminder(e, c) {
     e.stopPropagation();
     const link = buildDebtReminderLink(c);

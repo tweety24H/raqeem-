@@ -10,6 +10,8 @@ const GOLD_DARK = '#8a6d10';
 const CREAM = '#FBF6EA';
 const NAVY = '#1B2A6B';
 
+// هاي صفحة الفاتورة القابلة للطباعة - نفس تصميمها يطبع ويطلع PDF لما
+// تستخدم زر الطباعة، وفيها رمز QR يقدر الزبون يمسحه يتحقق من صحة الفاتورة
 export default function Receipt() {
   const { t } = useLanguage();
   const { id } = useParams();
@@ -23,6 +25,7 @@ export default function Receipt() {
   if (!data) return <div className="p-6 text-slate-400">{t('common.loading')}</div>;
 
   const { order, items, settings, qrWhatsappDataUrl } = data;
+  // الباقي على الزبون = الإجمالي بعد الخصم ناقص اللي دفعه لحد الآن
   const remaining = order.total_price - order.paid_amount;
 
   return (

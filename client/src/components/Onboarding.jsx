@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLanguage } from '../context/LanguageContext';
 
-const SEEN_KEY = 'raqeem_onboarding_seen';
+export const SEEN_KEY = 'raqeem_onboarding_seen';
 
 export function shouldShowOnboarding() {
   try {

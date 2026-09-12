@@ -27,6 +27,8 @@ export default function OrderDetail() {
     setData(res.data);
   }
 
+  // تغيير حالة الطلب (جديد -> قيد التصميم -> ... -> تم التسليم) - لما توصل
+  // "جاهز للتسليم" يطلع صوت خفيف وهزة (شوف utils/feedback.js)
   async function changeStatus(status) {
     setBusy(true);
     try {
@@ -38,6 +40,7 @@ export default function OrderDetail() {
     }
   }
 
+  // تسجيل دفعة جديدة على الطلب - يضيفها للمبلغ المدفوع ويحدث المتبقي تلقائي
   async function addPayment(e) {
     e.preventDefault();
     setError('');

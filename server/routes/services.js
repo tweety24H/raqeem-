@@ -4,12 +4,15 @@ const { requireAuth, requireOwner } = require('../middleware/auth');
 
 const router = express.Router();
 
+// هاي تجيب كل الخدمات الفعالة (كارت، فلكس، اعلان ضوئي..) بأسعارها - يستخدمها
+// فورم إنشاء الطلب حتى يعبي السعر تلقائي لما تختار خدمة
 // GET /api/services
 router.get('/', requireAuth, (req, res) => {
   const services = db.prepare('SELECT * FROM services WHERE active = 1 ORDER BY category, name').all();
   res.json({ services });
 });
 
+// اضافة خدمة جديدة بسعرها - بس المالك يقدر يسوي هذا من صفحة الإعدادات
 // POST /api/services (owner only - pricing settings)
 router.post('/', requireAuth, requireOwner, (req, res) => {
   const { name, unit, price, category } = req.body;

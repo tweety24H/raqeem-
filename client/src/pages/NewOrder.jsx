@@ -111,6 +111,8 @@ export default function NewOrder() {
 
   // نفس منطق الخصم بمرحلتين المطبَّق بالسيرفر (server/routes/orders.js) —
   // مكرَّر هنا فقط لعرض معاينة فورية قبل الإرسال، والسيرفر هو مصدر الحقيقة النهائي.
+  // هاي تحسب مبلغ الخصم - اذا نسبة % تضرب بالمجموع، واذا دينار تاخذ الرقم
+  // مباشرة (بس مقيدة النسبة بين 0-100 حتى ما تصير خصم أكثر من الكل)
   function discountStageAmount(base, type, value) {
     const v = Number(value) || 0;
     if (type === 'percent') return base * (Math.min(Math.max(v, 0), 100) / 100);
@@ -126,6 +128,8 @@ export default function NewOrder() {
     setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
   }
 
+  // لما تختار خدمة جاهزة من القائمة، نعبي الوصف والسعر تلقائي حسب سعرها
+  // المسجل بالإعدادات - المستخدم يقدر يعدل السعر يدوي بعدها لو يريد
   function pickService(idx, serviceId) {
     const svc = services.find((s) => String(s.id) === String(serviceId));
     updateItem(idx, {
@@ -160,6 +164,8 @@ export default function NewOrder() {
     setStep(3);
   }
 
+  // زر "إنشاء الطلب" النهائي - يتأكد الزبون والعناصر موجودين قبل ما يرسل،
+  // وبعد النجاح يوديك مباشرة لصفحة تفاصيل الطلب الجديد
   async function submit(e) {
     e.preventDefault();
     setError('');

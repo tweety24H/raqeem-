@@ -67,6 +67,8 @@ export default function CustomerDetail() {
         </div>
       </div>
 
+      {/* بطاقة نقاط الولاء - النقاط تنحسب تلقائي بالسيرفر (نقطة لكل 1000 د.ع
+          من كل طلب)، هنا بس نعرضها مع بار تقدم لحد 500 نقطة = خصم 5% */}
       <div className="card mb-6">
         <div className="mb-2 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-300">{t('customerDetail.loyaltyHeading')}</h3>

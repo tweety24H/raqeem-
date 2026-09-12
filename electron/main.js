@@ -12,6 +12,8 @@ process.env.RAQEEM_DB_DIR = path.join(app.getPath('userData'), 'data');
 
 const PORT = process.env.RAQEEM_PORT || 4310;
 
+// هاي تفتح شاشة السبلاش الصغيرة (400x400 بدون إطار) اللي تظهر أول ما تفتح
+// البرنامج - بس واجهة، ما تسوي شي ثاني
 function createSplashWindow() {
   const splash = new BrowserWindow({
     width: 400,
@@ -31,6 +33,8 @@ function createSplashWindow() {
   return splash;
 }
 
+// هاي تسوي النافذة الرئيسية للبرنامج - مخفية بالأول (show: false) لحد ما
+// يخلص التحميل، حتى المستخدم ما يشوف ومضة بيضاء وهو يفتح البرنامج
 function createWindow() {
   const win = new BrowserWindow({
     width: 1400,
@@ -49,6 +53,8 @@ function createWindow() {
     },
   });
 
+  // هذا الجزء يشتغل بس بالنسخة المثبتة عند الزبون (مو وقت التطوير) - يقفل
+  // كل طرق فتح أدوات المطور حتى محد يلعب بالكونسول ويشوف بيانات حساسة
   if (!isDev) {
     // يمنع فتح أدوات المطوّر بالنسخة النهائية (F12 / Ctrl+Shift+I / Ctrl+Shift+J
     // / Ctrl+Shift+C) حتى لا يقدر أي شخص يفتح Console ويلعب بالبيانات مباشرة.
@@ -123,6 +129,8 @@ function registerIpcHandlers() {
   ipcMain.handle('update:install', () => quitAndInstall());
 }
 
+// من لحظة ما البرنامج يصير جاهز: نشغل السيرفر، نفتح السبلاش والنافذة
+// الرئيسية سوا، وبعدين نسكر السبلاش ونطلع النافذة لما تخلص
 app.whenReady().then(() => {
   // شغّل خادم Express داخل نفس عملية Electron الرئيسية (بدون عملية فرعية منفصلة)
   require('../server/index.js');

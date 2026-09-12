@@ -20,6 +20,8 @@ const IN_PROGRESS_STATUSES = ['قيد التصميم', 'قيد الطباعة'];
 const READY_STATUS = 'جاهز للتسليم';
 const SEARCH_DEBOUNCE_MS = 300;
 
+// هاي الصفحة الرئيسية بعد تسجيل الدخول - تعرض ملخص سريع (طلبات، ديون،
+// مخزون منخفض) وفيها بحث سريع عن زبون لإنشاء طلب بضغطة وحدة
 export default function Dashboard() {
   const { t } = useLanguage();
   const { isOwner, hasPermission } = useAuth();
@@ -51,6 +53,8 @@ export default function Dashboard() {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, [addMenuOpen]);
 
+  // كتابة بمربع البحث - ننتظر شوي (debounce) قبل ما نرسل طلب للسيرفر حتى
+  // ما نرسل طلب مع كل حرف يكتبه المستخدم
   function onSearchChange(value) {
     setSearch(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -93,6 +97,7 @@ export default function Dashboard() {
     setQuickAddOpen(true);
   }
 
+  // تجيب الطلبات المعروضة بجدول/كانبان الداشبورد
   function loadOrders() {
     return api
       .get('/orders')

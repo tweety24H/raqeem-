@@ -43,6 +43,7 @@ export default function Settings() {
   );
 }
 
+// تبويب "بيانات المطبعة" - اسم المطبعة والعنوان والهاتف اللي تطلع بالفاتورة
 function ShopSettings() {
   const [form, setForm] = useState(null);
   const [saved, setSaved] = useState(false);
@@ -133,6 +134,7 @@ const WA_STATUS_LABEL = {
   error: 'تعذر تشغيل خدمة واتساب — تحقق من تثبيت المكتبة وأعد تشغيل السيرفر',
 };
 
+// حالة ربط واتساب المحلي (QR code) - يفحص كل شوي اذا الاقتران نجح او لا
 function WhatsAppPairingStatus() {
   const [state, setState] = useState(null);
   const [now, setNow] = useState(Date.now());
@@ -231,6 +233,8 @@ function WhatsAppPairingStatus() {
   );
 }
 
+// تبويب "الخدمات" - هنا يضيف صاحب المطبعة الخدمات الجاهزة (كارت، فلكس..)
+// بأسعارها، وهذي نفسها اللي تطلع بقائمة اختيار الخدمة عند إنشاء طلب جديد
 function ServicesSettings() {
   const [services, setServices] = useState([]);
   const [form, setForm] = useState({ name: '', unit: 'قطعة', price: '', category: '' });
@@ -251,6 +255,7 @@ function ServicesSettings() {
     load();
   }
 
+  // تعديل سعر خدمة موجودة - يتحدث فورًا بكل مكان يستخدم هالخدمة
   async function updatePrice(id, price) {
     await api.patch(`/services/${id}`, { price });
     load();
@@ -324,6 +329,8 @@ function ServicesSettings() {
   );
 }
 
+// تبويب "الموظفين" - اضافة موظف جديد برمز PIN خاص فيه، وتحديد دوره
+// (مصمم، عامل طباعة..) اللي يحدد شنو يقدر يشوف بالتطبيق
 function WorkersSettings() {
   const [workers, setWorkers] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -425,6 +432,8 @@ function WorkersSettings() {
 
 // تبويب "الأدوار" — كل دور بطاقة مستقلة: اسمه، عدد الموظفين المرتبطين فيه،
 // وقائمة صلاحيات مجمّعة حسب group_name بشكل checkboxes + زر حفظ خاص فيها.
+// تبويب "الأدوار والصلاحيات" - كل دور (مدير، مصمم..) عنده حزمة صلاحيات
+// محددة، هنا تتحكم شنو مسموح لكل دور يسويه بالضبط
 function RolesSettings() {
   const [roles, setRoles] = useState(null);
   const [error, setError] = useState('');
@@ -656,6 +665,8 @@ function NetworkSettings() {
   );
 }
 
+// تبويب "النسخ الاحتياطي" - تحدد وين تنحفظ نسخة قاعدة البيانات تلقائيًا
+// كل 6 ساعات (يفضل مجلد بفلاشة او قرص خارجي لأمان أكثر)
 function BackupSettings() {
   const [form, setForm] = useState(null);
   const [saved, setSaved] = useState(false);

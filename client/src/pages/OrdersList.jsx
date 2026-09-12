@@ -72,6 +72,8 @@ export default function OrdersList() {
 
   // Task: quick-access filter row (الكل|اليوم|متأخر|جاهز) — the chosen
   // filter is remembered in localStorage so it's restored on next visit.
+  // هاي أزرار الفلتر السريع (الكل/اليوم/متأخر/جاهز) - نحفظ آخر اختيار
+  // بـ localStorage حتى لو رجعت للصفحة يضل نفس الفلتر مو يرجع للكل من جديد
   function applyQuickFilter(key) {
     try {
       localStorage.setItem(QUICK_FILTER_KEY, key);
@@ -119,6 +121,8 @@ export default function OrdersList() {
     return list;
   }, [orders, inProgressOnly, todayOnly, overdueOnly]);
 
+  // هاي تجيب الطلبات من السيرفر حسب الفلتر المحدد (حالة، بحث) - تنادى كل
+  // مرة يتغير فيها الفلتر او البحث
   async function load() {
     setError('');
     try {
@@ -160,6 +164,7 @@ export default function OrdersList() {
 
   // Task: bulk actions — select rows in the list view and change their
   // status together, reusing the same single-order status endpoint.
+  // تحديد/الغاء تحديد طلب وحدة من جدول الطلبات - يستخدمها التحديد الجماعي
   function toggleSelect(id) {
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }
@@ -168,6 +173,8 @@ export default function OrdersList() {
     setSelectedIds((prev) => (prev.length === visibleOrders.length ? [] : visibleOrders.map((o) => o.id)));
   }
 
+  // هاي تغيّر حالة كل الطلبات المحددة دفعة وحدة - بترسل طلب PATCH لكل
+  // طلب محدد بنفس الوقت
   async function applyBulkStatus() {
     setBulkBusy(true);
     try {

@@ -111,7 +111,8 @@
   <div class="loading-text">جاري التحميل...</div>
   <div class="version">v1.2.0</div>
   <script>
-    // صوت ناعم عند الفتح — Web Audio API فقط، بدون ملف صوتي أو مكتبة.
+    // نطلع صوتة "تن" خفيفة لما البرنامج يفتح - نسويها بكود بس (Web Audio
+    // API) بلا ما نحتاج نحمّل ملف mp3 او أي مكتبة
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       const o = ctx.createOscillator();

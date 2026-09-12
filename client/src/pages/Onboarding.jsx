@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../api/client';
+import { SEEN_KEY as WALKTHROUGH_SEEN_KEY } from '../components/Onboarding';
 
 // Device-level flag (not per-worker): once any worker finishes or skips this
 // setup wizard on this machine, it never shows again — see Login.jsx and
@@ -30,6 +31,10 @@ export default function Onboarding() {
   function finish() {
     try {
       localStorage.setItem(FIRST_LAUNCH_KEY, 'true');
+      // مسوي معالج الإعداد الأول لتوه يعني ما نحتاج نعرضله جولة الداشبورد
+      // القصيرة بعده مباشرة (كومبوننت Onboarding.jsx) — نفس الشعور بمرتين
+      // ورا بعض، فنعلّمها "شافها" هنا حتى ما تنبثق فوق الداشبورد فورًا.
+      localStorage.setItem(WALKTHROUGH_SEEN_KEY, '1');
     } catch {
       /* ignore */
     }

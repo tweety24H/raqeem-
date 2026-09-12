@@ -73,6 +73,7 @@ require('./services/backupService').scheduleAutoBackup();
 require('./services/whatsappService').init();
 require('./services/debtService').scheduleDailyDebtCheck();
 require('./services/stockAlertService').scheduleDailyStockCheck();
+require('./services/recurringOrdersService').scheduleRecurringOrdersCheck();
 
 const PORT = process.env.RAQEEM_PORT || 4310;
 const HOST = '0.0.0.0'; // listen on LAN so the customer QR page works over WiFi

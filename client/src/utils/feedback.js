@@ -3,6 +3,8 @@
 
 let sharedCtx = null;
 
+// هاي تطلع صوتة قصيرة "تك" بس - نسويها بالمتصفح نفسه (Web Audio API)
+// بلا ما نحمّل أي ملف صوت، أخف وأسرع
 export function playTick() {
   try {
     const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -35,6 +37,8 @@ export function vibrate() {
 // حالة عادي (جديد/قيد التصميم/قيد الطباعة ما تحتاج لفت انتباه).
 const NOTIFY_STATUSES = new Set(['جاهز للتسليم', 'تم التسليم']);
 
+// هاي اللي تنادى من صفحة تفاصيل الطلب لما تغيّر الحالة - تفحص اذا الحالة
+// الجديدة "جاهز" او "تم التسليم" وبس بهاي الحالتين تطلع صوت وهزة
 export function notifyIfCompleted(newStatus) {
   if (!NOTIFY_STATUSES.has(newStatus)) return;
   playTick();
