@@ -44,8 +44,12 @@
     "wait-on": "^8.0.5"
   },
   "build": {
-    "appId": "com.raqeemos.app",
-    "productName": "Raqeem",
+    "appId": "com.raqeem.os",
+    "productName": "RaqeemOS",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
     "files": [
       "electron/**/*",
       "server/**/*",
@@ -64,7 +68,8 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Raqeem"
+      "shortcutName": "Raqeem",
+      "artifactName": "Raqeem Setup ${version}.exe"
     },
     "asarUnpack": [
       "**/*.node"

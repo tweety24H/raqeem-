@@ -4,6 +4,7 @@ client/dist/
 data/
 backups/
 dist/
+release/
 *.log
 .DS_Store
 .tools/
