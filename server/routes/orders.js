@@ -83,10 +83,34 @@ router.get('/:id', requireAuth, authorize('view_orders'), (req, res) => {
   res.json({ order, items, payments });
 });
 
+// خصم بمرحلتين قابلتين للدمج: خصم أساسي (discount_type/discount_value) يُطبَّق
+// على الإجمالي الفرعي، ثم خصم إضافي اختياري (discount_after_type/discount_after_value)
+// يُطبَّق على الباقي بعده — كل مرحلة يمكن أن تكون نسبة % أو مبلغ ثابت بالدينار
+// بشكل مستقل عن الأخرى. النسبة تُقيَّد بين 0-100 لمنع خصم بالسالب أو أكبر من الكل.
+function computeDiscountStage(base, type, value) {
+  const v = Number(value) || 0;
+  if (type === 'percent') return base * (Math.min(Math.max(v, 0), 100) / 100);
+  return Math.max(v, 0);
+}
+
+function computeOrderTotals(subtotal, body) {
+  const discountType = body.discount_type === 'percent' ? 'percent' : 'fixed';
+  const discountValue = Number(body.discount_value) || 0;
+  const discountAfterType = body.discount_after_type === 'percent' ? 'percent' : 'fixed';
+  const discountAfterValue = Number(body.discount_after_value) || 0;
+
+  const beforeAmount = computeDiscountStage(subtotal, discountType, discountValue);
+  const afterBase = Math.max(subtotal - beforeAmount, 0);
+  const afterAmount = computeDiscountStage(afterBase, discountAfterType, discountAfterValue);
+  const totalDiscount = beforeAmount + afterAmount;
+  const total = Math.max(subtotal - totalDiscount, 0);
+
+  return { discountType, discountValue, discountAfterType, discountAfterValue, totalDiscount, total };
+}
+
 // POST /api/orders
 router.post('/', requireAuth, authorize('create_order'), (req, res) => {
-  const { customer_id, items, discount, payment_type, paid_amount, due_date, notes, recurring_interval_days } =
-    req.body;
+  const { customer_id, items, payment_type, paid_amount, due_date, notes, recurring_interval_days } = req.body;
 
   if (!customer_id || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'الزبون وعنصر واحد على الأقل مطلوبان' });
@@ -99,8 +123,12 @@ router.post('/', requireAuth, authorize('create_order'), (req, res) => {
   if (!customer) return res.status(404).json({ error: 'الزبون غير موجود' });
 
   const subtotal = items.reduce((s, it) => s + Number(it.quantity) * Number(it.unit_price), 0);
-  const disc = Number(discount) || 0;
-  const total = Math.max(subtotal - disc, 0);
+  // Backward compat: a caller still sending the old flat `discount` (IQD) field
+  // with no discount_value keeps working exactly as before.
+  const legacyDiscount = Number(req.body.discount) || 0;
+  const { discountType, discountValue, discountAfterType, discountAfterValue, totalDiscount, total } =
+    computeOrderTotals(subtotal, req.body.discount_value != null ? req.body : { discount_value: legacyDiscount });
+  const disc = totalDiscount;
 
   let paid;
   if (payment_type === 'full') paid = total;
@@ -111,10 +139,25 @@ router.post('/', requireAuth, authorize('create_order'), (req, res) => {
     const orderNumber = generateOrderNumber();
     const info = db
       .prepare(
-        `INSERT INTO orders (order_number, customer_id, worker_id, status, subtotal, discount, total_price, payment_type, paid_amount, due_date, notes)
-         VALUES (?, ?, ?, 'جديد', ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO orders (order_number, customer_id, worker_id, status, subtotal, discount, discount_type, discount_value, discount_after_type, discount_after_value, total_price, payment_type, paid_amount, due_date, notes)
+         VALUES (?, ?, ?, 'جديد', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
-      .run(orderNumber, customer_id, req.worker.workerId, subtotal, disc, total, payment_type, paid, due_date || null, notes || null);
+      .run(
+        orderNumber,
+        customer_id,
+        req.worker.workerId,
+        subtotal,
+        disc,
+        discountType,
+        discountValue,
+        discountAfterType,
+        discountAfterValue,
+        total,
+        payment_type,
+        paid,
+        due_date || null,
+        notes || null
+      );
 
     const orderId = info.lastInsertRowid;
 

@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api/client';
 import PageHeader from '../components/PageHeader';
 import { useLanguage } from '../context/LanguageContext';
-import { formatIQD } from '../utils/format';
+import { formatIQD, formatDiscountLabel } from '../utils/format';
 
 const emptyItem = () => ({
   service_id: '',
@@ -56,7 +56,11 @@ export default function NewOrder() {
       ? reorderDraft.items.map((it) => ({ ...emptyItem(), ...it }))
       : [emptyItem()]
   );
-  const [discount, setDiscount] = useState(0);
+  const [discountType, setDiscountType] = useState('fixed');
+  const [discountValue, setDiscountValue] = useState(0);
+  const [extraDiscountOpen, setExtraDiscountOpen] = useState(false);
+  const [discountAfterType, setDiscountAfterType] = useState('fixed');
+  const [discountAfterValue, setDiscountAfterValue] = useState(0);
   const [paymentType, setPaymentType] = useState('full');
   const [paidAmount, setPaidAmount] = useState(0);
   const [dueDate, setDueDate] = useState('');
@@ -104,7 +108,19 @@ export default function NewOrder() {
   }
 
   const subtotal = items.reduce((s, it) => s + Number(it.quantity || 0) * Number(it.unit_price || 0), 0);
-  const total = Math.max(subtotal - Number(discount || 0), 0);
+
+  // نفس منطق الخصم بمرحلتين المطبَّق بالسيرفر (server/routes/orders.js) —
+  // مكرَّر هنا فقط لعرض معاينة فورية قبل الإرسال، والسيرفر هو مصدر الحقيقة النهائي.
+  function discountStageAmount(base, type, value) {
+    const v = Number(value) || 0;
+    if (type === 'percent') return base * (Math.min(Math.max(v, 0), 100) / 100);
+    return Math.max(v, 0);
+  }
+  const beforeDiscountAmount = discountStageAmount(subtotal, discountType, discountValue);
+  const afterBase = Math.max(subtotal - beforeDiscountAmount, 0);
+  const afterDiscountAmount = extraDiscountOpen ? discountStageAmount(afterBase, discountAfterType, discountAfterValue) : 0;
+  const discount = beforeDiscountAmount + afterDiscountAmount;
+  const total = Math.max(subtotal - discount, 0);
 
   function updateItem(idx, patch) {
     setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, ...patch } : it)));
@@ -167,7 +183,10 @@ export default function NewOrder() {
           stock_item_id: it.stock_item_id || null,
           stock_qty_used: it.stock_qty_used || 0,
         })),
-        discount: Number(discount) || 0,
+        discount_type: discountType,
+        discount_value: Number(discountValue) || 0,
+        discount_after_type: extraDiscountOpen ? discountAfterType : 'fixed',
+        discount_after_value: extraDiscountOpen ? Number(discountAfterValue) || 0 : 0,
         payment_type: paymentType,
         paid_amount: paymentType === 'partial' ? Number(paidAmount) || 0 : undefined,
         due_date: dueDate || null,
@@ -406,9 +425,97 @@ export default function NewOrder() {
           <div className="space-y-6 lg:col-span-2">
             <div className="card">
               <h2 className="mb-3 font-semibold text-slate-700 dark:text-slate-200">{t('newOrder.paymentSection')}</h2>
-              <div className="mb-3">
-                <label className="label">{t('newOrder.discountLabel')}</label>
-                <input className="input" type="number" value={discount} onChange={(e) => setDiscount(e.target.value)} />
+              <div className="mb-4 rounded-lg border border-slate-200 p-3 dark:border-white/10">
+                <label className="label mb-2">{t('newOrder.discountLabel')}</label>
+                <div className="mb-2 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDiscountType('percent')}
+                    className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${
+                      discountType === 'percent'
+                        ? 'border-[#C5A880] bg-[#C5A880] text-[#1A2744]'
+                        : 'border-slate-300 text-slate-600 dark:border-white/10 dark:text-slate-300'
+                    }`}
+                  >
+                    % {t('newOrder.discountPercentOption')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDiscountType('fixed')}
+                    className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${
+                      discountType === 'fixed'
+                        ? 'border-[#C5A880] bg-[#C5A880] text-[#1A2744]'
+                        : 'border-slate-300 text-slate-600 dark:border-white/10 dark:text-slate-300'
+                    }`}
+                  >
+                    {t('newOrder.discountFixedOption')}
+                  </button>
+                </div>
+                <div className="relative">
+                  <input
+                    className="input pl-14"
+                    type="number"
+                    min={0}
+                    max={discountType === 'percent' ? 100 : undefined}
+                    value={discountValue}
+                    onChange={(e) => setDiscountValue(e.target.value)}
+                    placeholder={discountType === 'percent' ? '10' : '5000'}
+                  />
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">
+                    {discountType === 'percent' ? '%' : t('common.iqd')}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setExtraDiscountOpen((v) => !v)}
+                  className="mt-3 flex items-center gap-1 text-xs font-semibold text-nili underline dark:text-gold"
+                >
+                  {extraDiscountOpen ? t('newOrder.discountExtraHide') : t('newOrder.discountExtraShow')}
+                </button>
+
+                {extraDiscountOpen && (
+                  <div className="mt-2 border-t border-dashed border-slate-200 pt-3 dark:border-white/10">
+                    <div className="mb-2 grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setDiscountAfterType('percent')}
+                        className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${
+                          discountAfterType === 'percent'
+                            ? 'border-[#C5A880] bg-[#C5A880] text-[#1A2744]'
+                            : 'border-slate-300 text-slate-600 dark:border-white/10 dark:text-slate-300'
+                        }`}
+                      >
+                        % {t('newOrder.discountPercentOption')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDiscountAfterType('fixed')}
+                        className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${
+                          discountAfterType === 'fixed'
+                            ? 'border-[#C5A880] bg-[#C5A880] text-[#1A2744]'
+                            : 'border-slate-300 text-slate-600 dark:border-white/10 dark:text-slate-300'
+                        }`}
+                      >
+                        {t('newOrder.discountFixedOption')}
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <input
+                        className="input pl-14"
+                        type="number"
+                        min={0}
+                        max={discountAfterType === 'percent' ? 100 : undefined}
+                        value={discountAfterValue}
+                        onChange={(e) => setDiscountAfterValue(e.target.value)}
+                        placeholder={discountAfterType === 'percent' ? '5' : '2000'}
+                      />
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">
+                        {discountAfterType === 'percent' ? '%' : t('common.iqd')}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="mb-3">
                 <label className="label">{t('newOrder.paymentTypeLabel')}</label>
@@ -471,10 +578,21 @@ export default function NewOrder() {
                 <span>{t('common.subtotal')}</span>
                 <span>{formatIQD(subtotal)}</span>
               </div>
-              <div className="mb-1 flex justify-between text-sm text-slate-500 dark:text-slate-400">
-                <span>{t('common.discount')}</span>
-                <span>- {formatIQD(discount)}</span>
-              </div>
+              {discount > 0 && (
+                <div className="mb-1 flex justify-between text-sm text-slate-500 dark:text-slate-400">
+                  <span>{t('common.discount')}</span>
+                  <span>
+                    -{' '}
+                    {formatDiscountLabel({
+                      discount,
+                      discount_type: discountType,
+                      discount_value: discountValue,
+                      discount_after_type: extraDiscountOpen ? discountAfterType : 'fixed',
+                      discount_after_value: extraDiscountOpen ? discountAfterValue : 0,
+                    })}
+                  </span>
+                </div>
+              )}
               <div className="mb-3 flex justify-between border-t border-slate-200 pt-2 text-lg font-bold text-nili dark:border-white/10 dark:text-gold">
                 <span>{t('common.grandTotal')}</span>
                 <span>{formatIQD(total)}</span>

@@ -7,7 +7,7 @@ import ViewToggle, { useViewMode } from '../components/ViewToggle';
 import ErrorBanner from '../components/ui/ErrorBanner';
 import EmptyState from '../components/ui/EmptyState';
 import { useLanguage } from '../context/LanguageContext';
-import { formatIQD, formatDate } from '../utils/format';
+import { formatIQD, formatDate, formatDiscountBadge } from '../utils/format';
 import { exportToExcel } from '../utils/exportExcel';
 import { notifyIfCompleted } from '../utils/feedback';
 
@@ -294,6 +294,11 @@ export default function OrdersList() {
                   <StatusBadge status={o.status} />
                   <span className="text-xs text-slate-400 dark:text-slate-500">{o.order_number}</span>
                 </div>
+                {formatDiscountBadge(o) && (
+                  <span className="mb-2 inline-block rounded-full bg-[#C5A880]/15 px-2 py-0.5 text-[11px] font-semibold text-[#8a6d3f] dark:text-[#C5A880]">
+                    {t('orders.discountBadgePrefix')} {formatDiscountBadge(o)}
+                  </span>
+                )}
                 <p className="font-semibold text-slate-800 dark:text-slate-100">{o.customer_name}</p>
                 {o.item_summary && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{o.item_summary}</p>}
                 <div className="mt-3 flex items-center justify-between text-sm">
@@ -348,7 +353,14 @@ export default function OrdersList() {
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <input type="checkbox" checked={selectedIds.includes(o.id)} onChange={() => toggleSelect(o.id)} />
                     </td>
-                    <td className="px-4 py-3 font-medium text-nili dark:text-gold">{o.order_number}</td>
+                    <td className="px-4 py-3 font-medium text-nili dark:text-gold">
+                      {o.order_number}
+                      {formatDiscountBadge(o) && (
+                        <span className="mr-2 inline-block rounded-full bg-[#C5A880]/15 px-2 py-0.5 text-[11px] font-semibold text-[#8a6d3f] dark:text-[#C5A880]">
+                          {t('orders.discountBadgePrefix')} {formatDiscountBadge(o)}
+                        </span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 dark:text-slate-200">{o.customer_name}</td>
                     <td className="px-4 py-3">
                       <StatusBadge status={o.status} />

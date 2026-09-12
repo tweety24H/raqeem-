@@ -135,6 +135,32 @@ function migrateCustomersPoints() {
 }
 migrateCustomersPoints();
 
+// ترقية: خصم مزدوج النوع (نسبة % أو مبلغ ثابت بالدينار)، بمرحلتين قابلتين
+// للدمج (خصم أساسي + خصم إضافي اختياري يُطبَّق بعده). العمود القديم
+// `discount` يبقى كما هو دائمًا: المبلغ النهائي المحسوب بالدينار، حتى لا
+// ينكسر أي كود قديم يقرأه كمبلغ مباشر (الفواتير/التقارير/الطلبات القديمة).
+function migrateOrdersDiscountColumns() {
+  const existing = db.prepare('PRAGMA table_info(orders)').all().map((c) => c.name);
+  const wanted = [
+    ['discount_type', "TEXT NOT NULL DEFAULT 'fixed'"],
+    ['discount_value', 'REAL NOT NULL DEFAULT 0'],
+    ['discount_after_type', "TEXT NOT NULL DEFAULT 'fixed'"],
+    ['discount_after_value', 'REAL NOT NULL DEFAULT 0'],
+  ];
+  for (const [col, def] of wanted) {
+    if (!existing.includes(col)) {
+      db.exec(`ALTER TABLE orders ADD COLUMN ${col} ${def}`);
+    }
+  }
+  // طلبات قديمة عندها discount بس بدون تفاصيل النوع: نعتبرها خصمًا ثابتًا
+  // (fixed) لأن هذا هو المعنى الفعلي المخزَّن تاريخيًا بعمود discount —
+  // معاملتها كنسبة مئوية كانت راح تُحرّف مبلغها المعروض بالكامل.
+  db.exec(
+    `UPDATE orders SET discount_value = discount WHERE discount_value = 0 AND discount > 0`
+  );
+}
+migrateOrdersDiscountColumns();
+
 // زرع الأدوار الأربعة الافتراضية + توزيع الصلاحيات عليها (idempotent).
 function seedRoles() {
   const ROLES = [

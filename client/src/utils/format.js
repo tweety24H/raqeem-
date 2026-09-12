@@ -6,6 +6,35 @@ function currentLocale() {
   }
 }
 
+// خصم بمرحلتين (أساسي + إضافي اختياري)، كل مرحلة نسبة % أو مبلغ ثابت —
+// يبني نص عرض موحّد يُستخدم بنفس الشكل بفورم الطلب، تفاصيل الطلب، والفاتورة.
+// يقبل إما order من قاعدة البيانات (discount_type/discount_value/...) أو
+// state فورم الطلب قبل الحفظ، بنفس أسماء الحقول.
+export function formatDiscountLabel(d) {
+  const total = Number(d.discount) || 0;
+  const type1 = d.discount_type === 'percent' ? 'percent' : 'fixed';
+  const val1 = Number(d.discount_value) || 0;
+  const type2 = d.discount_after_type === 'percent' ? 'percent' : 'fixed';
+  const val2 = Number(d.discount_after_value) || 0;
+
+  const segs = [];
+  if (val1 > 0) segs.push(type1 === 'percent' ? `${val1}%` : formatIQD(val1));
+  if (val2 > 0) segs.push(type2 === 'percent' ? `${val2}%` : formatIQD(val2));
+
+  if (segs.length === 0) return formatIQD(total);
+  // خصم ثابت وحيد بلا مرحلة إضافية: المبلغ يساوي القيمة نفسها، ما نحتاج تكراره.
+  if (segs.length === 1 && type1 === 'fixed' && val2 === 0) return formatIQD(total);
+  return `${segs.join(' + ')} (${formatIQD(total)})`;
+}
+
+// بادج مختصر لقوائم الطلبات — الخصم الأساسي فقط، بلا احتساب المرحلة الإضافية.
+export function formatDiscountBadge(d) {
+  const type1 = d.discount_type === 'percent' ? 'percent' : 'fixed';
+  const val1 = Number(d.discount_value) || Number(d.discount) || 0;
+  if (val1 <= 0) return null;
+  return type1 === 'percent' ? `${val1}%` : formatIQD(val1);
+}
+
 export function formatIQD(amount) {
   const n = Number(amount) || 0;
   return `${n.toLocaleString('en-US', { maximumFractionDigits: 0 })} د.ع`;

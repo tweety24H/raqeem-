@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import api, { fileUrl } from '../api/client';
 import VerifyQR from '../components/VerifyQR';
 import { useLanguage } from '../context/LanguageContext';
-import { formatIQD, formatDateTime } from '../utils/format';
+import { formatIQD, formatDateTime, formatDiscountLabel } from '../utils/format';
 
 const GOLD = '#C9A94A';
 const GOLD_DARK = '#8a6d10';
@@ -170,10 +170,12 @@ export default function Receipt() {
                 <span>{t('common.subtotal')}</span>
                 <span style={{ fontVariantNumeric: 'tabular-nums' }}>{formatIQD(order.subtotal)}</span>
               </div>
-              <div className="flex justify-between text-stone-500">
-                <span>{t('common.discount')}</span>
-                <span style={{ fontVariantNumeric: 'tabular-nums' }}>- {formatIQD(order.discount)}</span>
-              </div>
+              {order.discount > 0 && (
+                <div className="flex justify-between text-stone-500">
+                  <span>{t('common.discount')}</span>
+                  <span style={{ fontVariantNumeric: 'tabular-nums' }}>- {formatDiscountLabel(order)}</span>
+                </div>
+              )}
               <div className="flex justify-between rounded-lg bg-nili px-3 py-2 text-base font-bold text-white">
                 <span style={{ fontFamily: "'Aref Ruqaa', serif" }}>{t('common.grandTotal')}</span>
                 <span style={{ fontVariantNumeric: 'tabular-nums' }}>{formatIQD(order.total_price)}</span>

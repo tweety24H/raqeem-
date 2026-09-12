@@ -4,7 +4,7 @@ import api from '../api/client';
 import PageHeader from '../components/PageHeader';
 import StatusBadge from '../components/StatusBadge';
 import { useLanguage } from '../context/LanguageContext';
-import { formatIQD, formatDateTime } from '../utils/format';
+import { formatIQD, formatDateTime, formatDiscountLabel } from '../utils/format';
 import { OrderDesignsSection } from '../components/DesignArchive';
 import { notifyIfCompleted } from '../utils/feedback';
 
@@ -122,12 +122,14 @@ export default function OrderDetail() {
                   </td>
                   <td className="px-4 py-2 font-medium dark:text-slate-100">{formatIQD(order.subtotal)}</td>
                 </tr>
-                <tr>
-                  <td colSpan={3} className="px-4 py-2 text-left text-slate-500 dark:text-slate-400">
-                    {t('common.discount')}
-                  </td>
-                  <td className="px-4 py-2 font-medium dark:text-slate-100">- {formatIQD(order.discount)}</td>
-                </tr>
+                {order.discount > 0 && (
+                  <tr>
+                    <td colSpan={3} className="px-4 py-2 text-left text-slate-500 dark:text-slate-400">
+                      {t('common.discount')}
+                    </td>
+                    <td className="px-4 py-2 font-medium dark:text-slate-100">- {formatDiscountLabel(order)}</td>
+                  </tr>
+                )}
                 <tr>
                   <td colSpan={3} className="px-4 py-2 text-left font-bold text-nili dark:text-gold">
                     {t('common.grandTotal')}
