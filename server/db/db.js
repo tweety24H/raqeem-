@@ -89,6 +89,11 @@ function seedPermissions() {
     ['delete_customer', 'حذف زبون', 'الزبائن'],
     ['view_receipts', 'عرض الفواتير', 'الفواتير'],
     ['print_receipts', 'طباعة الفواتير', 'الفواتير'],
+    // منفصلة عمدًا عن edit_order: تسجيل دفعة (عمل الكاشير/المحاسب الأساسي)
+    // ما يحتاج صلاحية تعديل تفاصيل الطلب نفسه (عمل المصمم) — قبل هذا
+    // الفصل كان أي دور عنده edit_order يقدر يسجّل دفعات بدون قصد.
+    ['record_payment', 'تسجيل دفعة', 'الفواتير'],
+    ['manage_expenses', 'تسجيل المصاريف', 'أخرى'],
     ['view_dashboard', 'عرض لوحة التحكم', 'لوحة التحكم'],
     ['view_reports', 'عرض التقارير', 'التقارير'],
     ['view_profits', 'عرض الأرباح', 'التقارير'],
@@ -189,6 +194,7 @@ function seedRoles() {
     4: [
       'view_orders', 'view_customers', 'view_receipts', 'print_receipts',
       'view_reports', 'view_profits', 'view_debts', 'view_dashboard',
+      'update_order_status', 'record_payment', 'manage_expenses',
     ],
   };
 

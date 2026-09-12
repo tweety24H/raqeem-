@@ -133,9 +133,12 @@ export default function PinGateModal({ user, onClose, onSuccess }) {
             </button>
           </div>
 
-          <p className="text-center text-[11px] text-slate-400">
-            الافتراضي: 1234 {attempts > 0 && `• محاولة ${attempts}/3`}
-          </p>
+          {/* كانت هنا تلميحة ثابتة "الافتراضي: 1234" - عرض رمز PIN المالك
+              الحقيقي بشاشة الدخول نفسها ثغرة أمنية واضحة، حذفناها. نخلي
+              بس عداد المحاولات (يفيد المستخدم يعرف كم مرة غلط). */}
+          {attempts > 0 && (
+            <p className="text-center text-[11px] text-slate-400">محاولة {attempts}/3</p>
+          )}
         </form>
       </motion.div>
     </motion.div>

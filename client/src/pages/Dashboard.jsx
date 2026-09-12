@@ -307,22 +307,28 @@ export default function Dashboard() {
               tone="warning"
             />
             <StatCard accent to="/orders?status=ready" icon="✅" label={t('dashboard.statReady')} value={statusCounts.ready} tone="success" />
-            <StatCard
-              accent
-              to="/reports?range=today"
-              icon="💰"
-              label={t('dashboard.statProfitToday')}
-              value={summary?.profitToday?.profit || 0}
-              format={formatIQD}
-            />
-            <StatCard
-              to="/customers?filter=debtors"
-              icon="⚠️"
-              label={t('dashboard.statDebt')}
-              value={summary?.totalDebt || 0}
-              format={formatIQD}
-              tone={(summary?.totalDebt || 0) > 0 ? 'danger' : 'default'}
-            />
+            {/* السيرفر أصلاً يرجع profitToday=null لمن ماعنده view_profits —
+                هذا الفحص هنا بس يخفي الكارت بدل ما يعرض "0" مضلّلة */}
+            {hasPermission('view_profits') && (
+              <StatCard
+                accent
+                to="/reports?range=today"
+                icon="💰"
+                label={t('dashboard.statProfitToday')}
+                value={summary?.profitToday?.profit || 0}
+                format={formatIQD}
+              />
+            )}
+            {hasPermission('view_debts') && (
+              <StatCard
+                to="/customers?filter=debtors"
+                icon="⚠️"
+                label={t('dashboard.statDebt')}
+                value={summary?.totalDebt || 0}
+                format={formatIQD}
+                tone={(summary?.totalDebt || 0) > 0 ? 'danger' : 'default'}
+              />
+            )}
             <StatCard
               to="/stock?filter=low_stock"
               icon="📦"

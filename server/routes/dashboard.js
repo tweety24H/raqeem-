@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../db/db');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, hasEffectivePermission } = require('../middleware/auth');
 const { authorize } = require('../middleware/authorize');
 
 const router = express.Router();
@@ -51,10 +51,18 @@ router.get('/summary', requireAuth, authorize('view_dashboard'), (req, res) => {
     .prepare("SELECT COUNT(*) AS c FROM orders WHERE date(created_at) = date('now')")
     .get().c;
 
+  // كانت profitToday/profitMonth/totalDebt ترجع لأي موظف عنده view_dashboard
+  // بس (كل الأدوار عمليًا) — رغم إنها بيانات مالية حساسة المفروض تنحصر
+  // بصلاحية view_profits/view_debts. هذا كان يفشي الأرباح والديون لموظف
+  // زي المصمم حتى لو صفحة التقارير نفسها كانت محمية صح.
+  const isOwner = req.worker.role === 'owner';
+  const canViewProfits = isOwner || hasEffectivePermission(req.worker.workerId, 'view_profits');
+  const canViewDebts = isOwner || hasEffectivePermission(req.worker.workerId, 'view_debts');
+
   res.json({
-    profitToday: today,
-    profitMonth: month,
-    totalDebt: debtRow.totalDebt,
+    profitToday: canViewProfits ? today : null,
+    profitMonth: canViewProfits ? month : null,
+    totalDebt: canViewDebts ? debtRow.totalDebt : null,
     lowStock,
     dueSoon,
     ordersByStatus,

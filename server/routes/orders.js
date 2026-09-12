@@ -286,7 +286,9 @@ router.patch('/:id/status', requireAuth, authorize('update_order_status'), (req,
 });
 
 // POST /api/orders/:id/payment { amount, method, note }
-router.post('/:id/payment', requireAuth, authorize('edit_order'), (req, res) => {
+// تسجيل دفعة صلاحية مستقلة عن edit_order (شوف تعليقها بجدول permissions
+// بـ db.js) — الكاشير/المحاسب يقدر يحصّل دفعة بدون ما يقدر يعدّل تفاصيل الطلب.
+router.post('/:id/payment', requireAuth, authorize('record_payment'), (req, res) => {
   const { amount, method, note } = req.body;
   const amt = Number(amount);
   const order = db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id);

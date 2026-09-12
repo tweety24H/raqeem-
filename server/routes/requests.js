@@ -2,11 +2,14 @@
 const express = require('express');
 const db = require('../db/db');
 const { requireAuth } = require('../middleware/auth');
+const { authorize } = require('../middleware/authorize');
 
 const router = express.Router();
 
+// كانت بلا فحص صلاحية رغم إن الواجهة تخفي رابط "طلبات الزبائن" عن أي دور
+// بدون view_customers — صلحناها حتى الحماية الفعلية تطابق الواجهة.
 // GET /api/requests ?status=
-router.get('/', requireAuth, (req, res) => {
+router.get('/', requireAuth, authorize('view_customers'), (req, res) => {
   const { status } = req.query;
   let sql = 'SELECT * FROM customer_requests WHERE 1=1';
   const params = [];
@@ -19,7 +22,7 @@ router.get('/', requireAuth, (req, res) => {
 });
 
 // PATCH /api/requests/:id { status, order_id }
-router.patch('/:id', requireAuth, (req, res) => {
+router.patch('/:id', requireAuth, authorize('view_customers'), (req, res) => {
   const { status, order_id } = req.body;
   db.prepare(
     'UPDATE customer_requests SET status = COALESCE(?, status), order_id = COALESCE(?, order_id) WHERE id = ?'

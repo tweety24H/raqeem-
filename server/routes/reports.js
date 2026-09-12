@@ -18,8 +18,14 @@ router.get('/summary', requireAuth, authorize('view_reports'), (req, res) => {
   const orderWhere = rangeWhere(range, 'o.created_at');
   const expenseWhere = rangeWhere(range, 'date');
 
+  // كانت totalRevenue بس (المبلغ المفوتر) — بدون أي رقم "المحصّل فعليًا"
+  // بنفس الفترة، ما يخلي التقرير يتحقق منه مباشرة مقابل الدفعات الحقيقية.
   const orderStats = db
-    .prepare(`SELECT COUNT(*) AS totalOrders, COALESCE(SUM(total_price), 0) AS totalRevenue FROM orders o WHERE ${orderWhere}`)
+    .prepare(
+      `SELECT COUNT(*) AS totalOrders, COALESCE(SUM(total_price), 0) AS totalRevenue,
+              COALESCE(SUM(paid_amount), 0) AS totalCollected
+       FROM orders o WHERE ${orderWhere}`
+    )
     .get();
   const totalExpenses = db.prepare(`SELECT COALESCE(SUM(amount), 0) AS v FROM expenses WHERE ${expenseWhere}`).get().v;
   const netProfit = orderStats.totalRevenue - totalExpenses;
@@ -56,6 +62,8 @@ router.get('/summary', requireAuth, authorize('view_reports'), (req, res) => {
     range,
     totalOrders: orderStats.totalOrders,
     totalRevenue: orderStats.totalRevenue,
+    totalCollected: orderStats.totalCollected,
+    totalRemaining: orderStats.totalRevenue - orderStats.totalCollected,
     totalExpenses,
     netProfit,
     totalDebts,

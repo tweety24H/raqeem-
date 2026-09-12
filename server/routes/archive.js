@@ -4,6 +4,7 @@ const fs = require('fs');
 const multer = require('multer');
 const db = require('../db/db');
 const { requireAuth } = require('../middleware/auth');
+const { authorize } = require('../middleware/authorize');
 
 const router = express.Router();
 
@@ -20,8 +21,11 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage, limits: { fileSize: 25 * 1024 * 1024 } });
 
+// كل مسارات هذا الملف كانت بلا فحص صلاحية (requireAuth بس) رغم إن الواجهة
+// تخفي رابط "الأرشيف" عن أي دور بدون view_customers — صلحناها حتى الحماية
+// الفعلية تطابق الحماية الظاهرية بالواجهة.
 // GET /api/archive ?customer_id=&search=
-router.get('/', requireAuth, (req, res) => {
+router.get('/', requireAuth, authorize('view_customers'), (req, res) => {
   const { customer_id, search } = req.query;
   let sql = `
     SELECT a.*, c.name AS customer_name FROM archive_designs a
@@ -41,7 +45,7 @@ router.get('/', requireAuth, (req, res) => {
 });
 
 // POST /api/archive (multipart: file, customer_id, order_id, name)
-router.post('/', requireAuth, upload.single('file'), (req, res) => {
+router.post('/', requireAuth, authorize('edit_customer'), upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'لم يتم إرفاق ملف' });
   const { customer_id, order_id, name } = req.body;
   const relPath = path.join('uploads', 'archive', req.file.filename);
@@ -54,7 +58,7 @@ router.post('/', requireAuth, upload.single('file'), (req, res) => {
 });
 
 // DELETE /api/archive/:id
-router.delete('/:id', requireAuth, (req, res) => {
+router.delete('/:id', requireAuth, authorize('edit_customer'), (req, res) => {
   const design = db.prepare('SELECT * FROM archive_designs WHERE id = ?').get(req.params.id);
   if (!design) return res.status(404).json({ error: 'غير موجود' });
   const dataDir = process.env.RAQEEM_DB_DIR || path.join(__dirname, '..', '..', 'data');

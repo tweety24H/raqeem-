@@ -4,6 +4,7 @@ const fs = require('fs');
 const multer = require('multer');
 const db = require('../db/db');
 const { requireAuth } = require('../middleware/auth');
+const { authorize } = require('../middleware/authorize');
 
 const router = express.Router();
 
@@ -42,8 +43,11 @@ const upload = multer({
   },
 });
 
+// كل مسارات هذا الملف كانت بلا فحص صلاحية (requireAuth بس) — صلحناها بنفس
+// صلاحية تعديل الطلب (edit_order) لأن رفع/حذف تصميم هو تعديل فعلي على
+// الطلب، وبصلاحية عرض للمسارات اللي بس تجيب/تنزّل ملفات.
 // POST /api/designs/upload (multipart: customer_id, order_id, notes?, file)
-router.post('/upload', requireAuth, (req, res) => {
+router.post('/upload', requireAuth, authorize('edit_order'), (req, res) => {
   upload.single('file')(req, res, (err) => {
     if (err) {
       const msg = err.code === 'LIMIT_FILE_SIZE' ? 'حجم الملف أكبر من الحد المسموح (20 ميجابايت)' : err.message;
@@ -74,7 +78,7 @@ router.post('/upload', requireAuth, (req, res) => {
 });
 
 // GET /api/designs/order/:orderId
-router.get('/order/:orderId', requireAuth, (req, res) => {
+router.get('/order/:orderId', requireAuth, authorize('view_orders'), (req, res) => {
   const files = db
     .prepare('SELECT * FROM design_files WHERE order_id = ? ORDER BY uploaded_at DESC')
     .all(req.params.orderId);
@@ -82,7 +86,7 @@ router.get('/order/:orderId', requireAuth, (req, res) => {
 });
 
 // GET /api/designs/customer/:customerId - كل تصاميم الزبون عبر كل طلباته
-router.get('/customer/:customerId', requireAuth, (req, res) => {
+router.get('/customer/:customerId', requireAuth, authorize('view_customers'), (req, res) => {
   const files = db
     .prepare(
       `SELECT df.*, o.order_number FROM design_files df
@@ -95,7 +99,7 @@ router.get('/customer/:customerId', requireAuth, (req, res) => {
 });
 
 // GET /api/designs/download/:id
-router.get('/download/:id', requireAuth, (req, res) => {
+router.get('/download/:id', requireAuth, authorize('view_orders'), (req, res) => {
   const design = db.prepare('SELECT * FROM design_files WHERE id = ?').get(req.params.id);
   if (!design) return res.status(404).json({ error: 'الملف غير موجود' });
   const fullPath = path.join(dataDir, design.file_path);
@@ -104,7 +108,7 @@ router.get('/download/:id', requireAuth, (req, res) => {
 });
 
 // DELETE /api/designs/:id
-router.delete('/:id', requireAuth, (req, res) => {
+router.delete('/:id', requireAuth, authorize('edit_order'), (req, res) => {
   const design = db.prepare('SELECT * FROM design_files WHERE id = ?').get(req.params.id);
   if (!design) return res.status(404).json({ error: 'الملف غير موجود' });
   db.prepare('DELETE FROM design_files WHERE id = ?').run(req.params.id);

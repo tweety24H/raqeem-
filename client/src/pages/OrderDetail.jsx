@@ -4,6 +4,7 @@ import api from '../api/client';
 import PageHeader from '../components/PageHeader';
 import StatusBadge from '../components/StatusBadge';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { formatIQD, formatDateTime, formatDiscountLabel } from '../utils/format';
 import { OrderDesignsSection } from '../components/DesignArchive';
 import { notifyIfCompleted } from '../utils/feedback';
@@ -12,6 +13,7 @@ const STATUSES = ['جديد', 'قيد التصميم', 'قيد الطباعة', 
 
 export default function OrderDetail() {
   const { t } = useLanguage();
+  const { hasPermission } = useAuth();
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [payAmount, setPayAmount] = useState('');
@@ -76,24 +78,26 @@ export default function OrderDetail() {
           <h2 className="font-semibold text-slate-700 dark:text-slate-200">{t('orderDetail.statusHeading')}</h2>
           <StatusBadge status={order.status} />
         </div>
-        <div className="flex flex-wrap gap-2">
-          {STATUSES.map((s, idx) => (
-            <button
-              key={s}
-              disabled={busy}
-              onClick={() => changeStatus(s)}
-              className={`rounded-lg border px-3 py-1.5 text-xs font-medium ${
-                idx === statusIdx
-                  ? 'border-nili bg-nili text-white'
-                  : idx < statusIdx
-                  ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300'
-                  : 'border-slate-300 text-slate-500 hover:bg-slate-50 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/5'
-              }`}
-            >
-              {t(`status.${s}`)}
-            </button>
-          ))}
-        </div>
+        {hasPermission('update_order_status') && (
+          <div className="flex flex-wrap gap-2">
+            {STATUSES.map((s, idx) => (
+              <button
+                key={s}
+                disabled={busy}
+                onClick={() => changeStatus(s)}
+                className={`rounded-lg border px-3 py-1.5 text-xs font-medium ${
+                  idx === statusIdx
+                    ? 'border-nili bg-nili text-white'
+                    : idx < statusIdx
+                    ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300'
+                    : 'border-slate-300 text-slate-500 hover:bg-slate-50 dark:border-white/10 dark:text-slate-400 dark:hover:bg-white/5'
+                }`}
+              >
+                {t(`status.${s}`)}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -167,7 +171,7 @@ export default function OrderDetail() {
               </span>
             </div>
 
-            {remaining > 0 && (
+            {remaining > 0 && hasPermission('record_payment') && (
               <form onSubmit={addPayment} className="mb-3 flex gap-2">
                 <input
                   className="input"
