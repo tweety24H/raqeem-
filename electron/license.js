@@ -72,8 +72,17 @@ function readTrialMarker() {
 function writeTrialMarker(value) {
   try {
     fs.mkdirSync(TRIAL_MARKER_DIR, { recursive: true });
+    // لازم نشيل صفة الإخفاء أول (إذا الملف موجود من كتابة سابقة) قبل ما
+    // نكتب فوقه من جديد - وإلا Windows يرفض الكتابة بخطأ EPERM على أي ملف
+    // مخفي، يعني كل تحديث بعد أول مرة كان يفشل بصمت (try/catch يبلعه) وتضل
+    // العلامة عالقة على قيمتها الأولى للأبد. اكتشفناها فعلياً أثناء الاختبار.
+    try {
+      require('child_process').execSync(`attrib -h "${TRIAL_MARKER_PATH}"`, { stdio: 'ignore' });
+    } catch {
+      /* الملف غير موجود أصلاً (أول كتابة) - طبيعي تمامًا، نتجاهل */
+    }
     fs.writeFileSync(TRIAL_MARKER_PATH, encodeMarker(value));
-    // مخفي بويندوز حتى لا يبين بمتصفح الملفات العادي - محاولة تجميلية بس،
+    // نرجّعه مخفي حتى لا يبين بمتصفح الملفات العادي - محاولة تجميلية بس،
     // فشلها (مثلاً بغير ويندوز) ما يوقف شي.
     try {
       require('child_process').execSync(`attrib +h "${TRIAL_MARKER_PATH}"`, { stdio: 'ignore' });
@@ -154,7 +163,12 @@ function activate(licenseKey) {
 // العلامة الاحتياطي. حذف أحدهما بس (تصفير بيانات البرنامج، أو حذف الملف
 // المخفي يدوياً) ما يفيد طالما الثاني لسا موجود - والاثنين يتحدّثوا لبعض
 // أول ما نلقى قيمة صحيحة بواحد وناقصة أو أحدث بالثاني.
-function getTrialStart() {
+// `now`: نفس الوقت اللي getLicenseStatus() تحسب عليه daysUsed لاحقاً - نمرره
+// بدل ما نسوي Date.now() ثانية هنا، لأنه لو انسوت بمكانين منفصلين ينتج فرق
+// نانو-ثانية بينهم (استدعاء هذا الملف يجي بعد استدعاء "now" بالدالة اللي
+// تنادينا)، وبأول تشغيل هذا يخلي trialStart أكبر شوي من now فيصير daysUsed
+// سالب شوي و Math.ceil(14 - سالب) = 15 بدل 14. لقيناها فعلياً بالاختبار.
+function getTrialStart(now = Date.now()) {
   const fromStore = store.get('trialStart');
   const fromMarker = readTrialMarker();
 
@@ -164,7 +178,7 @@ function getTrialStart() {
   } else if (fromStore || fromMarker) {
     start = fromStore || fromMarker;
   } else {
-    start = Date.now();
+    start = now;
   }
 
   if (fromStore !== start) store.set('trialStart', start);
@@ -210,7 +224,7 @@ function getLicenseStatus() {
   }
   store.set('lastSeen', Math.max(now, lastSeen));
 
-  const trialStart = getTrialStart();
+  const trialStart = getTrialStart(now);
   const daysUsed = (now - trialStart) / (1000 * 60 * 60 * 24);
   const daysLeft = Math.max(0, Math.ceil(TRIAL_DAYS - daysUsed));
 
