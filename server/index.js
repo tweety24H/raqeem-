@@ -47,6 +47,25 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true, lanIp: lan ? lan.address : null });
 });
 
+// بوابة الترخيص على مستوى السيرفر نفسه - نفس فحص Activation.jsx/useLicense()
+// بالواجهة، بس هنا ما ينفع تجاوزه من الـ devtools أو بطلب مباشر للـ API
+// (مثلاً curl على localhost:4310) لأن الفحص الحقيقي صار خارج الواجهة أصلاً.
+// نطبّقها بس داخل Electron المبني فعلياً (process.versions.electron) - بوضع
+// التطوير (npm run dev) السيرفر يشتغل بعملية Node عادية بدون Electron إطلاقاً
+// فـ electron-store داخل license.js يطيح بخطأ لو حاولنا نستدعيه هناك، ونفس
+// قرار "بدون Electron ما نطبّق قفل ترخيص" أصلاً معتمد بـ useLicense.js بالواجهة.
+if (process.versions.electron) {
+  const license = require('../electron/license');
+  app.use((req, res, next) => {
+    // صفحة تحقق الزبون العامة (QR على الفاتورة) وفحص الصحة يضلوا شغالين
+    // حتى لو التجربة انتهت - ما نوقّف فواتير قديمة مطبوعة عن زبائن سابقين.
+    if (req.path.startsWith('/api/public') || req.path === '/api/health') return next();
+    const status = license.getLicenseStatus();
+    if (status.status === 'licensed' || status.status === 'trial') return next();
+    return res.status(403).json({ error: 'license_required', ...status });
+  });
+}
+
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/stock', require('./routes/stock'));
 app.use('/api/customers', require('./routes/customers'));

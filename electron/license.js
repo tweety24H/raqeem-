@@ -16,11 +16,74 @@
 // كما لا يوجد أي نظام ترخيص محلي بالعالم يضمن ذلك فعلياً.
 
 const crypto = require('crypto');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const { machineIdSync } = require('node-machine-id');
 const Store = require('electron-store');
 const { getLocalStoreKey } = require('./secret');
 
 const TRIAL_DAYS = 14;
+
+// أقصى مدة تراجع بساعة النظام نتساهل بيها قبل ما نعتبرها "تلاعب" — أكبر من
+// أي انتقال توقيت صيفي/شتوي عادي (~ساعة وحدة) أو انحراف ساعة بسيط، بس تكفي
+// لضبط أي حد يرجّع الساعة لورا عمداً حتى "يفرّغ" أيام التجربة المستهلكة.
+const CLOCK_TAMPER_TOLERANCE_MS = 3 * 60 * 60 * 1000; // 3 ساعات
+
+// نسخة احتياطية من تاريخ بداية التجربة، بمكان منفصل تماماً عن مجلد بيانات
+// التطبيق (%APPDATA%/raqeem-license) اللي يمسحه أي حذف عادي لبيانات
+// البرنامج أو إعادة تثبيته. حذف واحد بس ما يكفي لتصفير التجربة - نقرأ
+// الاثنين ونعتمد أقدم تاريخ موجود فعلاً.
+const TRIAL_MARKER_DIR = path.join(os.homedir(), '.raqeemos_sys');
+const TRIAL_MARKER_PATH = path.join(TRIAL_MARKER_DIR, '.trial_marker');
+const MARKER_PEPPER = 'raqeem-trial-marker-v1-x7Lk2';
+
+function encodeMarker(value) {
+  const payload = JSON.stringify({ v: value });
+  const hash = crypto.createHash('sha256').update(payload + MARKER_PEPPER).digest('hex').slice(0, 16);
+  return Buffer.from(`${hash}:${payload}`, 'utf8').toString('base64');
+}
+
+// يرجّع الرقم المخزون بالملف، أو null إذا الملف مو موجود أو تلاعب أحد بمحتواه
+// يدوياً (الـ hash ما يطابق).
+function decodeMarker(encoded) {
+  try {
+    const raw = Buffer.from(encoded, 'base64').toString('utf8');
+    const sep = raw.indexOf(':');
+    const hash = raw.slice(0, sep);
+    const payload = raw.slice(sep + 1);
+    const expected = crypto.createHash('sha256').update(payload + MARKER_PEPPER).digest('hex').slice(0, 16);
+    if (hash !== expected) return null;
+    const { v } = JSON.parse(payload);
+    return typeof v === 'number' ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+function readTrialMarker() {
+  try {
+    return decodeMarker(fs.readFileSync(TRIAL_MARKER_PATH, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+function writeTrialMarker(value) {
+  try {
+    fs.mkdirSync(TRIAL_MARKER_DIR, { recursive: true });
+    fs.writeFileSync(TRIAL_MARKER_PATH, encodeMarker(value));
+    // مخفي بويندوز حتى لا يبين بمتصفح الملفات العادي - محاولة تجميلية بس،
+    // فشلها (مثلاً بغير ويندوز) ما يوقف شي.
+    try {
+      require('child_process').execSync(`attrib +h "${TRIAL_MARKER_PATH}"`, { stdio: 'ignore' });
+    } catch {
+      /* تجاهل - مو حرج */
+    }
+  } catch {
+    /* تجاهل - لو تعذّر الكتابة (صلاحيات...) يضل النظام شغال بالنسخة الأساسية بالـ store فقط */
+  }
+}
 
 // المفتاح العام فقط (آمن تضمينه بالتطبيق) — المفتاح الخاص المطابق له
 // موجود فقط بمجلد licensing-vendor/private-key.pem على جهاز شركة رقيم، ولا
@@ -87,12 +150,26 @@ function activate(licenseKey) {
   return result;
 }
 
+// تاريخ بداية التجربة الفعلي = أقدم قيمة موجودة بين electron-store وملف
+// العلامة الاحتياطي. حذف أحدهما بس (تصفير بيانات البرنامج، أو حذف الملف
+// المخفي يدوياً) ما يفيد طالما الثاني لسا موجود - والاثنين يتحدّثوا لبعض
+// أول ما نلقى قيمة صحيحة بواحد وناقصة أو أحدث بالثاني.
 function getTrialStart() {
-  let start = store.get('trialStart');
-  if (!start) {
+  const fromStore = store.get('trialStart');
+  const fromMarker = readTrialMarker();
+
+  let start;
+  if (fromStore && fromMarker) {
+    start = Math.min(fromStore, fromMarker);
+  } else if (fromStore || fromMarker) {
+    start = fromStore || fromMarker;
+  } else {
     start = Date.now();
-    store.set('trialStart', start);
   }
+
+  if (fromStore !== start) store.set('trialStart', start);
+  if (fromMarker !== start) writeTrialMarker(start);
+
   return start;
 }
 
@@ -117,8 +194,24 @@ function getLicenseStatus() {
     store.delete('licenseKey');
   }
 
+  // كشف تلاعب الساعة: نسجّل أحدث وقت شفناه فعلياً بالجهاز (lastSeen)، وإذا
+  // الوقت الحالي رجع لورا عن آخر مرة بأكثر من فرق التساهل، معناها أحد رجّع
+  // ساعة النظام عمداً (أو الجهاز عنده مشكلة ساعة حقيقية - بالحالتين نوقف
+  // العد بدل ما نمنح أيام تجربة إضافية مجانية).
+  const now = Date.now();
+  const lastSeen = store.get('lastSeen') || 0;
+  if (lastSeen && now < lastSeen - CLOCK_TAMPER_TOLERANCE_MS) {
+    return {
+      status: 'expired',
+      reason: 'clock_tamper',
+      hardwareId,
+      daysLeft: 0,
+    };
+  }
+  store.set('lastSeen', Math.max(now, lastSeen));
+
   const trialStart = getTrialStart();
-  const daysUsed = (Date.now() - trialStart) / (1000 * 60 * 60 * 24);
+  const daysUsed = (now - trialStart) / (1000 * 60 * 60 * 24);
   const daysLeft = Math.max(0, Math.ceil(TRIAL_DAYS - daysUsed));
 
   return {
