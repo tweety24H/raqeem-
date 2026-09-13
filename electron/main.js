@@ -25,6 +25,7 @@ function createSplashWindow() {
     movable: false,
     skipTaskbar: true,
     center: true,
+    icon: path.join(__dirname, 'assets', 'icon.png'),
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
