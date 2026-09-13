@@ -6,6 +6,17 @@ const { initAutoUpdater, quitAndInstall } = require('./updater');
 
 const isDev = process.env.RAQEEM_ENV === 'dev';
 
+// قفل نسخة-وحدة: بدونه كل فتح جديد للبرنامج (نقرة مزدوجة على الاختصار، أو
+// حتى محاولة فاشلة سابقة) يفتح عملية RaqeemOS.exe إضافية بدل ما يتأكد
+// إذا هناك نسخة شغالة أصلاً - وهذا بالضبط سبب تكدّس عشرات النسخ اللي شفناها
+// فعليًا، واللي يخلي مثبّت NSIS يعلق بحلقة "البرنامج شغال، اضغط موافق"
+// بلا نهاية لأنه ما يقدر يسكرهم كلهم. لازم تكون أول شي يصير بالملف.
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+if (!gotSingleInstanceLock) {
+  app.quit();
+  process.exit(0);
+}
+
 // خزّن قاعدة البيانات وكل الملفات المرفوعة داخل مجلد بيانات المستخدم الخاص بويندوز
 // حتى تبقى النسخة مستقلة تمامًا لكل جهاز/مطبعة.
 process.env.RAQEEM_DB_DIR = path.join(app.getPath('userData'), 'data');
@@ -135,11 +146,24 @@ function registerIpcHandlers() {
   ipcMain.handle('update:install', () => quitAndInstall());
 }
 
+// إذا حد حاول يفتح نسخة ثانية وهو وحدة شغالة أصلاً (قفل النسخة-الوحدة فوق
+// رفضها) - بدل ما نسكتها بصمت، نرجّع تركيز الشاشة للنافذة الموجودة حتى
+// المستخدم يعرف البرنامج أصلاً مفتوح.
+app.on('second-instance', () => {
+  const existing = BrowserWindow.getAllWindows()[0];
+  if (existing) {
+    if (existing.isMinimized()) existing.restore();
+    existing.focus();
+  }
+});
+
+let serverHandle = null;
+
 // من لحظة ما البرنامج يصير جاهز: نشغل السيرفر، نفتح السبلاش والنافذة
 // الرئيسية سوا، وبعدين نسكر السبلاش ونطلع النافذة لما تخلص
 app.whenReady().then(() => {
   // شغّل خادم Express داخل نفس عملية Electron الرئيسية (بدون عملية فرعية منفصلة)
-  require('../server/index.js');
+  serverHandle = require('../server/index.js');
 
   registerIpcHandlers();
   backup.scheduleAutoBackup();
@@ -195,4 +219,17 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
+});
+
+// يسكر منفذ السيرفر الداخلي (4310) واتصال قاعدة البيانات بشكل نظيف قبل ما
+// تسكر العملية فعليًا - بدونها، إغلاق البرنامج (خصوصًا لو انسكر بالقوة أو
+// أثناء تحديث) يخلي المنفذ أو ملف القاعدة عالق بحالة نصف-مغلقة، وأي عملية
+// جديدة تحاول تفتح تطيح بخطأ EADDRINUSE على السيرفر أو تعلق بقفل الملف.
+app.on('before-quit', () => {
+  if (!serverHandle) return;
+  try {
+    serverHandle.shutdown();
+  } catch {
+    /* البرنامج مغلق أصلاً، ما يهم لو فشلت - الهدف تنظيف أفضل جهد فقط */
+  }
 });

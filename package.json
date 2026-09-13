@@ -69,7 +69,8 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Raqeem",
-      "artifactName": "Raqeem Setup ${version}.exe"
+      "artifactName": "Raqeem Setup ${version}.exe",
+      "include": "build/installer.nsh"
     },
     "asarUnpack": [
       "**/*.node"

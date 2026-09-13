@@ -97,8 +97,32 @@ require('./services/recurringOrdersService').scheduleRecurringOrdersCheck();
 const PORT = process.env.RAQEEM_PORT || 4310;
 const HOST = '0.0.0.0'; // listen on LAN so the customer QR page works over WiFi
 
-app.listen(PORT, HOST, () => {
+const httpServer = app.listen(PORT, HOST, () => {
   console.log(`RaqeemOS server running on http://${HOST}:${PORT}`);
 });
 
-module.exports = app;
+// بدون هذا الهاندلر، خطأ بربط المنفذ (أشهرها EADDRINUSE - نسخة قديمة عالقة
+// لسا ماسكة المنفذ) يطيح بالعملية كلها بـ uncaught exception بدل ما يظهر
+// رسالة واضحة بالسجل - كان يصير هذا فعليًا قبل ما نضيف قفل النسخة-الوحدة
+// بـ electron/main.js.
+httpServer.on('error', (err) => {
+  console.error('فشل تشغيل السيرفر الداخلي:', err.message);
+});
+
+// تُستدعى من electron/main.js عند إغلاق البرنامج (before-quit) - تسكر
+// المنفذ واتصال قاعدة البيانات بشكل نظيف حتى ما تضل عالقة لو انسكر البرنامج
+// بالقوة أو انطلب تحديث فوري.
+function shutdown() {
+  try {
+    httpServer.close();
+  } catch {
+    /* السيرفر مسكّر أصلاً أو ما بدأ - نتجاهل */
+  }
+  try {
+    db.close();
+  } catch {
+    /* نفس الشي - أفضل جهد بس، ما نريد نطيح بخطأ ونحن أصلاً بطريقنا للخروج */
+  }
+}
+
+module.exports = { app, server: httpServer, shutdown };
