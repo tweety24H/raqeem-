@@ -23,6 +23,7 @@
     "groupSystem": "System",
     "archiveGroup": "Archive",
     "logout": "Log Out",
+    "changePin": "Change PIN",
     "switchUser": "Switch user",
     "owner": "Owner",
     "employee": "Employee"

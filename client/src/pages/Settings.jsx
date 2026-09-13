@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pause, Play, Pencil, Trash2, Check, Clipboard, Package } from 'lucide-react';
+import { Pause, Play, Pencil, Trash2, Check, Clipboard, Package, Lock, CheckCircle2, Infinity as InfinityIcon } from 'lucide-react';
 import api, { fileUrl } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import EditWorkerModal from '../components/EditWorkerModal';
@@ -15,7 +15,7 @@ const TABS = [
   { key: 'roles', label: 'الأدوار' },
   { key: 'network', label: 'الشبكة المحلية' },
   { key: 'backup', label: 'النسخ الاحتياطي' },
-  ...(isElectron ? [{ key: 'license', label: 'الترخيص والحماية 🔒' }] : []),
+  ...(isElectron ? [{ key: 'license', label: 'الترخيص والحماية', Icon: Lock }] : []),
 ];
 
 export default function Settings() {
@@ -29,8 +29,9 @@ export default function Settings() {
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`px-4 py-2 text-sm font-medium ${tab === t.key ? 'border-b-2 border-nili text-nili dark:text-gold' : 'text-slate-500 dark:text-slate-400'}`}
+            className={`inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium ${tab === t.key ? 'border-b-2 border-nili text-nili dark:text-gold' : 'text-slate-500 dark:text-slate-400'}`}
           >
+            {t.Icon && <t.Icon className="h-3.5 w-3.5" />}
             {t.label}
           </button>
         ))}
@@ -134,7 +135,7 @@ const WA_STATUS_LABEL = {
   disabled: 'الخدمة متوقفة',
   initializing: 'جاري تحضير الاتصال...',
   qr_pending: 'امسح الكود بواتساب على جوالك',
-  ready: 'متصل بواتساب ✅',
+  ready: 'متصل بواتساب',
   error: 'تعذر تشغيل خدمة واتساب — تحقق من تثبيت المكتبة وأعد تشغيل السيرفر',
 };
 
@@ -196,7 +197,10 @@ function WhatsAppPairingStatus() {
 
   return (
     <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5">
-      <p className="text-sm font-medium text-slate-600 dark:text-slate-300">{WA_STATUS_LABEL[state.status] || state.status}</p>
+      <p className="flex items-center gap-1.5 text-sm font-medium text-slate-600 dark:text-slate-300">
+        {state.status === 'ready' && <CheckCircle2 className="h-4 w-4 text-success" />}
+        {WA_STATUS_LABEL[state.status] || state.status}
+      </p>
 
       {state.status === 'qr_pending' && state.qrDataUrl && (
         <div className="mt-3">
@@ -662,7 +666,11 @@ function RoleCard({ role, onSaved }) {
       )}
 
       <div className="mt-3 flex items-center justify-end gap-2">
-        {saved && <span className="text-xs font-semibold text-success dark:text-success">تم الحفظ ✓</span>}
+        {saved && (
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-success dark:text-success">
+            <Check className="h-3.5 w-3.5" /> تم الحفظ
+          </span>
+        )}
         <button type="button" disabled={saving} onClick={save} className="btn-primary !px-4 !py-1.5 !text-xs">
           {saving ? 'جاري الحفظ...' : 'حفظ'}
         </button>
@@ -826,8 +834,9 @@ function LicenseSettings() {
   if (!unlocked) {
     return (
       <form onSubmit={submitPassword} className="card max-w-sm space-y-3">
-        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-          {hasPassword ? '🔒 أدخل كلمة سر الحماية' : '🔒 عيّن كلمة سر جديدة لحماية هذا القسم'}
+        <p className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200">
+          <Lock className="h-4 w-4" />
+          {hasPassword ? 'أدخل كلمة سر الحماية' : 'عيّن كلمة سر جديدة لحماية هذا القسم'}
         </p>
         <input
           type="password"
@@ -942,10 +951,10 @@ function LicenseAndBackupPanel() {
         <h3 className="mb-3 font-semibold text-slate-800 dark:text-slate-100">حالة الترخيص</h3>
         {status.status === 'licensed' && (
           <>
-            <p className="rounded-lg bg-success/10 px-3 py-2 text-sm text-success dark:bg-success/10 dark:text-success">
-              ✓ مفعّل مجاناً — {status.shop}
+            <p className="flex items-center gap-1.5 rounded-lg bg-success/10 px-3 py-2 text-sm text-success dark:bg-success/10 dark:text-success">
+              <Check className="h-4 w-4 shrink-0" /> مفعّل مجاناً — {status.shop}
               {new Date(status.expiresAt).getFullYear() - new Date().getFullYear() >= 50 ? (
-                <> — ترخيص مجاني مدى الحياة ♾️</>
+                <> — ترخيص مجاني مدى الحياة <InfinityIcon className="inline h-4 w-4" /></>
               ) : (
                 <> — صالح لغاية {new Date(status.expiresAt).toLocaleDateString('ar-IQ')}</>
               )}
@@ -991,7 +1000,11 @@ function LicenseAndBackupPanel() {
               placeholder="الصق مفتاح التفعيل هنا..."
             />
             {activateError && <p className="mt-1 text-xs font-semibold text-danger dark:text-danger">{activateError}</p>}
-            {activateOk && <p className="mt-1 text-xs font-semibold text-success dark:text-success">تم التفعيل بنجاح ✓</p>}
+            {activateOk && (
+              <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-success dark:text-success">
+                <Check className="h-3.5 w-3.5" /> تم التفعيل بنجاح
+              </p>
+            )}
             <button className="btn-brand mt-2">فعّل</button>
           </form>
         )}

@@ -147,6 +147,29 @@ router.get('/me', requireAuth, (req, res) => {
   });
 });
 
+// POST /api/auth/change-pin { currentPin, newPin } — ذاتي الخدمة: أي موظف
+// مسجّل دخول يغيّر رمزه الشخصي هو نفسه (يتحقق من الرمز الحالي فعليًا)،
+// بعكس PATCH /workers/:id اللي هو تصفير المالك لرمز موظف آخر بلا معرفة رمزه القديم.
+router.post('/change-pin', requireAuth, (req, res) => {
+  const { currentPin, newPin } = req.body;
+  if (!currentPin || typeof currentPin !== 'string') {
+    return res.status(400).json({ error: 'أدخل الرمز الحالي' });
+  }
+  if (!newPin || !/^\d{4}$/.test(newPin)) {
+    return res.status(400).json({ error: 'الرمز الجديد يجب أن يكون 4 أرقام بالضبط' });
+  }
+  const worker = db.prepare('SELECT * FROM workers WHERE id = ?').get(req.worker.workerId);
+  if (!worker || !bcrypt.compareSync(currentPin, worker.pin_hash)) {
+    return res.status(400).json({ error: 'الرمز الحالي غير صحيح' });
+  }
+  const others = db.prepare('SELECT * FROM workers WHERE active = 1 AND id != ?').all(worker.id);
+  if (others.some((w) => bcrypt.compareSync(newPin, w.pin_hash))) {
+    return res.status(400).json({ error: 'رمز PIN مستخدم من قبل عامل آخر، اختر رمزًا مختلفًا' });
+  }
+  db.prepare('UPDATE workers SET pin_hash = ? WHERE id = ?').run(bcrypt.hashSync(newPin, 8), worker.id);
+  res.json({ ok: true });
+});
+
 // --- Worker management (owner only) ---
 
 // GET /api/auth/workers

@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock } from 'lucide-react';
+import { Lock, Star, KeyRound } from 'lucide-react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import PinGateModal from '../components/PinGateModal';
@@ -254,7 +254,7 @@ export default function Login() {
                   `}
                 >
                   {isOwner && (
-                    <span className="absolute -top-2 -right-2 rounded-full bg-gradient-to-br from-[#C5A880] to-[#9c7c4a] px-2 py-0.5 text-[10px] font-bold text-[#0B1D3A] shadow">★ مالك</span>
+                    <span className="absolute -top-2 -right-2 inline-flex items-center gap-0.5 rounded-full bg-gradient-to-br from-[#C5A880] to-[#9c7c4a] px-2 py-0.5 text-[10px] font-bold text-[#0B1D3A] shadow"><Star className="h-2.5 w-2.5 fill-current" /> مالك</span>
                   )}
                   <span className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0B1D3A] text-lg font-bold text-[#C5A880]">
                     {initials(w.name)}
@@ -288,8 +288,9 @@ export default function Login() {
             )}
           </div>
 
-          <div className="mt-5 rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-center text-[11px] text-[#9c7c4a]">
-            🔐 لإضافة موظف جديد: سجل دخول كمالك ← الإعدادات ← الموظفون والصلاحيات ← + إضافة موظف
+          <div className="mt-5 flex items-center justify-center gap-1.5 rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-center text-[11px] text-[#9c7c4a]">
+            <KeyRound className="h-3.5 w-3.5 shrink-0" />
+            لإضافة موظف جديد: سجل دخول كمالك ← الإعدادات ← الموظفون والصلاحيات ← + إضافة موظف
           </div>
 
           <p className="mt-6 text-center text-[11px] text-slate-400">

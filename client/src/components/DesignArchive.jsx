@@ -1,6 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import api, { fileUrl } from '../api/client';
 import Modal from './Modal';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from './ui/alert-dialog';
 import { useLanguage } from '../context/LanguageContext';
 import { formatDateTime } from '../utils/format';
 import { fileIcon, isImageType, isPreviewable, formatBytes, downloadDesignFile } from '../utils/fileHelpers';
@@ -9,9 +19,9 @@ const ACCEPT = '.pdf,.jpg,.jpeg,.png,.ai,.psd,.cdr,.eps';
 
 export function DesignCard({ file, onDeleted, showOrder }) {
   const { t } = useLanguage();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   async function remove() {
-    if (!confirm(t('designs.confirmDelete'))) return;
     await api.delete(`/designs/${file.id}`);
     onDeleted?.();
   }
@@ -49,10 +59,23 @@ export function DesignCard({ file, onDeleted, showOrder }) {
         <button onClick={() => downloadDesignFile(api, file)} className="text-success hover:underline dark:text-success">
           {t('designs.download')}
         </button>
-        <button onClick={remove} className="text-danger hover:underline dark:text-danger">
+        <button onClick={() => setConfirmOpen(true)} className="text-danger hover:underline dark:text-danger">
           {t('designs.delete')}
         </button>
       </div>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent dir="rtl" className="text-right">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('designs.confirmDelete')}</AlertDialogTitle>
+            <AlertDialogDescription>{file.file_name}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={remove}>{t('designs.delete')}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

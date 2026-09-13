@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { Home, Package, Boxes, Users, BarChart3, Archive, Clock, Shield, Settings, ChevronLeft, ChevronDown, LogOut, Repeat, Printer } from 'lucide-react';
+import { Home, Package, Boxes, Users, BarChart3, Archive, Clock, Shield, Settings, ChevronLeft, ChevronDown, LogOut, Repeat, Printer, KeyRound } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useDashboardSummary } from '../context/DashboardSummaryContext';
 import SwitchUserModal from './SwitchUserModal';
+import ChangePinModal from './ChangePinModal';
 
 const READY_STATUS = 'جاهز للتسليم';
 const EXPANDED_W = 280;
@@ -157,6 +158,7 @@ export default function SidebarGlass({ collapsed, onToggleCollapsed, mobileOpen,
   const { summary } = useDashboardSummary();
   const [hoverExpand, setHoverExpand] = useState(false);
   const [showSwitchUser, setShowSwitchUser] = useState(false);
+  const [showChangePin, setShowChangePin] = useState(false);
 
   // "جاهز" = بادج قسم الطلبات — عدد الطلبات الجاهزة للتسليم فعليًا (من نفس
   // مصدر بيانات الداشبورد)، مو "قرب الاستحقاق" كان بالتصميم القديم.
@@ -251,12 +253,28 @@ export default function SidebarGlass({ collapsed, onToggleCollapsed, mobileOpen,
           </button>
           <button
             type="button"
+            onClick={() => setShowChangePin(true)}
+            title={t('nav.changePin')}
+            className={`font-arabic mt-3 flex w-full items-center gap-2 rounded-xl px-2 py-1.5 text-sm text-slate-400 transition hover:bg-white/10 hover:text-white ${
+              !isExpanded ? 'justify-center' : ''
+            }`}
+          >
+            <KeyRound className="h-4 w-4 shrink-0" strokeWidth={1.5} />
+            {isExpanded && <span>{t('nav.changePin')}</span>}
+          </button>
+          <button
+            type="button"
             onClick={() => {
+              try {
+                localStorage.clear();
+              } catch {
+                /* ignore */
+              }
               logout();
               navigate('/login');
             }}
             title={t('nav.logout')}
-            className={`font-arabic mt-3 flex w-full items-center gap-2 text-sm text-slate-400 transition hover:text-white ${
+            className={`font-arabic mt-2 flex w-full items-center gap-2 rounded-xl px-2 py-1.5 text-sm text-red-600 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 ${
               !isExpanded ? 'justify-center' : ''
             }`}
           >
@@ -267,6 +285,7 @@ export default function SidebarGlass({ collapsed, onToggleCollapsed, mobileOpen,
       </aside>
 
       <SwitchUserModal open={showSwitchUser} onClose={() => setShowSwitchUser(false)} />
+      <ChangePinModal open={showChangePin} onClose={() => setShowChangePin(false)} />
     </>
   );
 }

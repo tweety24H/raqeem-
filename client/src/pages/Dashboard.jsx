@@ -7,7 +7,10 @@ import OrdersKanban from '../components/OrdersKanban';
 import InteractiveBackground from '../components/InteractiveBackground';
 import StatCard from '../components/ui/StatCard';
 import EmptyState from '../components/ui/EmptyState';
-import Modal from '../components/Modal';
+import Button from '../components/ui/Button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
 import StatusBadge from '../components/StatusBadge';
 import { StatCardsSkeleton, SkeletonBlock } from '../components/ui/LoadingSkeleton';
 import ErrorBanner from '../components/ui/ErrorBanner';
@@ -446,28 +449,33 @@ function QuickAddCustomerModal({ initialName, onClose, onCreated }) {
   }
 
   return (
-    <Modal open title={t('customers.modalTitle')} onClose={onClose}>
-      <form onSubmit={submit} className="space-y-3">
-        {error && (
-          <div className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger dark:bg-danger/10 dark:text-danger">{error}</div>
-        )}
-        <div>
-          <label className="label">{t('common.name')}</label>
-          <input className="input" required autoFocus value={name} onChange={(e) => setName(e.target.value)} />
-        </div>
-        <div>
-          <label className="label">{t('common.phone')}</label>
-          <input className="input" value={phone} onChange={(e) => setPhone(e.target.value)} />
-        </div>
-        <div className="flex justify-end gap-2 pt-2">
-          <button type="button" className="btn-secondary" onClick={onClose}>
-            {t('common.cancel')}
-          </button>
-          <button disabled={saving} className="btn-primary">
-            {saving ? t('newOrder.savingBtn') : t('dashboard.saveAndCreateOrder')}
-          </button>
-        </div>
-      </form>
-    </Modal>
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent dir="rtl" className="text-right">
+        <DialogHeader>
+          <DialogTitle>{t('customers.modalTitle')}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-3">
+          {error && (
+            <div className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger dark:bg-danger/10 dark:text-danger">{error}</div>
+          )}
+          <div className="space-y-1.5">
+            <Label htmlFor="quick-add-name">{t('common.name')}</Label>
+            <Input id="quick-add-name" required autoFocus value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="quick-add-phone">{t('common.phone')}</Label>
+            <Input id="quick-add-phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          </div>
+          <DialogFooter className="pt-2">
+            <Button type="button" variant="secondary" magnetic={false} onClick={onClose}>
+              {t('common.cancel')}
+            </Button>
+            <Button type="submit" variant="gold" magnetic={false} disabled={saving}>
+              {saving ? t('newOrder.savingBtn') : t('dashboard.saveAndCreateOrder')}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

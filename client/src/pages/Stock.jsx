@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Camera, Package } from 'lucide-react';
 import api, { fileUrl } from '../api/client';
 import PageHeader from '../components/PageHeader';
-import Modal from '../components/Modal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import ViewToggle, { useViewMode } from '../components/ViewToggle';
 import EmptyState from '../components/ui/EmptyState';
 import { useLanguage } from '../context/LanguageContext';
@@ -526,7 +526,12 @@ function AddItemModal({ categories: initialCategories, onClose, onSaved }) {
   }
 
   return (
-    <Modal open title={t('stock.addModalTitle')} onClose={onClose} width="max-w-2xl">
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent dir="rtl" className="max-w-2xl text-right">
+        <DialogHeader>
+          <DialogTitle>{t('stock.addModalTitle')}</DialogTitle>
+        </DialogHeader>
+        <div className="max-h-[70vh] overflow-y-auto pr-1">
       <form onSubmit={submit} className="space-y-3">
         {error && (
           <div className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger dark:bg-danger/10 dark:text-danger">
@@ -553,7 +558,9 @@ function AddItemModal({ categories: initialCategories, onClose, onSaved }) {
           onClose={() => setShowScanner(false)}
         />
       )}
-    </Modal>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -647,7 +654,12 @@ function ItemDetailModal({ item, categories: initialCategories, onClose, onChang
   };
 
   return (
-    <Modal open title={`${t('stock.manageModalTitlePrefix')}: ${item.name}`} onClose={onClose} width="max-w-2xl">
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent dir="rtl" className="max-w-2xl text-right">
+        <DialogHeader>
+          <DialogTitle>{`${t('stock.manageModalTitlePrefix')}: ${item.name}`}</DialogTitle>
+        </DialogHeader>
+        <div className="max-h-[70vh] overflow-y-auto pr-1">
       {!detail ? (
         <div className="text-slate-400 dark:text-slate-500">{t('common.loading')}</div>
       ) : (
@@ -813,6 +825,8 @@ function ItemDetailModal({ item, categories: initialCategories, onClose, onChang
           </div>
         </div>
       )}
-    </Modal>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
