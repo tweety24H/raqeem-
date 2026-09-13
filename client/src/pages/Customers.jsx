@@ -3,9 +3,19 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { FileSpreadsheet, FolderOpen, Users } from 'lucide-react';
 import api from '../api/client';
 import PageHeader from '../components/PageHeader';
-import Modal from '../components/Modal';
 import ViewToggle, { useViewMode } from '../components/ViewToggle';
 import EmptyState from '../components/ui/EmptyState';
+import Button from '../components/ui/Button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '../components/ui/dialog';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Textarea } from '../components/ui/textarea';
 import { useLanguage } from '../context/LanguageContext';
 import { formatIQD } from '../utils/format';
 import { buildDebtReminderLink } from '../utils/whatsapp';
@@ -250,6 +260,9 @@ export default function Customers() {
   );
 }
 
+// بايلوت shadcn/ui: هذا المودال حُوّل بالكامل من Modal.jsx اليدوي القديم
+// إلى Dialog من shadcn (مبني على @base-ui/react) — تجربة لتقييم الانتقال
+// التدريجي للمكونات المشتركة قبل تعميمه على باقي المشاريع.
 function AddCustomerModal({ onClose, onSaved }) {
   const { t } = useLanguage();
   const [form, setForm] = useState({ name: '', phone: '', notes: '' });
@@ -267,32 +280,53 @@ function AddCustomerModal({ onClose, onSaved }) {
   }
 
   return (
-    <Modal open title={t('customers.modalTitle')} onClose={onClose}>
-      <form onSubmit={submit} className="space-y-3">
-        {error && (
-          <div className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger dark:bg-danger/10 dark:text-danger">
-            {error}
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent dir="rtl" className="text-right">
+        <DialogHeader>
+          <DialogTitle>{t('customers.modalTitle')}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-3">
+          {error && (
+            <div className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger dark:bg-danger/10 dark:text-danger">
+              {error}
+            </div>
+          )}
+          <div className="space-y-1.5">
+            <Label htmlFor="customer-name">{t('common.name')}</Label>
+            <Input
+              id="customer-name"
+              required
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
           </div>
-        )}
-        <div>
-          <label className="label">{t('common.name')}</label>
-          <input className="input" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-        </div>
-        <div>
-          <label className="label">{t('common.phone')}</label>
-          <input className="input" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-        </div>
-        <div>
-          <label className="label">{t('common.notes')}</label>
-          <textarea className="input" rows={2} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-        </div>
-        <div className="flex justify-end gap-2 pt-2">
-          <button type="button" className="btn-secondary" onClick={onClose}>
-            {t('common.cancel')}
-          </button>
-          <button className="btn-primary">{t('common.save')}</button>
-        </div>
-      </form>
-    </Modal>
+          <div className="space-y-1.5">
+            <Label htmlFor="customer-phone">{t('common.phone')}</Label>
+            <Input
+              id="customer-phone"
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="customer-notes">{t('common.notes')}</Label>
+            <Textarea
+              id="customer-notes"
+              rows={2}
+              value={form.notes}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            />
+          </div>
+          <DialogFooter className="pt-2">
+            <Button type="button" variant="secondary" magnetic={false} onClick={onClose}>
+              {t('common.cancel')}
+            </Button>
+            <Button type="submit" variant="gold" magnetic={false}>
+              {t('common.save')}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
