@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Pause, Play, Pencil, Trash2, Check, Clipboard, Package } from 'lucide-react';
 import api, { fileUrl } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import EditWorkerModal from '../components/EditWorkerModal';
@@ -466,7 +467,7 @@ function WorkersSettings() {
                       onClick={() => toggleActive(w)}
                       className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-sm text-slate-600 transition hover:bg-slate-200 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20"
                     >
-                      {w.active ? '⏸️' : '▶️'}
+                      {w.active ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
                     </button>
                     <button
                       type="button"
@@ -474,7 +475,7 @@ function WorkersSettings() {
                       onClick={() => setEditingWorker(w)}
                       className="flex h-7 w-7 items-center justify-center rounded-full bg-nili/10 text-sm text-nili transition hover:bg-nili/15 dark:bg-gold/15 dark:text-gold-light dark:hover:bg-gold/25"
                     >
-                      ✏️
+                      <Pencil className="h-3.5 w-3.5" />
                     </button>
                     <button
                       type="button"
@@ -482,7 +483,7 @@ function WorkersSettings() {
                       onClick={() => handleDeleteClick(w)}
                       className="flex h-7 w-7 items-center justify-center rounded-full bg-danger/10 text-sm text-danger transition hover:bg-danger/15 dark:bg-danger/15 dark:text-danger dark:hover:bg-danger/25"
                     >
-                      🗑️
+                      <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 </td>
@@ -974,7 +975,7 @@ function LicenseAndBackupPanel() {
           <div className="flex gap-2">
             <input readOnly className="input font-mono text-xs" value={status.hardwareId} />
             <button type="button" onClick={copyHwid} className="btn-secondary shrink-0 !px-3">
-              {copied ? '✓' : '📋'}
+              {copied ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
             </button>
           </div>
         </div>
@@ -999,8 +1000,8 @@ function LicenseAndBackupPanel() {
       <div className="card">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-semibold text-slate-800 dark:text-slate-100">النسخ الاحتياطي المشفّر</h3>
-          <button type="button" onClick={backupNow} disabled={backupBusy} className="btn-brand !px-3 !py-1.5 !text-xs">
-            {backupBusy ? 'جاري...' : '📦 نسخ الآن'}
+          <button type="button" onClick={backupNow} disabled={backupBusy} className="btn-brand !px-3 !py-1.5 !text-xs inline-flex items-center gap-1">
+            {backupBusy ? 'جاري...' : <><Package className="h-3.5 w-3.5" /> نسخ الآن</>}
           </button>
         </div>
         <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">المجلد: {backupDir}</p>

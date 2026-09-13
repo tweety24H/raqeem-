@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Package, Image, CaseSensitive, Lightbulb, Sparkles, Ban, Save, Smartphone, Printer } from 'lucide-react';
 import api, { fileUrl } from '../api/client';
 import VerifyQR from '../components/VerifyQR';
 import { formatIQD, formatDate } from '../utils/format';
@@ -8,15 +9,15 @@ import { buildLightboxOrderLink } from '../utils/whatsapp';
 const DRAFT_KEY = 'raqeem_lightbox_draft';
 
 const AD_TYPES = [
-  { value: 'صندوق', label: 'صندوق', icon: '📦' },
-  { value: 'فلكس', label: 'فلكس', icon: '🖼️' },
-  { value: 'حروف بارزة', label: 'حروف بارزة', icon: '🔤' },
+  { value: 'صندوق', label: 'صندوق', Icon: Package },
+  { value: 'فلكس', label: 'فلكس', Icon: Image },
+  { value: 'حروف بارزة', label: 'حروف بارزة', Icon: CaseSensitive },
 ];
 
 const LIGHTING_TYPES = [
-  { value: 'LED', label: 'LED', icon: '💡' },
-  { value: 'نيون', label: 'نيون', icon: '✨' },
-  { value: 'بدون', label: 'بدون', icon: '🚫' },
+  { value: 'LED', label: 'LED', Icon: Lightbulb },
+  { value: 'نيون', label: 'نيون', Icon: Sparkles },
+  { value: 'بدون', label: 'بدون', Icon: Ban },
 ];
 
 const FLEX_TYPES = [
@@ -417,7 +418,7 @@ export default function LightboxOrder() {
                       : 'border-slate-200 bg-white text-slate-600 hover:border-nili/40 dark:border-white/10 dark:bg-[#1a1a23] dark:text-slate-300'
                   }`}
                 >
-                  <span className="mb-1 block text-lg">{opt.icon}</span>
+                  <opt.Icon className="mx-auto mb-1 block h-5 w-5" />
                   {opt.label}
                 </button>
               ))}
@@ -438,7 +439,7 @@ export default function LightboxOrder() {
                       : 'border-slate-200 bg-white text-slate-600 hover:border-gold/40 dark:border-white/10 dark:bg-[#1a1a23] dark:text-slate-300'
                   }`}
                 >
-                  <span className="mb-1 block text-lg">{opt.icon}</span>
+                  <opt.Icon className="mx-auto mb-1 block h-5 w-5" />
                   {opt.label}
                 </button>
               ))}
@@ -527,8 +528,8 @@ export default function LightboxOrder() {
           </div>
         )}
 
-        <button disabled={saving} onClick={submit} className="btn-primary w-full py-3 text-base">
-          {saving ? 'جاري الحفظ...' : '💾 حفظ وطباعة الوصل'}
+        <button disabled={saving} onClick={submit} className="btn-primary inline-flex w-full items-center justify-center gap-1.5 py-3 text-base">
+          {saving ? 'جاري الحفظ...' : <><Save className="h-4 w-4" /> حفظ وطباعة الوصل</>}
         </button>
       </div>
     </div>
@@ -559,11 +560,11 @@ function PrintReceipt({
           ← رجوع لقائمة الطلبات
         </Link>
         <div className="flex gap-2">
-          <button onClick={onSendWhatsapp} className="rounded-lg bg-success px-4 py-2 text-sm text-white hover:bg-success">
-            📱 ارسال واتساب
+          <button onClick={onSendWhatsapp} className="inline-flex items-center gap-1.5 rounded-lg bg-success px-4 py-2 text-sm text-white hover:bg-success">
+            <Smartphone className="h-4 w-4" /> ارسال واتساب
           </button>
-          <button onClick={() => window.print()} className="rounded-lg bg-nili px-4 py-2 text-sm text-white hover:bg-nili-dark">
-            🖨️ طباعة PDF
+          <button onClick={() => window.print()} className="inline-flex items-center gap-1.5 rounded-lg bg-nili px-4 py-2 text-sm text-white hover:bg-nili-dark">
+            <Printer className="h-4 w-4" /> طباعة PDF
           </button>
           <button onClick={onNewOrder} className="rounded-lg bg-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-300">
             + طلب جديد

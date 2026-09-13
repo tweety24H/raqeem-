@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Printer } from 'lucide-react';
 import api from '../api/client';
 import PageHeader from '../components/PageHeader';
 import EmptyState from '../components/ui/EmptyState';
@@ -96,7 +97,7 @@ export default function PrintQueue() {
     <div className="p-6">
       <PageHeader title={t('printQueue.title')} subtitle={t('printQueue.subtitle')} />
 
-      {!loading && orders.length === 0 && <EmptyState icon="🖨️" title={t('printQueue.empty')} />}
+      {!loading && orders.length === 0 && <EmptyState icon={<Printer className="h-8 w-8" />} title={t('printQueue.empty')} />}
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {orders.map((o) => (

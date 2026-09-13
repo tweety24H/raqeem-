@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Trash2 } from 'lucide-react';
 import api from '../api/client';
 
 const CONFIRM_WORD = 'حذف';
@@ -47,8 +48,8 @@ export default function DeleteWorkerModal({ worker, onClose, onDeleted }) {
           className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl dark:border dark:border-slate-800 dark:bg-slate-900"
         >
           <div className="mb-4 text-center">
-            <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-danger/15 text-2xl dark:bg-danger/15">
-              🗑️
+            <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-danger/15 text-danger dark:bg-danger/15">
+              <Trash2 className="h-6 w-6" />
             </span>
             <h3 className="font-bold text-[#0B1D3A] dark:text-white">هل أنت متأكد من حذف {worker.name}؟</h3>
             <p className="mt-2 text-xs text-danger dark:text-danger">سيتم حذف جميع بيانات دخوله، لا يمكن التراجع</p>

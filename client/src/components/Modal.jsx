@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
+import { X } from 'lucide-react';
 
 export default function Modal({ open, onClose, title, children, width = 'max-w-lg' }) {
   return (
@@ -24,7 +25,7 @@ export default function Modal({ open, onClose, title, children, width = 'max-w-l
                 onClick={onClose}
                 className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-white/10 dark:hover:text-slate-200"
               >
-                ✕
+                <X className="h-4 w-4" />
               </button>
             </div>
             <div className="max-h-[75vh] overflow-y-auto p-6">{children}</div>

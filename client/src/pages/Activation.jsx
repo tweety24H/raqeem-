@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Check, Clipboard, MessageCircle } from 'lucide-react';
 
 const WHATSAPP_NUMBER = '9647801234567';
 
@@ -70,7 +71,7 @@ export default function Activation({ status, onActivated, onDismiss, allowDismis
           <div className="flex items-center gap-2">
             <input readOnly value={hardwareId} className="input font-mono text-xs" />
             <button type="button" onClick={copyHwid} className="btn-secondary shrink-0 !px-3">
-              {copied ? '✓' : '📋'}
+              {copied ? <Check className="h-4 w-4" /> : <Clipboard className="h-4 w-4" />}
             </button>
           </div>
           <p className="mt-1 text-xs text-slate-400">أرسل هذا الرقم لشركة رقيم عبر واتساب للحصول على مفتاح التفعيل.</p>
@@ -97,7 +98,7 @@ export default function Activation({ status, onActivated, onDismiss, allowDismis
           rel="noreferrer"
           className="flex w-full items-center justify-center gap-2 rounded-lg bg-success px-4 py-2 text-sm font-semibold text-white transition hover:bg-success"
         >
-          💬 تواصل واتساب للحصول على مفتاح
+          <MessageCircle className="h-4 w-4" /> تواصل واتساب للحصول على مفتاح
         </a>
 
         {allowDismiss && !expired && (

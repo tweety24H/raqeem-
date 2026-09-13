@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Lock } from 'lucide-react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import PinGateModal from '../components/PinGateModal';
@@ -268,7 +269,9 @@ export default function Login() {
                 مو زر، بلا onClick، حتى محد يحاول يفعّله من هذا المكان. */}
             {!hasDesigner && (
               <div className="flex cursor-not-allowed flex-col items-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 opacity-70">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-200 text-xl text-slate-400">🔒</span>
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-200 text-slate-400">
+                  <Lock className="h-5 w-5" />
+                </span>
                 <span className="text-sm font-semibold text-slate-500">مصمم</span>
                 <span className="text-center text-[11px] text-slate-400">ينشئه المالك من الإعدادات</span>
               </div>
@@ -276,7 +279,9 @@ export default function Login() {
 
             {!hasCashier && (
               <div className="flex cursor-not-allowed flex-col items-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 opacity-70">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-200 text-xl text-slate-400">🔒</span>
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-200 text-slate-400">
+                  <Lock className="h-5 w-5" />
+                </span>
                 <span className="text-sm font-semibold text-slate-500">كاشير</span>
                 <span className="text-center text-[11px] text-slate-400">ينشئه المالك من الإعدادات</span>
               </div>

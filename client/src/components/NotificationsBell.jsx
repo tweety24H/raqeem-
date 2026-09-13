@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Bell } from 'lucide-react';
 import { useDashboardSummary } from '../context/DashboardSummaryContext';
 import { formatDate } from '../utils/format';
 
@@ -31,10 +32,10 @@ export default function NotificationsBell() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-sm transition hover:bg-slate-100 dark:border-slate-800 dark:bg-white/5 dark:hover:bg-white/10"
+        className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white transition hover:bg-slate-100 dark:border-slate-800 dark:bg-white/5 dark:hover:bg-white/10"
         aria-label="الإشعارات"
       >
-        🔔
+        <Bell className="h-4 w-4" />
         {count > 0 && (
           <span className="absolute -top-1 -left-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-bold text-white">
             {count > 9 ? '9+' : count}

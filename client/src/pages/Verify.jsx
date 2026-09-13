@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Clock, RefreshCw, PackageCheck, CheckCircle2, Circle, AlertTriangle } from 'lucide-react';
 import api, { fileUrl } from '../api/client';
 import VerifyQR from '../components/VerifyQR';
 import LanguageToggle from '../components/LanguageToggle';
@@ -13,12 +14,12 @@ const CREAM = '#FBF6EA';
 const NAVY = '#0B1D3A';
 
 function statusMeta(status, t) {
-  if (status === 'جديد') return { icon: '🟡', label: t('verify.statusTodo'), fg: '#9c7c4a', bg: 'rgba(197,168,128,0.18)' };
+  if (status === 'جديد') return { Icon: Clock, label: t('verify.statusTodo'), fg: '#9c7c4a', bg: 'rgba(197,168,128,0.18)' };
   if (status === 'قيد التصميم' || status === 'قيد الطباعة')
-    return { icon: '🔵', label: t('verify.statusInProgress'), fg: '#475569', bg: '#f1f5f9' };
-  if (status === 'جاهز للتسليم') return { icon: '🟢', label: t('verify.statusReady'), fg: '#0B1D3A', bg: 'rgba(11,29,58,0.1)' };
-  if (status === 'تم التسليم') return { icon: '✅', label: t('verify.statusDelivered'), fg: '#0B1D3A', bg: 'rgba(11,29,58,0.1)' };
-  return { icon: '⚪', label: status, fg: '#475569', bg: '#f1f5f9' };
+    return { Icon: RefreshCw, label: t('verify.statusInProgress'), fg: '#475569', bg: '#f1f5f9' };
+  if (status === 'جاهز للتسليم') return { Icon: PackageCheck, label: t('verify.statusReady'), fg: '#0B1D3A', bg: 'rgba(11,29,58,0.1)' };
+  if (status === 'تم التسليم') return { Icon: CheckCircle2, label: t('verify.statusDelivered'), fg: '#0B1D3A', bg: 'rgba(11,29,58,0.1)' };
+  return { Icon: Circle, label: status, fg: '#475569', bg: '#f1f5f9' };
 }
 
 export default function Verify() {
@@ -79,7 +80,7 @@ export default function Verify() {
 
         {notFound && (
           <div className="rounded-2xl border border-danger/30 bg-danger/10 p-8 text-center dark:border-danger/30 dark:bg-danger/10">
-            <p className="mb-2 text-4xl">⚠️</p>
+            <AlertTriangle className="mx-auto mb-2 h-10 w-10 text-danger" />
             <h1 className="mb-2 text-lg font-bold text-danger dark:text-danger">{t('verify.notFoundTitle')}</h1>
             <p className="text-sm text-danger dark:text-danger">{t('verify.notFoundBody')}</p>
           </div>
@@ -114,7 +115,7 @@ export default function Verify() {
                     className="mx-auto mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold text-white"
                     style={{ background: '#10B981', fontFamily: "'IBM Plex Sans Arabic', sans-serif" }}
                   >
-                    <span>✅</span>
+                    <CheckCircle2 className="h-3.5 w-3.5" />
                     {t('verify.verifiedBadge')}
                   </div>
                 </div>
@@ -156,7 +157,7 @@ export default function Verify() {
                         className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold"
                         style={{ background: s.bg, color: s.fg }}
                       >
-                        <span>{s.icon}</span>
+                        <s.Icon className="h-3.5 w-3.5" />
                         {s.label}
                       </span>
                     );

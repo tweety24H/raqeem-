@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { ShieldAlert } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 // Task 7: shown whenever a worker without the required permission tries to
@@ -7,7 +8,7 @@ export default function Forbidden() {
   const { t } = useLanguage();
   return (
     <div className="flex h-full min-h-[70vh] flex-col items-center justify-center gap-4 p-6 text-center">
-      <span className="text-5xl">🚫</span>
+      <ShieldAlert className="h-14 w-14 text-danger" />
       <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">
         ليس لديك صلاحية للوصول لهذه الصفحة
       </h1>

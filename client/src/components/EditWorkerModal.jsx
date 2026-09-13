@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Pencil } from 'lucide-react';
 import api from '../api/client';
 
 // مودال تعديل موظف موجود - الاسم والدور جاهزين مسبقًا، وحقل الـ PIN
@@ -56,7 +57,9 @@ export default function EditWorkerModal({ worker, roles, onClose, onSaved }) {
           dir="rtl"
           className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl dark:border dark:border-slate-800 dark:bg-slate-900"
         >
-          <h3 className="mb-4 text-center font-bold text-[#0B1D3A] dark:text-white">✏️ تعديل بيانات {worker.name}</h3>
+          <h3 className="mb-4 flex items-center justify-center gap-1.5 text-center font-bold text-[#0B1D3A] dark:text-white">
+            <Pencil className="h-4 w-4" /> تعديل بيانات {worker.name}
+          </h3>
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>

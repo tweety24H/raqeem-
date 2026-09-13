@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Camera } from 'lucide-react';
 import Modal from './Modal';
 
 const SCANNER_ELEMENT_ID = 'raqeem-barcode-scanner';
@@ -65,7 +66,7 @@ export default function BarcodeScannerModal({ onDetected, onClose }) {
   }, [onDetected]);
 
   return (
-    <Modal open title="📷 مسح الباركود" onClose={onClose}>
+    <Modal open title={<span className="inline-flex items-center gap-1.5"><Camera className="h-4 w-4" /> مسح الباركود</span>} onClose={onClose}>
       <div className="space-y-3">
         {starting && <p className="text-center text-sm text-slate-400 dark:text-slate-500">جاري تشغيل الكاميرا...</p>}
         {error && (

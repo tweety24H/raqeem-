@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Wallet, Receipt, Package, BarChart3 } from 'lucide-react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import StatusBadge from '../components/StatusBadge';
@@ -57,10 +58,10 @@ export default function MobileDashboard() {
 
         {summary && (
           <>
-            <BigCard emoji="💰" label="أرباح اليوم" value={formatIQD(summary.profitToday.profit)} tone="emerald" />
-            <BigCard emoji="🧾" label="مجموع الديون" value={formatIQD(summary.totalDebt)} tone="rose" />
+            <BigCard emoji={<Wallet className="h-5 w-5" />} label="أرباح اليوم" value={formatIQD(summary.profitToday.profit)} tone="emerald" />
+            <BigCard emoji={<Receipt className="h-5 w-5" />} label="مجموع الديون" value={formatIQD(summary.totalDebt)} tone="rose" />
             <BigCard
-              emoji="📦"
+              emoji={<Package className="h-5 w-5" />}
               label="مواد ناقصة"
               value={`${summary.lowStock.length} صنف`}
               tone="amber"
@@ -73,7 +74,7 @@ export default function MobileDashboard() {
 
             <div className="rounded-2xl bg-white p-4 shadow-sm">
               <div className="mb-3 flex items-center gap-2 text-lg font-bold text-slate-800">
-                <span>🧾</span>
+                <Receipt className="h-5 w-5" />
                 <span>آخر 5 طلبات</span>
               </div>
               {orders.length === 0 && <div className="py-4 text-center text-slate-400">لا توجد طلبات بعد</div>}
@@ -100,9 +101,9 @@ export default function MobileDashboard() {
 
             <Link
               to="/reports"
-              className="block rounded-2xl bg-white p-4 text-center text-sm font-semibold text-nili shadow-sm"
+              className="flex items-center justify-center gap-1.5 rounded-2xl bg-white p-4 text-center text-sm font-semibold text-nili shadow-sm"
             >
-              📊 عرض التقارير الكاملة
+              <BarChart3 className="h-4 w-4" /> عرض التقارير الكاملة
             </Link>
           </>
         )}

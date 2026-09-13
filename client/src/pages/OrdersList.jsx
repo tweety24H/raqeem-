@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { FileSpreadsheet, X, Package } from 'lucide-react';
 import api from '../api/client';
 import PageHeader from '../components/PageHeader';
 import StatusBadge, { STATUSES, STATUS_STYLES, STATUS_SOLID } from '../components/StatusBadge';
@@ -193,8 +194,8 @@ export default function OrdersList() {
         subtitle={t('orders.subtitle')}
         actions={
           <>
-            <button type="button" onClick={exportOrders} className="btn-secondary">
-              📊 تصدير Excel
+            <button type="button" onClick={exportOrders} className="btn-secondary inline-flex items-center gap-1.5">
+              <FileSpreadsheet className="h-4 w-4" /> تصدير Excel
             </button>
             <ViewToggle mode={mode} onChange={setMode} />
             <Link to="/orders/new" className="btn-primary">
@@ -246,12 +247,12 @@ export default function OrdersList() {
         ))}
         {inProgressOnly && (
           <span className="badge cursor-pointer bg-gold text-white" onClick={() => selectStatus('')}>
-            {t('dashboard.statInProgress')} ✕
+            {t('dashboard.statInProgress')} <X className="inline h-3 w-3" />
           </span>
         )}
         {todayOnly && (
           <span className="badge cursor-pointer bg-nili text-white" onClick={() => setTodayOnly(false)}>
-            {t('dashboard.today')} ✕
+            {t('dashboard.today')} <X className="inline h-3 w-3" />
           </span>
         )}
         <input
@@ -322,7 +323,7 @@ export default function OrdersList() {
           })}
           {visibleOrders.length === 0 && (
             <div className="col-span-full">
-              <EmptyState icon="📦" title={t('orders.noOrders')} actionLabel={t('orders.newOrderBtn')} actionTo="/orders/new" />
+              <EmptyState icon={<Package className="h-8 w-8" />} title={t('orders.noOrders')} actionLabel={t('orders.newOrderBtn')} actionTo="/orders/new" />
             </div>
           )}
         </div>
@@ -398,7 +399,7 @@ export default function OrdersList() {
               {visibleOrders.length === 0 && (
                 <tr>
                   <td colSpan={9} className="px-4 py-2">
-                    <EmptyState icon="📦" title={t('orders.noOrders')} actionLabel={t('orders.newOrderBtn')} actionTo="/orders/new" />
+                    <EmptyState icon={<Package className="h-8 w-8" />} title={t('orders.noOrders')} actionLabel={t('orders.newOrderBtn')} actionTo="/orders/new" />
                   </td>
                 </tr>
               )}

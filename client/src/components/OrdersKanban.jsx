@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Printer, Calendar } from 'lucide-react';
 import api from '../api/client';
 import { formatDate } from '../utils/format';
 import { useLanguage } from '../context/LanguageContext';
@@ -198,7 +199,7 @@ export default function OrdersKanban({ orders, onOrderChanged }) {
                         <StatusBadge status={o.status} />
                       </div>
                       <p className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                        <span>🖨️</span> {o.item_summary || t('kanban.noDescription')}
+                        <Printer className="inline h-3.5 w-3.5" /> {o.item_summary || t('kanban.noDescription')}
                       </p>
                       {inProgress && (
                         <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-white/10">
@@ -216,7 +217,7 @@ export default function OrdersKanban({ orders, onOrderChanged }) {
                           title={`${t('kanban.priorityLabel')}: ${t(PRIORITY_KEY[p])}`}
                         >
                           <span className={`h-1.5 w-1.5 rounded-full ${PRIORITY_DOT[p]}`} />
-                          📅 {formatDate(o.due_date)}
+                          <Calendar className="inline h-3.5 w-3.5" /> {formatDate(o.due_date)}
                         </span>
                         <span
                           className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white"

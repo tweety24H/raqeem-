@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Clock } from 'lucide-react';
 import api from '../api/client';
 import PageHeader from '../components/PageHeader';
 import Modal from '../components/Modal';
@@ -131,7 +132,7 @@ export default function ActivityLogs() {
 
       <div className="card">
         {rows.length === 0 ? (
-          <EmptyState icon="🕓" title={t('common.noData')} />
+          <EmptyState icon={<Clock className="h-8 w-8" />} title={t('common.noData')} />
         ) : (
           <div className="border-r-2 border-slate-200 pr-5 dark:border-white/10">
             {rows.map((r) => (

@@ -1,14 +1,35 @@
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { formatIQD, formatDate } from '../utils/format';
+import { useTheme } from '../context/ThemeContext';
 
-// رسم بياني بسيط بالأعمدة (بدون مكتبة خارجية) يقارن الإيراد بالمصاريف يوميًا
+const NILI = '#0B1D3A';
+const NILI_LIGHT = '#132A50';
+const DANGER = '#EF4444';
+
+function ChartTooltip({ active, payload, label }) {
+  if (!active || !payload || !payload.length) return null;
+  const revenue = payload.find((p) => p.dataKey === 'revenue')?.value || 0;
+  const expenses = payload.find((p) => p.dataKey === 'expenses')?.value || 0;
+  return (
+    <div className="rounded-lg bg-slate-800 px-3 py-2 text-[11px] text-white shadow-lg" dir="rtl">
+      <div className="mb-1 font-semibold">{formatDate(label)}</div>
+      <div>إيراد: {formatIQD(revenue)}</div>
+      <div>مصاريف: {formatIQD(expenses)}</div>
+    </div>
+  );
+}
+
+// رسم بياني حقيقي بـ recharts (tooltip تفاعلي + أنيميشن انتقال ناعم عند تغيّر
+// البيانات) بدل الأعمدة اليدوية القديمة المبنية بـ<div> خام.
 export default function RevenueChart({ data }) {
-  if (!data || data.length === 0) return <div className="text-sm text-slate-400">لا توجد بيانات</div>;
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
-  const max = Math.max(1, ...data.map((d) => Math.max(d.revenue, d.expenses)));
+  if (!data || data.length === 0) return <div className="text-sm text-slate-400">لا توجد بيانات</div>;
 
   return (
     <div>
-      <div className="mb-3 flex items-center gap-4 text-xs text-slate-500">
+      <div className="mb-3 flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
         <span className="flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full bg-nili" /> الإيراد
         </span>
@@ -16,29 +37,23 @@ export default function RevenueChart({ data }) {
           <span className="h-2.5 w-2.5 rounded-full bg-danger" /> المصاريف
         </span>
       </div>
-      <div className="flex h-40 items-end gap-[3px]">
-        {data.map((d) => (
-          <div key={d.date} className="group relative flex h-full flex-1 items-end gap-[1px]">
-            <div
-              className="flex-1 rounded-t bg-nili transition-opacity group-hover:opacity-80"
-              style={{ height: `${(d.revenue / max) * 100}%`, minHeight: d.revenue > 0 ? '2px' : 0 }}
-            />
-            <div
-              className="flex-1 rounded-t bg-danger transition-opacity group-hover:opacity-80"
-              style={{ height: `${(d.expenses / max) * 100}%`, minHeight: d.expenses > 0 ? '2px' : 0 }}
-            />
-            <div className="pointer-events-none absolute bottom-full z-10 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-800 px-2 py-1 text-[11px] text-white group-hover:block ltr:left-1/2 rtl:right-1/2">
-              <div className="font-semibold">{formatDate(d.date)}</div>
-              <div>إيراد: {formatIQD(d.revenue)}</div>
-              <div>مصاريف: {formatIQD(d.expenses)}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="mt-1 flex justify-between text-[11px] text-slate-400">
-        <span>{formatDate(data[0]?.date)}</span>
-        <span>{formatDate(data[data.length - 1]?.date)}</span>
-      </div>
+      <ResponsiveContainer width="100%" height={160}>
+        <BarChart data={data} margin={{ top: 4, right: 0, left: 0, bottom: 0 }} barGap={1}>
+          <CartesianGrid vertical={false} stroke={isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9'} />
+          <XAxis
+            dataKey="date"
+            tickFormatter={(d) => formatDate(d)}
+            tick={{ fontSize: 10, fill: isDark ? '#64748b' : '#94a3b8' }}
+            axisLine={false}
+            tickLine={false}
+            minTickGap={24}
+          />
+          <YAxis hide domain={[0, 'dataMax']} />
+          <Tooltip content={<ChartTooltip />} cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : '#f8fafc' }} />
+          <Bar dataKey="revenue" fill={isDark ? NILI_LIGHT : NILI} radius={[3, 3, 0, 0]} maxBarSize={14} isAnimationActive animationDuration={400} />
+          <Bar dataKey="expenses" fill={DANGER} radius={[3, 3, 0, 0]} maxBarSize={14} isAnimationActive animationDuration={400} />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Printer, Download } from 'lucide-react';
 import api, { fileUrl } from '../api/client';
 import VerifyQR from '../components/VerifyQR';
 import { useLanguage } from '../context/LanguageContext';
@@ -55,11 +56,11 @@ export default function Receipt() {
         <div className="flex items-center gap-2">
           {/* الاثنين يفتحون نفس نافذة الطباعة — "تحميل PDF" يعتمد على خيار
               "حفظ كـ PDF" الجاهز بمربع الطباعة (ما يحتاج مكتبة PDF إضافية). */}
-          <button onClick={() => window.print()} className="btn print:hidden">
-            🖨️ {t('receipt.printBtn')}
+          <button onClick={() => window.print()} className="btn print:hidden inline-flex items-center gap-1.5">
+            <Printer className="h-4 w-4" /> {t('receipt.printBtn')}
           </button>
-          <button onClick={() => window.print()} className="btn-gold print:hidden">
-            ⬇️ تحميل PDF
+          <button onClick={() => window.print()} className="btn-gold print:hidden inline-flex items-center gap-1.5">
+            <Download className="h-4 w-4" /> تحميل PDF
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Plus, User, Clock, Package, Receipt, Palette, CheckCircle2, Wallet, AlertTriangle, PartyPopper } from 'lucide-react';
 import api from '../api/client';
 import ViewToggle, { useViewMode } from '../components/ViewToggle';
 import OrdersKanban from '../components/OrdersKanban';
@@ -214,7 +215,7 @@ export default function Dashboard() {
                   }}
                   className="flex w-full items-center gap-2 px-4 py-2.5 text-right text-sm text-slate-700 hover:bg-nili/5 dark:text-slate-200 dark:hover:bg-white/5"
                 >
-                  ➕ {t('dashboard.quickNewOrder')}
+                  <Plus className="h-4 w-4" /> {t('dashboard.quickNewOrder')}
                 </button>
                 <button
                   type="button"
@@ -224,7 +225,7 @@ export default function Dashboard() {
                   }}
                   className="flex w-full items-center gap-2 border-t border-slate-100 px-4 py-2.5 text-right text-sm text-slate-700 hover:bg-nili/5 dark:border-white/5 dark:text-slate-200 dark:hover:bg-white/5"
                 >
-                  👤 {t('dashboard.quickNewCustomer')}
+                  <User className="h-4 w-4" /> {t('dashboard.quickNewCustomer')}
                 </button>
               </div>
             )}
@@ -275,7 +276,7 @@ export default function Dashboard() {
                 to="/orders?filter=today"
                 className="flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm font-medium text-gold-dark transition hover:bg-gold/15 dark:border-gold/20 dark:bg-gold/10 dark:text-gold-light dark:hover:bg-gold/20"
               >
-                ⏰ {t('dashboard.alertDueSoon', { count: dueSoonCount })}
+                <Clock className="h-4 w-4 shrink-0" /> {t('dashboard.alertDueSoon', { count: dueSoonCount })}
               </Link>
             )}
             {lowStockCount > 0 && (
@@ -283,7 +284,7 @@ export default function Dashboard() {
                 to="/stock?filter=low_stock"
                 className="flex items-center gap-2 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm font-medium text-danger transition hover:bg-danger/15 dark:border-danger/20 dark:bg-danger/10 dark:text-danger dark:hover:bg-danger/20"
               >
-                📦 {t('dashboard.alertLowStock', { count: lowStockCount })}
+                <Package className="h-4 w-4 shrink-0" /> {t('dashboard.alertLowStock', { count: lowStockCount })}
               </Link>
             )}
           </div>
@@ -297,23 +298,23 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-            <StatCard accent to="/orders?filter=today" icon="🧾" label={t('dashboard.statOrdersToday')} value={summary?.ordersToday || 0} />
+            <StatCard accent to="/orders?filter=today" icon={<Receipt className="h-5 w-5" />} label={t('dashboard.statOrdersToday')} value={summary?.ordersToday || 0} />
             <StatCard
               accent
               to="/orders?status=in_progress"
-              icon="🎨"
+              icon={<Palette className="h-5 w-5" />}
               label={t('dashboard.statInProgress')}
               value={statusCounts.inProgress}
               tone="warning"
             />
-            <StatCard accent to="/orders?status=ready" icon="✅" label={t('dashboard.statReady')} value={statusCounts.ready} tone="success" />
+            <StatCard accent to="/orders?status=ready" icon={<CheckCircle2 className="h-5 w-5" />} label={t('dashboard.statReady')} value={statusCounts.ready} tone="success" />
             {/* السيرفر أصلاً يرجع profitToday=null لمن ماعنده view_profits —
                 هذا الفحص هنا بس يخفي الكارت بدل ما يعرض "0" مضلّلة */}
             {hasPermission('view_profits') && (
               <StatCard
                 accent
                 to="/reports?range=today"
-                icon="💰"
+                icon={<Wallet className="h-5 w-5" />}
                 label={t('dashboard.statProfitToday')}
                 value={summary?.profitToday?.profit || 0}
                 format={formatIQD}
@@ -322,7 +323,7 @@ export default function Dashboard() {
             {hasPermission('view_debts') && (
               <StatCard
                 to="/customers?filter=debtors"
-                icon="⚠️"
+                icon={<AlertTriangle className="h-5 w-5" />}
                 label={t('dashboard.statDebt')}
                 value={summary?.totalDebt || 0}
                 format={formatIQD}
@@ -331,7 +332,7 @@ export default function Dashboard() {
             )}
             <StatCard
               to="/stock?filter=low_stock"
-              icon="📦"
+              icon={<Package className="h-5 w-5" />}
               label={t('dashboard.statLowStock')}
               value={lowStockCount}
               tone={lowStockCount > 0 ? 'danger' : 'default'}
@@ -351,7 +352,7 @@ export default function Dashboard() {
                 <SkeletonBlock className="h-10 w-full" />
               </div>
             ) : followUpOrders.length === 0 ? (
-              <EmptyState icon="🎉" title={t('dashboard.emptyFollowUpTitle')} />
+              <EmptyState icon={<PartyPopper className="h-8 w-8" />} title={t('dashboard.emptyFollowUpTitle')} />
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">

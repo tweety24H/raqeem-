@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { FileSpreadsheet, FolderOpen, Users } from 'lucide-react';
 import api from '../api/client';
 import PageHeader from '../components/PageHeader';
 import Modal from '../components/Modal';
@@ -85,8 +86,8 @@ export default function Customers() {
         subtitle={t('customers.subtitle')}
         actions={
           <>
-            <button type="button" onClick={exportCustomers} className="btn-secondary">
-              📊 تصدير Excel
+            <button type="button" onClick={exportCustomers} className="btn-secondary inline-flex items-center gap-1.5">
+              <FileSpreadsheet className="h-4 w-4" /> تصدير Excel
             </button>
             <ViewToggle mode={mode} onChange={setMode} />
             <button className="btn-primary" onClick={() => setShowAdd(true)}>
@@ -156,14 +157,14 @@ export default function Customers() {
                   onClick={() => setArchiveCustomer(c)}
                   title={t('customers.archiveTitle')}
                 >
-                  📁 {t('customers.archiveBtn')}
+                  <FolderOpen className="inline h-3.5 w-3.5" /> {t('customers.archiveBtn')}
                 </button>
               </div>
             </div>
           ))}
           {list.length === 0 && (
             <div className="col-span-full">
-              <EmptyState icon="👥" title={t('common.noData')} actionLabel={t('customers.addBtn')} onAction={() => setShowAdd(true)} />
+              <EmptyState icon={<Users className="h-8 w-8" />} title={t('common.noData')} actionLabel={t('customers.addBtn')} onAction={() => setShowAdd(true)} />
             </div>
           )}
         </div>
@@ -209,7 +210,7 @@ export default function Customers() {
                         }}
                         title={t('customers.archiveTitle')}
                       >
-                        📁 {t('customers.archiveBtn')}
+                        <FolderOpen className="inline h-3.5 w-3.5" /> {t('customers.archiveBtn')}
                       </button>
                     </div>
                   </td>
@@ -223,7 +224,7 @@ export default function Customers() {
               {list.length === 0 && (
                 <tr>
                   <td colSpan={overdueOnly ? 6 : 5} className="px-4 py-2">
-                    <EmptyState icon="👥" title={t('common.noData')} actionLabel={t('customers.addBtn')} onAction={() => setShowAdd(true)} />
+                    <EmptyState icon={<Users className="h-8 w-8" />} title={t('common.noData')} actionLabel={t('customers.addBtn')} onAction={() => setShowAdd(true)} />
                   </td>
                 </tr>
               )}

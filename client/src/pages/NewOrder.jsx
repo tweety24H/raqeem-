@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Check } from 'lucide-react';
 import api from '../api/client';
 import PageHeader from '../components/PageHeader';
 import { useLanguage } from '../context/LanguageContext';
@@ -642,7 +643,7 @@ function Stepper({ step, customerLocked, t }) {
                   active ? 'bg-white/20' : done ? 'bg-success text-white' : 'bg-slate-300 text-slate-600 dark:bg-white/10'
                 }`}
               >
-                {done ? '✓' : n}
+                {done ? <Check className="h-4 w-4" /> : n}
               </span>
               {labels[i]}
             </div>

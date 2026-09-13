@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { Camera, Package } from 'lucide-react';
 import api, { fileUrl } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import Modal from '../components/Modal';
@@ -174,8 +175,8 @@ export default function Stock() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <button type="button" className="btn-secondary" onClick={() => setShowScanSearch(true)}>
-          📷 مسح باركود
+        <button type="button" className="btn-secondary inline-flex items-center gap-1.5" onClick={() => setShowScanSearch(true)}>
+          <Camera className="h-4 w-4" /> مسح باركود
         </button>
         <select className="input w-auto" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
           <option value="">{t('stock.allTypes')}</option>
@@ -246,7 +247,7 @@ export default function Stock() {
           })}
           {items.length === 0 && (
             <div className="col-span-full">
-              <EmptyState icon="📦" title={t('stock.noItems')} actionLabel={t('stock.addItemBtn')} onAction={() => setShowAdd(true)} />
+              <EmptyState icon={<Package className="h-8 w-8" />} title={t('stock.noItems')} actionLabel={t('stock.addItemBtn')} onAction={() => setShowAdd(true)} />
             </div>
           )}
         </div>
@@ -304,7 +305,7 @@ export default function Stock() {
               {items.length === 0 && (
                 <tr>
                   <td colSpan={9} className="px-4 py-2">
-                    <EmptyState icon="📦" title={t('stock.noItems')} actionLabel={t('stock.addItemBtn')} onAction={() => setShowAdd(true)} />
+                    <EmptyState icon={<Package className="h-8 w-8" />} title={t('stock.noItems')} actionLabel={t('stock.addItemBtn')} onAction={() => setShowAdd(true)} />
                   </td>
                 </tr>
               )}

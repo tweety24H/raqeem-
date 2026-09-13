@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { FileText } from 'lucide-react';
 import api, { fileUrl } from '../api/client';
 import PageHeader from '../components/PageHeader';
 import Modal from '../components/Modal';
@@ -52,8 +53,8 @@ export default function Archive() {
                 {isImage ? (
                   <img src={fileUrl(d.file_path)} alt={d.name} className="mb-2 h-32 w-full rounded-lg object-cover" />
                 ) : (
-                  <div className="mb-2 flex h-32 w-full items-center justify-center rounded-lg bg-slate-100 text-3xl">
-                    📄
+                  <div className="mb-2 flex h-32 w-full items-center justify-center rounded-lg bg-slate-100 text-slate-400">
+                    <FileText className="h-10 w-10" />
                   </div>
                 )}
               </a>

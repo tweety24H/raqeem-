@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { FileSpreadsheet } from 'lucide-react';
 import api from '../api/client';
 import PageHeader from '../components/PageHeader';
 import Modal from '../components/Modal';
@@ -118,8 +119,8 @@ function OverviewTab() {
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
-        <button type="button" onClick={exportOverview} disabled={!active} className="btn-secondary">
-          📊 تصدير Excel ({activeLabel})
+        <button type="button" onClick={exportOverview} disabled={!active} className="btn-secondary inline-flex items-center gap-1.5">
+          <FileSpreadsheet className="h-4 w-4" /> تصدير Excel ({activeLabel})
         </button>
       </div>
 
@@ -423,8 +424,8 @@ function DetailedTab() {
             <input className="input" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
           </div>
         </div>
-        <button type="button" onClick={exportDetailed} className="btn-secondary">
-          📊 تصدير Excel
+        <button type="button" onClick={exportDetailed} className="btn-secondary inline-flex items-center gap-1.5">
+          <FileSpreadsheet className="h-4 w-4" /> تصدير Excel
         </button>
       </div>
 

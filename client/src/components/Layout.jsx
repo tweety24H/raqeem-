@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Focus } from 'lucide-react';
+import { Focus, Menu } from 'lucide-react';
 import { DashboardSummaryProvider } from '../context/DashboardSummaryContext';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -132,10 +132,10 @@ export default function Layout() {
             <button
               type="button"
               onClick={() => setMobileOpen(true)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-lg transition hover:bg-slate-100 dark:border-slate-800 dark:bg-white/5 dark:hover:bg-white/10 lg:hidden"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white transition hover:bg-slate-100 dark:border-slate-800 dark:bg-white/5 dark:hover:bg-white/10 lg:hidden"
               aria-label="فتح القائمة"
             >
-              ☰
+              <Menu className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-2">
               <button
