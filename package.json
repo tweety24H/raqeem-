@@ -1,6 +1,6 @@
 {
   "name": "raqeem-os",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "description": "نظام إدارة مطابع - يعمل محليًا بالكامل",
   "private": true,
   "main": "electron/main.js",
@@ -41,6 +41,7 @@
     "electron-builder": "^25.1.8",
     "electron-rebuild": "^3.2.9",
     "nodemon": "^3.1.14",
+    "rcedit": "^5.0.2",
     "wait-on": "^8.0.5"
   },
   "build": {
@@ -78,7 +79,9 @@
     "publish": {
       "provider": "github",
       "owner": "tweety24H",
-      "repo": "raqeemos-review"
-    }
+      "repo": "raqeemos-review",
+      "private": false
+    },
+    "afterPack": "build/afterPack.js"
   }
 }

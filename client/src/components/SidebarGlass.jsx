@@ -6,6 +6,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useDashboardSummary } from '../context/DashboardSummaryContext';
 import SwitchUserModal from './SwitchUserModal';
 import ChangePinModal from './ChangePinModal';
+import logoUrl from '../assets/logo.png';
 
 const READY_STATUS = 'جاهز للتسليم';
 const EXPANDED_W = 280;
@@ -187,7 +188,7 @@ export default function SidebarGlass({ collapsed, onToggleCollapsed, mobileOpen,
         {/* Logo + زر الطي */}
         <div className={`flex items-center gap-2.5 border-b border-white/10 px-4 py-4 ${!isExpanded ? 'justify-center px-2' : ''}`}>
           <span className="relative flex h-9 w-9 shrink-0 items-center justify-center">
-            <img src="/logo.png" alt="Raqeem" className="h-9 w-9 rounded-xl bg-white/5 object-contain p-1" />
+            <img src={logoUrl} alt="Raqeem" className="h-9 w-9 rounded-xl bg-white/5 object-contain p-1" />
             <span className="absolute -bottom-0.5 -left-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#0B1D3A] bg-success" />
           </span>
           {isExpanded && (

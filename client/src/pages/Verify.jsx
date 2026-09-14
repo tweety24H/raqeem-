@@ -7,6 +7,7 @@ import LanguageToggle from '../components/LanguageToggle';
 import ThemeToggle from '../components/ThemeToggle';
 import { useLanguage } from '../context/LanguageContext';
 import { formatIQD, formatDate } from '../utils/format';
+import logoUrl from '../assets/logo.png';
 
 const GOLD = '#C9A94A';
 const GOLD_DARK = '#8a6d10';
@@ -61,7 +62,7 @@ export default function Verify() {
     <div dir="rtl" className="min-h-screen bg-stone-100 dark:bg-[#0a0a0f]">
       <header className="no-print flex items-center justify-between border-b border-stone-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-950">
         <div className="flex items-center gap-2">
-          <img src="/logo.png" alt="Raqeem" className="h-6 w-6 rounded-lg object-contain" />
+          <img src={logoUrl} alt="Raqeem" className="h-6 w-6 rounded-lg object-contain" />
           <span className="font-bold">
             <span className="text-[#0B1D3A] dark:text-slate-100">Raqeem</span>
             <span className="text-[#C5A880] text-sm">OS</span>

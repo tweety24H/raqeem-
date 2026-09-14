@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Check, Clipboard, MessageCircle } from 'lucide-react';
+import logoUrl from '../assets/logo.png';
 
 const WHATSAPP_NUMBER = '9647801234567';
 
@@ -50,7 +51,7 @@ export default function Activation({ status, onActivated, onDismiss, allowDismis
     >
       <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl dark:bg-[#15151d]">
         <div className="mb-6 text-center">
-          <img src="/logo.png" alt="Raqeem" className="mx-auto mb-3 h-16 w-16 rounded-2xl object-contain" />
+          <img src={logoUrl} alt="Raqeem" className="mx-auto mb-3 h-16 w-16 rounded-2xl object-contain" />
           <h1 className="font-arabic text-xl font-semibold text-slate-900 dark:text-white">مرحباً بك في مطبعتي</h1>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">أدخل مفتاح التفعيل لتشغيل البرنامج</p>
         </div>

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import logoUrl from '../assets/logo.png';
 
 // سبلاش الاقلاع اللي يطلع بس بالمتصفح العادي (مو داخل نسخة Electron
 // المبنية) - نفس تصميم شاشة electron/splash.html بالضبط (نفس الالوان
@@ -14,7 +15,7 @@ export default function BootSplash() {
     >
       {/* الشعار الذهبي - نبضة خفيفة مستمرة (scale 1 -> 1.05) كل 1.5 ثانية */}
       <motion.img
-        src="/logo.png"
+        src={logoUrl}
         alt="Raqeem"
         animate={{ scale: [1, 1.05, 1] }}
         transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}

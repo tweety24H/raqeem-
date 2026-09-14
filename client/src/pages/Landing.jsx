@@ -1,5 +1,6 @@
 import InteractiveBackground from '../components/InteractiveBackground';
 import Button from '../components/ui/Button';
+import heroUrl from '../assets/hero.jpg';
 
 // ملاحظة: هذا الملف قديم وغير مستخدم بالـ routing الحالي (App.jsx يستخدم
 // LandingNew.jsx على مسار "/") — بس محدث بنفس هوية nili/gold حتى لا يبقى
@@ -60,7 +61,7 @@ export default function Landing() {
           {/* Right side - Image */}
           <div className="w-full lg:w-[58%] relative lg:h-[calc(100vh-80px)] flex items-end justify-center lg:justify-start">
             <img
-              src="/hero.jpg"
+              src={heroUrl}
               alt="مطبعتك - نطبع أفكارك"
               className="w-full max-w-[720px] lg:max-w-none lg:w-[95%] lg:h-[92%] object-contain object-bottom"
             />

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../api/client';
 import { SEEN_KEY as WALKTHROUGH_SEEN_KEY } from '../components/Onboarding';
+import logoUrl from '../assets/logo.png';
 
 // Device-level flag (not per-worker): once any worker finishes or skips this
 // setup wizard on this machine, it never shows again — see Login.jsx and
@@ -75,7 +76,7 @@ export default function Onboarding() {
   return (
     <div dir="rtl" className="flex h-screen w-screen flex-col items-center justify-center bg-[#0A0F1C] px-6 font-arabic">
       <motion.img
-        src="/logo.png"
+        src={logoUrl}
         alt="Raqeem"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}

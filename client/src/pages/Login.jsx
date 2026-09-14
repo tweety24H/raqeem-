@@ -6,6 +6,7 @@ import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import PinGateModal from '../components/PinGateModal';
 import { FIRST_LAUNCH_KEY } from './Onboarding';
+import logoUrl from '../assets/logo.png';
 
 // دالة تجيب أول حرف من الاسم
 function initials(name) {
@@ -157,7 +158,7 @@ export default function Login() {
         </svg>
 
         <motion.img
-          src="/logo.png"
+          src={logoUrl}
           alt="Raqeem"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0, scale: [1, 1.03, 1] }}
@@ -212,7 +213,7 @@ export default function Login() {
           {/* موبايل لوجو */}
           <div className="mb-6 text-center lg:hidden">
             <motion.img
-              src="/logo.png"
+              src={logoUrl}
               alt="Raqeem"
               animate={{ scale: [1, 1.05, 1] }}
               transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
