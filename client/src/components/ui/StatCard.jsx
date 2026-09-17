@@ -1,0 +1,88 @@
+import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+
+const MotionLink = motion(Link);
+
+const REDUCE_MOTION = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Counts up from 0 (or from the previous value, on updates) to `value` over
+// ~900ms using requestAnimationFrame — no animation library dependency.
+function useCountUp(value, duration = 900) {
+  const [display, setDisplay] = useState(REDUCE_MOTION ? value : 0);
+  const fromRef = useRef(0);
+  const rafRef = useRef(null);
+
+  useEffect(() => {
+    const target = Number(value) || 0;
+    if (REDUCE_MOTION) {
+      setDisplay(target);
+      return undefined;
+    }
+    const from = fromRef.current;
+    const start = performance.now();
+
+    function tick(now) {
+      const progress = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(Math.round(from + (target - from) * eased));
+      if (progress < 1) {
+        rafRef.current = requestAnimationFrame(tick);
+      } else {
+        fromRef.current = target;
+      }
+    }
+
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [value, duration]);
+
+  return display;
+}
+
+// Task 4: dashboard stat tiles are clickable when given a `to` route — they
+// render as a <Link> (like ui/Card) with a hover lift + shadow so employees
+// can jump straight to the filtered orders/customers/stock/reports view.
+export default function StatCard({ label, value, format, icon, tone = 'default', badge, to, accent = false }) {
+  const display = useCountUp(value);
+
+  const toneClasses = {
+    default: 'text-slate-900 dark:text-slate-100',
+    warning: 'text-gold-dark dark:text-gold-light',
+    danger: 'text-danger dark:text-danger',
+    success: 'text-success dark:text-success',
+  };
+
+  const Component = to ? MotionLink : motion.div;
+  const linkProps = to ? { to } : {};
+
+  return (
+    <Component
+      {...linkProps}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={to ? { y: -3 } : undefined}
+      transition={{ duration: 0.35, ease: [0.22, 0.61, 0.36, 1] }}
+      className={`card flex items-center gap-3 ${accent ? 'border-t-2 border-t-gold' : ''} ${
+        to ? 'cursor-pointer transition hover:shadow-lg hover:border-nili/30 dark:hover:border-nili-light/30' : ''
+      }`}
+    >
+      {icon && (
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-nili/10 text-lg text-nili dark:bg-nili-light/10 dark:text-nili-light">
+          {icon}
+        </span>
+      )}
+      <div className="min-w-0 flex-1">
+        <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
+        <p className={`text-xl font-bold tabular-nums ${toneClasses[tone] || toneClasses.default}`}>
+          {format ? format(display) : display}
+        </p>
+      </div>
+      {badge != null && badge > 0 && (
+        <span className="rounded-full bg-danger/15 px-2 py-0.5 text-xs font-semibold text-danger dark:bg-danger/15 dark:text-danger">
+          {badge}
+        </span>
+      )}
+    </Component>
+  );
+}

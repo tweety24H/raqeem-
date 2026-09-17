@@ -1,0 +1,116 @@
+/* IBM Plex Sans Arabic (the app's only UI font, weights 400/600/700) is
+   loaded via <link> in index.html (not @import) so it's discovered by the
+   preconnect hints and doesn't block first paint. Aref Ruqaa stays here —
+   it's used only for decorative flourishes on the printable receipt/invoice
+   pages, a separate concern from the UI font. */
+@import url('https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --radius: 1rem;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-50 text-slate-800 font-sans;
+}
+
+.dark body {
+  @apply bg-[#0a0a0f] text-slate-100;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 6px;
+}
+
+/* Custom @apply-based component classes must live inside @layer components
+   so Tailwind's JIT can correctly generate the CSS-variable-based opacity
+   utilities used below (e.g. focus:ring-brand-500/30) — without this layer,
+   PostCSS raises "class does not exist" for any opacity-modified utility
+   used in @apply. */
+@layer components {
+  .input {
+    @apply w-full rounded-xl border border-slate-200 px-3 py-2 text-sm transition focus:outline-none focus:ring-2 focus:ring-gold/20 focus:border-gold;
+  }
+
+  .dark .input {
+    @apply border-white/10 bg-slate-900 text-white placeholder:text-slate-500 focus:border-gold focus:ring-gold/20;
+  }
+
+  .label {
+    @apply mb-1 block text-sm font-medium text-slate-600;
+  }
+
+  .dark .label {
+    @apply text-slate-300;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-nili px-4 py-2 text-sm font-semibold text-gold shadow-sm shadow-nili/20 transition duration-200 ease-out hover:bg-nili-light disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97];
+  }
+  .btn-primary {
+    @apply btn;
+  }
+  /* Low-emphasis secondary action tinted with the brand accent — never a
+     solid fill, since brand is reserved for focus rings/charts only. */
+  .btn-brand {
+    @apply btn bg-brand-50 text-brand-700 shadow-none hover:bg-brand-100;
+  }
+  .dark .btn-brand {
+    @apply bg-brand-500/10 text-brand-300 hover:bg-brand-500/20;
+  }
+  /* Reserved for important/highlighted actions only (the app's one accent color). */
+  .btn-gold {
+    @apply btn bg-gold text-nili-dark shadow-gold/20 hover:bg-gold-dark;
+  }
+  /* Secondary action: white with a gold-tinted border, navy text. */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-gold/30 bg-white px-4 py-2 text-sm font-semibold text-nili shadow-none transition duration-200 ease-out hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97];
+  }
+  .dark .btn-secondary {
+    @apply border-white/10 bg-white/10 text-white hover:bg-white/20;
+  }
+  /* Destructive action: light red fill, never a solid button — reserved for
+     the one confirm button inside a delete-confirmation modal. */
+  .btn-danger {
+    @apply btn bg-danger/10 text-danger shadow-none border border-danger/30 hover:bg-danger/15;
+  }
+
+  .card {
+    @apply rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition duration-200 ease-out hover:shadow-md hover:border-gold/30;
+  }
+
+  .dark .card {
+    @apply border-slate-800 bg-slate-900/90 shadow-sm hover:border-gold/20;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold;
+  }
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #3f3f52;
+}
+
+/* يخفي السايدبار (aside) عند طباعة أي صفحة — عنصر <aside> وحيد بالتطبيق كله. */
+@media print {
+  aside {
+    display: none !important;
+  }
+}

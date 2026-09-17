@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8" />
+<title>Raqeem</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 400px;
+    height: 500px;
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* الصفحة كلها تطلع بـ fade خفيف (0.5 ثانية) أول ما تفتح شاشة السبلاش */
+  body {
+    background: #0B1D3A;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    font-family: 'Tajawal', 'Segoe UI', Tahoma, Arial, sans-serif;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  body::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    background: radial-gradient(ellipse at bottom, rgba(197, 168, 128, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ايقونة Raqeem بالنص - نبضة خفيفة مستمرة (scale 1 -> 1.05) كل 1.5 ثانية */
+  .logo {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    border-radius: 26px;
+    filter: drop-shadow(0 0 20px rgba(197, 168, 128, 0.4));
+    animation: pulse 1.5s infinite ease-in-out;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  /* Raqeem بالابيض الغامق + OS بالذهبي - نفس البراند الرسمي بكل الواجهة */
+  .title {
+    margin-top: 20px;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+    color: #FFFFFF;
+  }
+
+  .title .os {
+    font-size: 14px;
+    font-weight: 600;
+    color: #C5A880;
+    margin-right: 2px;
+    vertical-align: top;
+  }
+
+  .tagline {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 13px;
+    margin-top: 8px;
+  }
+
+  /* شريط تحميل ذهبي رفيع - يبدأ فارغ ويتعبى لـ 100% خلال ثانيتين */
+  .loader-wrap {
+    margin-top: 40px;
+    width: 200px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .loader {
+    height: 100%;
+    background: linear-gradient(90deg, #C5A880, #E8D5B5);
+    width: 0%;
+    animation: load 2s forwards ease-out;
+  }
+
+  @keyframes load {
+    0% { width: 0%; }
+    100% { width: 100%; }
+  }
+
+  .loading-text {
+    position: absolute;
+    bottom: 28px;
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 10px;
+  }
+
+  /* رقم النسخة - رمادي غامق بأسفل الشاشة */
+  .version {
+    position: absolute;
+    bottom: 12px;
+    color: #64748B;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+  <img src="assets/icon.png" class="logo" alt="Raqeem" />
+  <div class="title">Raqeem<span class="os">OS</span></div>
+  <div class="tagline">مطبعتك.. بأرقام</div>
+  <div class="loader-wrap"><div class="loader"></div></div>
+  <div class="loading-text">جاري التحميل...</div>
+  <div class="version">v2.0.0</div>
+  <script>
+    // نطلع صوتة "تن" خفيفة لما البرنامج يفتح - نسويها بكود بس (Web Audio
+    // API) بلا ما نحتاج نحمّل ملف mp3 او أي مكتبة
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.frequency.value = 800;
+      g.gain.value = 0.05;
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+      setTimeout(() => o.stop(), 300);
+    } catch (e) {
+      /* المتصفح ما يدعم Web Audio — تجاهل بصمت */
+    }
+  </script>
+</body>
+</html>

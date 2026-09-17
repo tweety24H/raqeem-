@@ -1,0 +1,25 @@
+node_modules/
+.wwebjs_auth/
+.wwebjs_cache/
+backups/
+data/
+session/
+release/
+build/
+dist/
+.env
+.env.local
+.claude/
+.tools/
+Claude outputs/
+*.log
+.DS_Store
+
+# سر الترخيص الخاص بشركة رقيم - المفتاح الخاص RSA لا يجب أبداً أن يوصل لأي
+# عميل أو Git أو أي مكان عام. الكود نفسه (sign.js، generate-license.js) مسموح
+# يترفع - معرفة خوارزمية التوقيع لا تكفي لتزوير مفتاح بدون المفتاح الخاص نفسه
+# (نفس مبدأ أي نظام RSA حقيقي: الأمان بالمفتاح، مو بإخفاء الكود). القاعدتين
+# أدناه تستثنون ملفات الـ .pem تحديداً بالاسم، بالإضافة لقاعدة *.pem العامة.
+licensing-vendor/private-key.pem
+licensing-vendor/public-key.pem
+*.pem

@@ -1,0 +1,88 @@
+{
+  "name": "raqeem-os",
+  "version": "2.0.2",
+  "description": "نظام إدارة مطابع - يعمل محليًا بالكامل",
+  "private": true,
+  "main": "electron/main.js",
+  "author": "RaqeemOS",
+  "scripts": {
+    "client:dev": "npm --prefix client run dev",
+    "server:dev": "nodemon server/index.js",
+    "dev": "concurrently -k -n SERVER,CLIENT -c yellow,cyan \"npm:server:dev\" \"npm:client:dev\"",
+    "dev:electron": "cross-env RAQEEM_ENV=dev electron .",
+    "preelectron:dev": "node scripts/kill-stale.js",
+    "electron:dev": "npm run rebuild && concurrently -k -n CLIENT,ELECTRON -c cyan,magenta \"npm:client:dev\" \"wait-on http://localhost:5173 && cross-env RAQEEM_ENV=dev electron .\"",
+    "seed:test": "node server/db/seed-test.js",
+    "build:client": "npm --prefix client run build",
+    "postinstall": "electron-builder install-app-deps && npm rebuild better-sqlite3 --runtime=node --target=22.23.2 || echo ok",
+    "prerebuild": "node scripts/kill-stale.js",
+    "rebuild": "electron-rebuild -f -w better-sqlite3",
+    "dist": "npm run build:client && electron-builder",
+    "publish-release": "npm run build:client && electron-builder --publish always"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^12.11.1",
+    "cors": "^2.8.5",
+    "electron-store": "^8.2.0",
+    "electron-updater": "^6.8.9",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.7.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "node-machine-id": "^1.1.12",
+    "qrcode": "^1.5.4",
+    "whatsapp-web.js": "^1.34.7"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "electron-rebuild": "^3.2.9",
+    "nodemon": "^3.1.14",
+    "rcedit": "^5.0.2",
+    "wait-on": "^8.0.5"
+  },
+  "build": {
+    "appId": "com.raqeem.os",
+    "productName": "RaqeemOS",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "server/**/*",
+      "client/dist/**/*",
+      "node_modules/**/*",
+      "package.json",
+      "build/icon.png",
+      "!licensing-vendor/**"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Raqeem",
+      "artifactName": "Raqeem Setup ${version}.exe",
+      "include": "build/installer.nsh"
+    },
+    "asarUnpack": [
+      "**/*.node"
+    ],
+    "publish": {
+      "provider": "github",
+      "owner": "tweety24H",
+      "repo": "raqeemos-review",
+      "private": false
+    },
+    "afterPack": "build/afterPack.js"
+  }
+}

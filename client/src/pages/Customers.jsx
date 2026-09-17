@@ -1,0 +1,332 @@
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { FileSpreadsheet, FolderOpen, Users } from 'lucide-react';
+import api from '../api/client';
+import PageHeader from '../components/PageHeader';
+import ViewToggle, { useViewMode } from '../components/ViewToggle';
+import EmptyState from '../components/ui/EmptyState';
+import Button from '../components/ui/Button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '../components/ui/dialog';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Textarea } from '../components/ui/textarea';
+import { useLanguage } from '../context/LanguageContext';
+import { formatIQD } from '../utils/format';
+import { buildDebtReminderLink } from '../utils/whatsapp';
+import { CustomerDesignsModal } from '../components/DesignArchive';
+import { exportToExcel } from '../utils/exportExcel';
+
+export default function Customers() {
+  const { t } = useLanguage();
+  const [customers, setCustomers] = useState([]);
+  const [search, setSearch] = useState('');
+  const [overdueOnly, setOverdueOnly] = useState(false);
+  const [debtorsOnly, setDebtorsOnly] = useState(false);
+  const [overdue, setOverdue] = useState([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [showAdd, setShowAdd] = useState(searchParams.get('new') === '1');
+  const [archiveCustomer, setArchiveCustomer] = useState(null);
+  const [mode, setMode] = useViewMode('raqeem_view_customers', 'list');
+
+  useEffect(() => {
+    load();
+    api.get('/customers/overdue', { params: { days: 45 } }).then((r) => setOverdue(r.data.customers));
+  }, [search]);
+
+  // Deep link from the Dashboard's "New Customer" quick action (?new=1):
+  // open the Add Customer modal automatically, then clean the URL.
+  // Also handles the Dashboard's "Total Debts" stat card (?filter=debtors),
+  // which shows customers with an outstanding balance (Task 4).
+  useEffect(() => {
+    if (searchParams.get('new') === '1') {
+      setShowAdd(true);
+    }
+    if (searchParams.get('filter') === 'debtors') {
+      setDebtorsOnly(true);
+    }
+    if (searchParams.get('new') || searchParams.get('filter')) {
+      setSearchParams({}, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function exportCustomers() {
+    exportToExcel(
+      `الزبائن-${new Date().toISOString().slice(0, 10)}`,
+      'الزبائن',
+      list.map((c) => ({
+        الاسم: c.name,
+        الهاتف: c.phone || '',
+        الدين: c.debt,
+      }))
+    );
+  }
+
+  // تجيب قائمة الزبائن من السيرفر - تنفلتر حسب البحث لو المستخدم كاتب شي
+  async function load() {
+    const res = await api.get('/customers', { params: { search: search || undefined } });
+    setCustomers(res.data.customers);
+  }
+
+  // زر "تذكير" جنب اسم الزبون المديون - يفتح واتساب ويب برسالة جاهزة
+  // فيها اسمه ومبلغ دينه، مجاني بالكامل بدون أي API مدفوع
+  function sendReminder(e, c) {
+    e.stopPropagation();
+    const link = buildDebtReminderLink(c);
+    if (!link) {
+      alert(t('customers.errorNoPhone'));
+      return;
+    }
+    window.open(link, '_blank');
+    api.post(`/customers/${c.id}/remind`).catch(() => {});
+  }
+
+  const list = overdueOnly ? overdue : debtorsOnly ? customers.filter((c) => c.debt > 0) : customers;
+
+  return (
+    <div className="p-6">
+      <PageHeader
+        title={t('customers.title')}
+        subtitle={t('customers.subtitle')}
+        actions={
+          <>
+            <button type="button" onClick={exportCustomers} className="btn-secondary inline-flex items-center gap-1.5">
+              <FileSpreadsheet className="h-4 w-4" /> تصدير Excel
+            </button>
+            <ViewToggle mode={mode} onChange={setMode} />
+            <button className="btn-primary" onClick={() => setShowAdd(true)}>
+              {t('customers.addBtn')}
+            </button>
+          </>
+        }
+      />
+
+      {debtorsOnly && (
+        <div className="mb-4 flex items-center justify-between rounded-lg border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger dark:border-danger/30 dark:bg-danger/10 dark:text-danger">
+          <span>{t('customers.debtorsFilterActive', { count: list.length })}</span>
+          <button className="font-semibold underline" onClick={() => setDebtorsOnly(false)}>
+            {t('customers.showAll')}
+          </button>
+        </div>
+      )}
+
+      {overdue.length > 0 && (
+        <div className="mb-4 rounded-lg border border-gold/40 bg-gold/10 px-4 py-3 text-sm text-gold-dark dark:border-gold/30 dark:bg-gold/10 dark:text-gold-light">
+          {t('customers.overdueWarning', { count: overdue.length })}
+          <button className="mr-2 font-semibold underline" onClick={() => setOverdueOnly((v) => !v)}>
+            {overdueOnly ? t('customers.showAll') : t('customers.showOverdueOnly')}
+          </button>
+        </div>
+      )}
+
+      <input
+        className="input mb-4 max-w-xs"
+        placeholder={t('customers.searchPlaceholder')}
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+
+      {mode === 'grid' ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {list.map((c) => (
+            <div
+              key={c.id}
+              className="card cursor-pointer transition hover:border-nili hover:shadow-md"
+              onClick={() => (window.location.hash = `#/customers/${c.id}`)}
+            >
+              <p className="font-semibold text-nili dark:text-gold">{c.name}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{c.phone || t('customers.noPhone')}</p>
+              <div className="mt-2 flex items-center justify-between text-sm">
+                <span className="text-slate-500 dark:text-slate-400">{t('customers.debtLabel')}</span>
+                <span className={`font-semibold ${c.debt > 0 ? 'text-danger' : 'text-success'}`}>
+                  {formatIQD(c.debt)}
+                </span>
+              </div>
+              {overdueOnly && (
+                <div className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+                  {t('customers.lastActivity', { days: c.daysSinceActivity })}
+                </div>
+              )}
+              <div className="mt-3 flex flex-wrap items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                {c.debt > 0 && (
+                  <button
+                    className="rounded-lg bg-success/10 px-3 py-1.5 text-xs font-semibold text-success hover:bg-success/15 dark:bg-success/15 dark:text-success dark:hover:bg-success/25"
+                    onClick={(e) => sendReminder(e, c)}
+                  >
+                    {t('customers.sendReminderBtn')}
+                  </button>
+                )}
+                <button
+                  className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20"
+                  onClick={() => setArchiveCustomer(c)}
+                  title={t('customers.archiveTitle')}
+                >
+                  <FolderOpen className="inline h-3.5 w-3.5" /> {t('customers.archiveBtn')}
+                </button>
+              </div>
+            </div>
+          ))}
+          {list.length === 0 && (
+            <div className="col-span-full">
+              <EmptyState icon={<Users className="h-8 w-8" />} title={t('common.noData')} actionLabel={t('customers.addBtn')} onAction={() => setShowAdd(true)} />
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="card overflow-x-auto p-0">
+          <table className="w-full text-sm">
+            <thead className="bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-slate-400">
+              <tr>
+                <th className="px-4 py-3 text-right">{t('common.name')}</th>
+                <th className="px-4 py-3 text-right">{t('common.phone')}</th>
+                <th className="px-4 py-3 text-right">{t('customers.debtLabel')}</th>
+                <th className="px-4 py-3 text-right"></th>
+                {overdueOnly && <th className="px-4 py-3 text-right">{t('customers.lastActivityHeader')}</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {list.map((c) => (
+                <tr
+                  key={c.id}
+                  className="cursor-pointer border-t border-slate-100 hover:bg-slate-50 dark:border-white/5 dark:hover:bg-white/5"
+                  onClick={() => (window.location.hash = `#/customers/${c.id}`)}
+                >
+                  <td className="px-4 py-3 font-medium text-nili dark:text-gold">{c.name}</td>
+                  <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{c.phone || '-'}</td>
+                  <td className={`px-4 py-3 font-semibold ${c.debt > 0 ? 'text-danger' : 'text-success'}`}>
+                    {formatIQD(c.debt)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {c.debt > 0 && (
+                        <button
+                          className="rounded-lg bg-success/10 px-3 py-1.5 text-xs font-semibold text-success hover:bg-success/15 dark:bg-success/15 dark:text-success dark:hover:bg-success/25"
+                          onClick={(e) => sendReminder(e, c)}
+                        >
+                          {t('customers.sendReminderBtn')}
+                        </button>
+                      )}
+                      <button
+                        className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 dark:bg-white/10 dark:text-slate-300 dark:hover:bg-white/20"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setArchiveCustomer(c);
+                        }}
+                        title={t('customers.archiveTitle')}
+                      >
+                        <FolderOpen className="inline h-3.5 w-3.5" /> {t('customers.archiveBtn')}
+                      </button>
+                    </div>
+                  </td>
+                  {overdueOnly && (
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
+                      {t('customers.lastActivity', { days: c.daysSinceActivity })}
+                    </td>
+                  )}
+                </tr>
+              ))}
+              {list.length === 0 && (
+                <tr>
+                  <td colSpan={overdueOnly ? 6 : 5} className="px-4 py-2">
+                    <EmptyState icon={<Users className="h-8 w-8" />} title={t('common.noData')} actionLabel={t('customers.addBtn')} onAction={() => setShowAdd(true)} />
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {showAdd && (
+        <AddCustomerModal
+          onClose={() => setShowAdd(false)}
+          onSaved={() => {
+            setShowAdd(false);
+            load();
+          }}
+        />
+      )}
+
+      {archiveCustomer && (
+        <CustomerDesignsModal customer={archiveCustomer} onClose={() => setArchiveCustomer(null)} />
+      )}
+    </div>
+  );
+}
+
+// بايلوت shadcn/ui: هذا المودال حُوّل بالكامل من Modal.jsx اليدوي القديم
+// إلى Dialog من shadcn (مبني على @base-ui/react) — تجربة لتقييم الانتقال
+// التدريجي للمكونات المشتركة قبل تعميمه على باقي المشاريع.
+function AddCustomerModal({ onClose, onSaved }) {
+  const { t } = useLanguage();
+  const [form, setForm] = useState({ name: '', phone: '', notes: '' });
+  const [error, setError] = useState('');
+
+  async function submit(e) {
+    e.preventDefault();
+    setError('');
+    try {
+      await api.post('/customers', form);
+      onSaved();
+    } catch (err) {
+      setError(err.response?.data?.error || t('stock.errorSave'));
+    }
+  }
+
+  return (
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent dir="rtl" className="text-right">
+        <DialogHeader>
+          <DialogTitle>{t('customers.modalTitle')}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-3">
+          {error && (
+            <div className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger dark:bg-danger/10 dark:text-danger">
+              {error}
+            </div>
+          )}
+          <div className="space-y-1.5">
+            <Label htmlFor="customer-name">{t('common.name')}</Label>
+            <Input
+              id="customer-name"
+              required
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="customer-phone">{t('common.phone')}</Label>
+            <Input
+              id="customer-phone"
+              value={form.phone}
+              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="customer-notes">{t('common.notes')}</Label>
+            <Textarea
+              id="customer-notes"
+              rows={2}
+              value={form.notes}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            />
+          </div>
+          <DialogFooter className="pt-2">
+            <Button type="button" variant="secondary" magnetic={false} onClick={onClose}>
+              {t('common.cancel')}
+            </Button>
+            <Button type="submit" variant="gold" magnetic={false}>
+              {t('common.save')}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
