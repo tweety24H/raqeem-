@@ -308,8 +308,8 @@
     "saveInfoBtn": "Save Changes",
     "savedInfoMsg": "Item info saved",
     "exportExcelBtn": "Export Excel",
-    "importExcelBtn": "Import Excel",
-    "importSuccessMsg": "Imported: {created} new, {updated} updated",
+    "importExcelBtn": "Import from Excel",
+    "importSuccessMsg": "Imported {count} items successfully",
     "importErrorMsg": "Import failed, check file format",
     "clearFiltersBtn": "Clear Filters"
   },

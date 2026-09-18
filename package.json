@@ -1,6 +1,6 @@
 {
   "name": "raqeem-os",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "نظام إدارة مطابع - يعمل محليًا بالكامل",
   "private": true,
   "main": "electron/main.js",
@@ -71,7 +71,7 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Raqeem",
-      "artifactName": "Raqeem Setup ${version}.exe",
+      "artifactName": "Raqeem-Setup-${version}.exe",
       "include": "build/installer.nsh"
     },
     "asarUnpack": [
@@ -80,7 +80,7 @@
     "publish": {
       "provider": "github",
       "owner": "tweety24H",
-      "repo": "raqeemos-review",
+      "repo": "raqeem-",
       "private": false
     },
     "afterPack": "build/afterPack.js"

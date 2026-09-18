@@ -308,8 +308,8 @@
     "saveInfoBtn": "حفظ التعديلات",
     "savedInfoMsg": "تم حفظ بيانات الصنف",
     "exportExcelBtn": "تصدير Excel",
-    "importExcelBtn": "استيراد Excel",
-    "importSuccessMsg": "تم الاستيراد: {created} صنف جديد، {updated} صنف محدث",
+    "importExcelBtn": "استيراد من اكسل",
+    "importSuccessMsg": "تم استيراد {count} صنف بنجاح",
     "importErrorMsg": "فشل الاستيراد، تأكد من صيغة الملف",
     "clearFiltersBtn": "مسح الفلاتر"
   },

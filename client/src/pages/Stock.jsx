@@ -3,22 +3,55 @@ import { useSearchParams } from 'react-router-dom';
 import { Camera, Package } from 'lucide-react';
 import api, { fileUrl } from '../api/client';
 import PageHeader from '../components/PageHeader';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
+import Button from '../components/ui/Button';
 import ViewToggle, { useViewMode } from '../components/ViewToggle';
 import EmptyState from '../components/ui/EmptyState';
 import { useLanguage } from '../context/LanguageContext';
+import { useToast } from '../context/ToastContext';
 import { formatIQD, formatDateTime } from '../utils/format';
 import { buildStockAlertLink } from '../utils/whatsapp';
 import BarcodeScannerModal from '../components/BarcodeScannerModal';
 import { exportToExcel } from '../utils/exportExcel';
+
+// قراءة ذكية لهيدر ملف الاستيراد: نتقبّل أي تسمية شائعة للعمود (عربي أو
+// إنكليزي، بمسافات أو بدونها) بدل ما نجبر الموظف يستخدم نفس أسماء الأعمدة
+// الظاهرة بتصدير المخزون بالحرف. أول عمود يطابق كلمة مفتاحية يوخذ لهذا
+// الحقل - لو تكرر نفس الحقل بعمودين، الأول يفوز.
+const IMPORT_FIELD_KEYWORDS = {
+  name: ['اسم', 'صنف', 'name', 'item', 'product'],
+  price: ['سعر', 'price', 'cost'],
+  quantity: ['كمية', 'عدد', 'qty', 'quantity'],
+  unit: ['قياس', 'وحدة', 'unit'],
+  barcode: ['باركود', 'barcode'],
+};
+
+function normalizeHeader(h) {
+  return String(h || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_\-]/g, '');
+}
+
+function detectImportField(header) {
+  const normalized = normalizeHeader(header);
+  if (!normalized) return null;
+  for (const [field, keywords] of Object.entries(IMPORT_FIELD_KEYWORDS)) {
+    if (keywords.some((k) => normalized.includes(normalizeHeader(k)))) return field;
+  }
+  return null;
+}
 
 const DEFAULT_UNITS = ['قطعة', 'كغم', 'متر', 'لتر', 'كارتون', 'طبقة', 'رول', 'فرخ', 'مل'];
 const TYPES = ['خام', 'منتج_تام', 'مستهلك', 'قطع_غيار', 'تغليف'];
 
 export default function Stock() {
   const { t } = useLanguage();
+  const toast = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const [items, setItems] = useState([]);
+  const [importPreview, setImportPreview] = useState(null);
+  const [importBusy, setImportBusy] = useState(false);
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState('');
   const [lowOnly, setLowOnly] = useState(() => searchParams.get('filter') === 'low_stock');
@@ -110,27 +143,64 @@ export default function Stock() {
       const buf = await file.arrayBuffer();
       const wb = XLSX.read(buf, { type: 'array' });
       const sheet = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-      const importItems = rows.map((r) => ({
-        name: r['الاسم'] || r.name,
-        type: r['النوع'] || r.type,
-        category: r['التصنيف'] || r.category,
-        unit: r['الوحدة'] || r.unit || 'قطعة',
-        quantity: r['الكمية'] ?? r.quantity ?? 0,
-        min_quantity: r['الحد الأدنى'] ?? r.min_quantity ?? 0,
-        purchase_price: r['سعر الشراء'] ?? r.purchase_price ?? 0,
-        sale_price: r['سعر البيع'] ?? r.sale_price ?? 0,
-        barcode: r['الباركود'] || r.barcode,
-        location: r['موقع الرف'] || r.location,
-        supplier: r['المورد'] || r.supplier,
-        notes: r['ملاحظات'] || r.notes,
-      }));
-      const res = await api.post('/stock/import', { items: importItems });
-      alert(t('stock.importSuccessMsg', { created: res.data.created, updated: res.data.updated }));
+      const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+      if (!rawRows.length) {
+        toast.error('الملف فارغ - ما فيه أي بيانات');
+        return;
+      }
+
+      // نبني خريطة "اسم العمود بالملف -> الحقل" مرة وحدة من صف الهيدر، بدل
+      // ما نفحص كل صف لحاله - يتقبّل أي مجموعة أعمدة موجودة (حتى لو بس
+      // الاسم والسعر) ويتجاهل أي عمود ثاني ما نعرفه.
+      const fieldByHeader = {};
+      Object.keys(rawRows[0]).forEach((header) => {
+        const field = detectImportField(header);
+        if (field && !Object.values(fieldByHeader).includes(field)) {
+          fieldByHeader[header] = field;
+        }
+      });
+
+      const items = rawRows
+        .map((row) => {
+          const picked = {};
+          for (const [header, field] of Object.entries(fieldByHeader)) {
+            picked[field] = row[header];
+          }
+          return {
+            name: String(picked.name || '').trim(),
+            unit: String(picked.unit || '').trim() || 'قطعة',
+            quantity: Number(picked.quantity) || 0,
+            purchase_price: Number(picked.price) || 0,
+            barcode: picked.barcode ? String(picked.barcode).trim() : null,
+          };
+        })
+        // صفوف فارغة أو بدون اسم صنف تتجاهل تلقائياً
+        .filter((item) => item.name);
+
+      if (!items.length) {
+        toast.error('ما لقيت أي صف فيه اسم صنف صحيح بالملف');
+        return;
+      }
+
+      setImportPreview(items);
+    } catch (err) {
+      toast.error('تعذّر قراءة الملف - تأكد إنه ملف Excel صحيح');
+    }
+  }
+
+  async function confirmImport() {
+    if (!importPreview) return;
+    setImportBusy(true);
+    try {
+      const res = await api.post('/stock/import', { items: importPreview });
+      toast.success(t('stock.importSuccessMsg', { count: res.data.created + res.data.updated }));
+      setImportPreview(null);
       load();
       loadCategories();
     } catch (err) {
-      alert(t('stock.importErrorMsg'));
+      toast.error(t('stock.importErrorMsg'));
+    } finally {
+      setImportBusy(false);
     }
   }
 
@@ -347,6 +417,50 @@ export default function Stock() {
           onClose={() => setShowScanSearch(false)}
         />
       )}
+
+      <Dialog open={!!importPreview} onOpenChange={(o) => !o && setImportPreview(null)}>
+        <DialogContent dir="rtl" className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>معاينة الاستيراد</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            إجمالي {importPreview?.length || 0} صنف جاهز للاستيراد
+            {importPreview?.length > 10 ? ' - عرض أول 10 صفوف:' : ':'}
+          </p>
+          <div className="max-h-80 overflow-y-auto rounded-lg border border-slate-200 dark:border-white/10">
+            <table className="w-full text-sm">
+              <thead className="sticky top-0 bg-slate-50 dark:bg-white/5">
+                <tr>
+                  <th className="p-2 text-right font-semibold text-slate-600 dark:text-slate-300">الاسم</th>
+                  <th className="p-2 text-right font-semibold text-slate-600 dark:text-slate-300">السعر</th>
+                  <th className="p-2 text-right font-semibold text-slate-600 dark:text-slate-300">الكمية</th>
+                  <th className="p-2 text-right font-semibold text-slate-600 dark:text-slate-300">الوحدة</th>
+                  <th className="p-2 text-right font-semibold text-slate-600 dark:text-slate-300">الباركود</th>
+                </tr>
+              </thead>
+              <tbody>
+                {importPreview?.slice(0, 10).map((item, i) => (
+                  <tr key={i} className="border-t border-slate-100 dark:border-white/5">
+                    <td className="p-2 text-slate-700 dark:text-slate-200">{item.name}</td>
+                    <td className="p-2 text-slate-700 dark:text-slate-200">{formatIQD(item.purchase_price)}</td>
+                    <td className="p-2 text-slate-700 dark:text-slate-200">{item.quantity}</td>
+                    <td className="p-2 text-slate-700 dark:text-slate-200">{item.unit}</td>
+                    <td className="p-2 text-slate-500 dark:text-slate-400">{item.barcode || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <DialogFooter className="pt-2">
+            <Button type="button" variant="secondary" magnetic={false} onClick={() => setImportPreview(null)}>
+              إلغاء
+            </Button>
+            <Button type="button" variant="gold" magnetic={false} className="flex-1" disabled={importBusy} onClick={confirmImport}>
+              {importBusy ? 'جاري الاستيراد...' : 'تأكيد الاستيراد'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
